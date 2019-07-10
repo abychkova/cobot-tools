@@ -49,6 +49,9 @@ extra-deps:
 - git: https://github.com/less-wrong/cobot
   commit: 0.1.1.0
 
+extra-lib-dirs:
+- /usr/local/lib
+
 # Control whether we use the GHC we find on the path
 # system-ghc: true
 #
