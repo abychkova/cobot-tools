@@ -1,0 +1,70 @@
+name:                cobot-tools
+version:             0.1.0.0
+github:              "less-wrong/cobot-tools"
+license:             BSD3
+category:            Bio 
+author:              "Pavel Yakovlev, Bogdan Neterebskii, Alexander Sadovnikov"
+maintainer:          "pavel@yakovlev.me"
+copyright:           "2018-2019, Less Wrong Bio"
+synopsis:            Biological data file formats and IO
+
+extra-source-files:
+- README.md
+- ChangeLog.md
+
+# Metadata used when publishing your package
+
+# To avoid duplicated efforts in documentation and dealing with the
+# complications of embedding Haddock markup inside cabal files, it is
+# common to point users to the README.md file.
+description:         Please see the README on GitHub at <https://github.com/less-wrong/cobot-tools#readme>
+
+dependencies:
+- base >= 4.7 && < 5
+- cobot
+- data-msgpack >= 0.0.9 && < 0.1
+- mtl >= 2.2.1 && < 2.3.0
+- text
+- containers >= 0.5.7.1 && < 0.7
+- array >= 0.5 && < 0.6
+- deepseq >= 1.4 && < 1.5
+- lens >= 4.16 && < 5.0
+
+library:
+  source-dirs: src
+  default-extensions:
+    - DeriveGeneric
+    - DeriveFunctor
+    - DeriveFoldable
+    - DeriveAnyClass
+    - FlexibleInstances
+    - InstanceSigs
+    - MultiParamTypeClasses
+    - RecordWildCards
+    - ScopedTypeVariables
+    - OverloadedStrings
+    - TypeFamilies
+    - DataKinds
+    - ConstraintKinds
+    - TypeOperators
+    - TemplateHaskell
+    - FlexibleContexts
+  c-sources:           src/Bio/Tools/Sequence/ViennaRNA/Native/vienna_rna_wrapper.c
+  extra-libraries:     RNA
+
+tests:
+  cobot-tools-test:
+    main:                Spec.hs
+    source-dirs:         test
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    default-extensions:
+      - OverloadedStrings
+      - TypeFamilies
+    dependencies:
+    - cobot-tools
+    - QuickCheck >= 2.9.2 && < 2.13
+    - hspec >= 2.4.1 && < 2.7
+    - neat-interpolation >= 0.3
