@@ -46,8 +46,7 @@ packages:
 # extra-package-dbs: []
 
 extra-deps:
-- git: https://github.com/less-wrong/cobot
-  commit: 0.1.1.0
+- cobot-0.1.1.0
 
 extra-lib-dirs:
 - /usr/local/lib

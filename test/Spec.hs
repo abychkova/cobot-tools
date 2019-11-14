@@ -1,4 +1,5 @@
 import           SpecPrimers
+import           SpecCodonOptimization
 import           SpecViennaRNA
 import           System.IO
 import           Test.Hspec
@@ -13,3 +14,6 @@ main = do
          -- ViennaRNA
          foldTest
          cofoldTest
+         
+         -- CodonOptimization
+         codonOptimizationSpec

@@ -1,5 +1,5 @@
 name:                cobot-tools
-version:             0.1.0.1
+version:             0.1.1.0
 github:              "less-wrong/cobot-tools"
 license:             BSD3
 category:            Bio 
@@ -20,15 +20,18 @@ extra-source-files:
 description:         Please see the README on GitHub at <https://github.com/less-wrong/cobot-tools#readme>
 
 dependencies:
-- base >= 4.7 && < 5
-- cobot
-- data-msgpack >= 0.0.9 && < 0.1
-- mtl >= 2.2.1 && < 2.3.0
-- text
-- containers >= 0.5.7.1 && < 0.7
 - array >= 0.5 && < 0.6
+- base >= 4.7 && < 5
+- bytestring
+- cobot
+- containers >= 0.5.7.1 && < 0.7
+- data-default
+- data-msgpack >= 0.0.9 && < 0.1
 - deepseq >= 1.4 && < 1.5
 - lens >= 4.16 && < 5.0
+- mtl >= 2.2.1 && < 2.3.0
+- regex-tdfa
+- text
 
 library:
   source-dirs: src
