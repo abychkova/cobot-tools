@@ -29,7 +29,7 @@ data CodonScoreConfig =
         , rnaFoldingWindow   :: Int                -- ^ length of the window for RNA folding score calculation (bp)
         , forbiddenDNAWeight :: Double             -- ^ forbidden DNA motifs score weight
         , gcContentDesired   :: Int                -- ^ desired gc content in percents
-        , forbiddenSequence  :: [String]   -- ^ list of forbidden patterns
+        , forbiddenSequence  :: [String]           -- ^ list of forbidden patterns
         }
     deriving (Eq, Show, Generic)
 
