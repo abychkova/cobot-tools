@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+## [0.1.2.1] - 2019-12-9
+### Changed
+- changed `forbidden` parameter type
+
 ## [0.1.2.0] - 2019-12-5
 ### Added
 - wrike-426952824 : added Ecoli and CHO codon tables

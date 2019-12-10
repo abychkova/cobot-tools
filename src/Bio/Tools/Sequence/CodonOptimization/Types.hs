@@ -5,7 +5,6 @@ module Bio.Tools.Sequence.CodonOptimization.Types
     , defaultForbiddenRegexp
     ) where
 
-import qualified Data.ByteString.Lazy as BSL (ByteString)
 import           Data.Default                (Default (..))
 import           GHC.Generics                (Generic)
 
@@ -30,14 +29,14 @@ data CodonScoreConfig =
         , rnaFoldingWindow   :: Int                -- ^ length of the window for RNA folding score calculation (bp)
         , forbiddenDNAWeight :: Double             -- ^ forbidden DNA motifs score weight
         , gcContentDesired   :: Int                -- ^ desired gc content in percents
-        , forbiddenSequence  :: [BSL.ByteString]   -- ^ list of forbidden patterns
+        , forbiddenSequence  :: [String]           -- ^ list of forbidden patterns
         }
     deriving (Eq, Show, Generic)
 
 instance Default CodonScoreConfig where
   def = CodonScoreConfig CHO 3 1 1 0.5 1.4 40 0.001 2.6 100 1 43 defaultForbiddenRegexp
 
-defaultForbiddenRegexp :: [BSL.ByteString]
+defaultForbiddenRegexp :: [String]
 defaultForbiddenRegexp =
     [ "ATTTA"
     , "ATACTCCCCC"
