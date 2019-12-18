@@ -1,20 +1,16 @@
 module Bio.Tools.Sequence.OligoDesigner.Algo
     (split
-    ,OligSplitting(..)
-    ,Olig(..)) where
+    ) where
 
-import Debug.Trace (trace)
+import Bio.Tools.Sequence.OligoDesigner.Types (SequenceLen
+                                                   ,MaxOligSize
+                                                   ,MinOverlap
+                                                   ,Quality
+                                                   ,GapSize
+                                                   ,OligsCount
+                                                   ,OligSize, OligSplitting(..))
+--import Debug.Trace (trace)
 
-type SequenceLen =  Int
-type MaxOligSize =  Int
-type MinOverlap =  Int
-type Quality =  Double
-type GapSize = Int
-type OligsCount = Int
-type OligSize = Int
-
-type Olig = (Int, Int)
-data OligSplitting = OligSplitting {strand5 :: [Olig], strand3 :: [Olig]} deriving (Show, Eq)
 
 split :: SequenceLen -> MaxOligSize -> Quality -> MinOverlap -> Maybe OligSplitting
 split sequLen maxOligSize quality minOverlap = do
@@ -43,7 +39,7 @@ shiftToOffset :: Int -> [(Int, Int)] -> [(Int, Int)]
 shiftToOffset offset coords = map (\(x, y) -> (x + offset, y + offset)) coords
 
 findOptimalSplitting :: SequenceLen -> Quality -> MinOverlap -> [Int] -> Maybe (OligSize, GapSize, OligsCount)
-findOptimalSplitting _ _ _ []                            =  trace ("findOptimalSplitting") $ Nothing
+findOptimalSplitting _ _ _ []                            =  Nothing
 findOptimalSplitting sequLen quality minOverlap (x : xs) =  case processOligSize sequLen quality minOverlap x of
     Just (gap, count) -> return (x, gap, count)
     _                 -> findOptimalSplitting sequLen quality minOverlap xs
@@ -57,7 +53,7 @@ processOligSize sequLen quality minOverlap size = do
     return (gapSize, oligsCount)
 
 countOligsCount :: SequenceLen -> MinOverlap -> GapSize -> OligSize -> [Int] -> Maybe OligsCount
-countOligsCount _ _ _ _ []                               = trace ("countOligsCount") $ Nothing
+countOligsCount _ _ _ _ []                               = Nothing
 countOligsCount sequLen minOverlap gapSize size (x : xs) = do
     let expectedRest = size - div (size - gapSize) 2
     let realRest = sequLen - x * (size + gapSize) + gapSize
