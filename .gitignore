@@ -34,3 +34,4 @@ cabal.project.local~
 *.swp
 *.swo
 /.idea/
+/.idea/codeStyles/

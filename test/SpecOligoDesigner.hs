@@ -8,8 +8,10 @@ import           Test.Hspec                                     (Expectation,
                                                                  Spec, describe,
                                                                  it, shouldBe,
                                                                  shouldSatisfy)
-import Data.Maybe (fromMaybe)
-import Debug.Trace (trace)
+import Data.Maybe (fromMaybe, isJust)
+import Debug.Trace (trace, traceShow)
+import Test.QuickCheck
+import Test.Hspec.QuickCheck (prop)
 
 emptySplitting :: OligSplitting
 emptySplitting = OligSplitting [] []
@@ -26,6 +28,7 @@ oligoDesignerSpec =
         realExampleWithGap
         realExampleWithGap2
         realExampleWithGap3
+        quickCheckSpec
 
 splitSequence :: Spec
 splitSequence =
@@ -97,3 +100,41 @@ realExampleWithGap3 =
         let res = fromMaybe emptySplitting (split 355 60 0.7 18)
         trace (show res) $ strand5 res `shouldBe` [(0,59), (65,124), (130,189), (195,254), (260,319)]
         strand3 res `shouldBe` [(33,92), (98,157), (163,222), (228,287), (293,355)]
+
+quickCheckSpec :: Spec
+quickCheckSpec = prop "quickCheckSpec" $ splitWithRandom
+
+splitWithRandom :: Property
+splitWithRandom =
+  forAll genSequenceLens
+    (\seqLen -> forAll genOligMaxLens
+        (\oligSize -> forAll genOverlapses
+            (\overlaps -> forAll genQualities
+                (\quality -> isJust $ split seqLen oligSize 1 overlaps)
+            )
+        )
+    )
+
+qualities :: [Int]
+qualities = [0,1..1]
+
+sequenceLens :: [Int]
+sequenceLens = [100..1000]
+
+oligMaxLens :: [Int]
+oligMaxLens = [40..100]
+
+overlapses :: [Int]
+overlapses = [3..20]
+
+genQualities :: Gen Int
+genQualities = elements qualities
+
+genOverlapses :: Gen Int
+genOverlapses = elements overlapses
+
+genOligMaxLens :: Gen Int
+genOligMaxLens = elements oligMaxLens
+
+genSequenceLens :: Gen Int
+genSequenceLens = elements sequenceLens
