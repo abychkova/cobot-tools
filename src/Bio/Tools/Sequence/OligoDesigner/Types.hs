@@ -7,7 +7,8 @@ module Bio.Tools.Sequence.OligoDesigner.Types
     ,OligsCount
     ,OligSize
     ,Olig
-    ,OligSplitting(..)) where
+    ,OligSplitting(..)
+    ,pretty) where
 
 import           GHC.Generics                (Generic)
 import Data.List (foldl')
@@ -23,12 +24,12 @@ type OligsCount = Int
 type OligSize = Int
 
 type Olig = (Int, Int)
-data OligSplitting = OligSplitting {strand5 :: [Olig], strand3 :: [Olig]} deriving (Eq, Generic)
+data OligSplitting = OligSplitting {strand5 :: [Olig], strand3 :: [Olig]} deriving (Show, Eq, Generic)
 
-instance Show OligSplitting where
-    show (OligSplitting strand5 strand3) = "5': " ++ str5 ++ "\n3': " ++ str3 where
-        str5 = fst $ foldl' concat ("", 0) strand5
-        str3 = fst $ foldl' concat ("", 0) strand3
+pretty :: OligSplitting -> String
+pretty (OligSplitting strand5 strand3) = "5': " ++ str5 ++ "\n3': " ++ str3 where
+    str5 = fst $ foldl' concat ("", 0) strand5
+    str3 = fst $ foldl' concat ("", 0) strand3
 
-        concat :: (String, Int) -> (Int, Int) -> (String, Int)
-        concat (res, prev) p@(x, y) = (res ++ replicate (x - prev) ' ' ++ "(" ++ replicate (y - x) '_' ++ ")", y)
+    concat :: (String, Int) -> (Int, Int) -> (String, Int)
+    concat (res, prev) p@(x, y) = (res ++ replicate (x - prev) ' ' ++ "(" ++ replicate (y - x) '_' ++ ")", y)
