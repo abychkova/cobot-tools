@@ -33,5 +33,4 @@ cabal.project.local~
 # vim
 *.swp
 *.swo
-/.idea/
-/.idea/codeStyles/
+.idea/
