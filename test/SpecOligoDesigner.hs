@@ -2,7 +2,7 @@
 
 module SpecOligoDesigner where
 
-import           Bio.Tools.Sequence.OligoDesigner.Algo  (split)
+import           Bio.Tools.Sequence.OligoDesigner.Splitter  (split)
 import           Bio.Tools.Sequence.OligoDesigner.Types (MinOverlap,
                                                          OligSplitting (..),
                                                          SequenceLen, pretty)
