@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+## [0.1.2.2] - 2019-12-25
+### Fixed
+- wrike-438378826: CHO codon table fixed
+
 ## [0.1.2.1] - 2019-12-9
 ### Changed
 - changed `forbidden` parameter type
