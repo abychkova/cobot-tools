@@ -8,14 +8,13 @@ module Bio.Tools.Sequence.OligoDesigner.Types
     ,OligSet(..)
     ,OligsCount
     ,OligSize
-    ,OligBound
+    ,OligBounds
     ,OligSplitting(..)
     ,standardTemperature
     ,pretty) where
 
 import           GHC.Generics                (Generic)
 import Data.List (foldl')
-import Debug.Trace (trace)
 import           Bio.NucleicAcid.Nucleotide.Type                (DNA (..))
 
 type SequenceLen =  Int
@@ -26,17 +25,17 @@ type GapSize = Int
 
 type OligsCount = Int
 type OligSize = Int
-type OligBound = (Int, Int)
+type OligBounds = (Int, Int)
 
-data OligSplitting = OligSplitting {strand5 :: [OligBound], strand3 :: [OligBound]} deriving (Show, Eq, Generic)
+data OligSplitting = OligSplitting {strand5 :: [OligBounds], strand3 :: [OligBounds]} deriving (Show, Eq, Generic)
 
 pretty :: OligSplitting -> String
 pretty (OligSplitting strand5 strand3) = "5': " ++ str5 ++ "\n3': " ++ str3 where
-    str5 = fst $ foldl' concat ("", 0) strand5
-    str3 = fst $ foldl' concat ("", 0) strand3
+    str5 = fst $ foldl' conc ("", 0) strand5
+    str3 = fst $ foldl' conc ("", 0) strand3
 
-    concat :: (String, Int) -> (Int, Int) -> (String, Int)
-    concat (res, prev) p@(x, y) = (res ++ replicate (x - prev) ' ' ++ "(" ++ replicate (y - x) '_' ++ ")", y)
+    conc :: (String, Int) -> (Int, Int) -> (String, Int)
+    conc (res, prev) (x, y) = (res ++ replicate (x - prev) ' ' ++ "(" ++ replicate (y - x) '_' ++ ")", y)
 
 data Olig = Olig {sequ :: [DNA], start :: Int, end :: Int} deriving (Show, Eq, Generic)
 data OligSet = OligSet {forward :: [Olig], reversed :: [Olig]}

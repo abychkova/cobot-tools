@@ -2,7 +2,7 @@
 
 module SpecOligoDesignerScorer where
 
-import Bio.Tools.Sequence.OligoDesigner.Scorer (score)
+import Bio.Tools.Sequence.OligoDesigner.Scorer (rnaCofoldScore, gcScore)
 import Bio.Tools.Sequence.OligoDesigner.Types (Olig(..), OligSet(..))
 import Test.Hspec (Expectation, Spec, describe, it, shouldBe, shouldSatisfy)
 import Test.Hspec.QuickCheck (modifyMaxSize, prop)
@@ -12,6 +12,7 @@ oligoDesignerScoreSpec :: Spec
 oligoDesignerScoreSpec = describe "Oligo-Designer score spec" $ do
     scoreRNAFoldingSpec
     scoreRNAFoldingSpec2
+    gcScoreSpec
 
 scoreRNAFoldingSpec :: Spec
 scoreRNAFoldingSpec =
@@ -30,7 +31,7 @@ scoreRNAFoldingSpec =
                 , Olig "ATATACCCTCTAGAGTCTAGATCTTGATATCATCCCCGTGAGTCAAACCG" 189 239
                 ]
         let oligSet = OligSet forward reversed
-        score oligSet `shouldBe` -7.6000023
+        rnaCofoldScore oligSet `shouldBe` -7.6000023
 
 scoreRNAFoldingSpec2 :: Spec
 scoreRNAFoldingSpec2 =
@@ -53,4 +54,12 @@ scoreRNAFoldingSpec2 =
                 , Olig "TGAACTGACGGTGACCGTGGTCCCTTGGCCCCAGATGTCCATTCCGTAGT" 0 0
                 ]
         let oligSet = OligSet forward reversed
-        score oligSet `shouldBe` 5.5999985
+        rnaCofoldScore oligSet `shouldBe` 5.5999985
+        
+gcScoreSpec :: Spec
+gcScoreSpec = 
+   describe "" $ it "" $ do
+       let sequ = "GAAGTGCAGCTGGTGGAGTCTGGGGGAGGCGTGGTACAGCCTGGCAGGTCCCTGTCTCCTGTGCAGCCTCTGGATTCACCTTTAA" ++ 
+                  "CGATTATACCATGCACTGGGTCCAGCTCCAGGGAAGGGCCTGGAGTGGGTCTCAGGTATTAGTTGGAATGGCGGTAG"
+       let target = 64
+       gcScore sequ target `shouldBe` 0.009066358024691357
