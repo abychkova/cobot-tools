@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+## [0.1.2.3] - 2019-12-29
+### Added
+- quick-check tests for codon-optimization algorithm
+
 ## [0.1.2.2] - 2019-12-25
 ### Fixed
 - wrike-438378826: CHO codon table fixed

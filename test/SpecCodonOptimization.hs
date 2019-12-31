@@ -2,7 +2,7 @@
 
 module SpecCodonOptimization where
 
-import           Bio.NucleicAcid.Nucleotide.Type                (DNA)
+import           Bio.NucleicAcid.Nucleotide.Type                (DNA (..))
 import           Bio.Protein.AminoAcid                          ()
 import           Bio.Protein.AminoAcid.Type                     (AA)
 import           Bio.Tools.Sequence.CodonOptimization.Algo      (optimizeAA,
@@ -11,9 +11,10 @@ import           Bio.Tools.Sequence.CodonOptimization.Algo      (optimizeAA,
                                                                  scoreCmp,
                                                                  scoreSequence)
 import           Bio.Tools.Sequence.CodonOptimization.Constants (ak2Codon)
-import           Bio.Tools.Sequence.CodonOptimization.Types     (CodonScoreConfig(..),
+import           Bio.Tools.Sequence.CodonOptimization.Types     (CodonScoreConfig (..),
                                                                  Organism (..),
                                                                  defaultForbiddenRegexp)
+import           Control.Monad                                  (replicateM)
 import           Data.List                                      (foldl',
                                                                  maximumBy,
                                                                  minimumBy)
@@ -22,8 +23,13 @@ import           Data.Maybe                                     (fromMaybe)
 import           System.Random
 import           Test.Hspec                                     (Expectation,
                                                                  Spec, describe,
-                                                                 it, shouldBe,
+                                                                 it, runIO,
+                                                                 shouldBe,
                                                                  shouldSatisfy)
+import           Test.Hspec.QuickCheck                          (prop)
+import           Test.QuickCheck.Gen                            (Gen, elements)
+import           Test.QuickCheck.Property                       (Property,
+                                                                 forAll)
 
 confHuman :: CodonScoreConfig
 confHuman = CodonScoreConfig Human 3 1 1 0.5 1.4 40 0.001 2.6 100 1 60 defaultForbiddenRegexp
@@ -67,6 +73,9 @@ toRandomCodon ak = do
 codonOptimizationSpec :: Spec
 codonOptimizationSpec =
     describe "Codon optimization spec" $ do
+        optimizedAgainstRandom confCHO
+        optimizedAgainstRandom confHuman
+        optimizedAgainstRandom confEColi
         optimizeSequence
         optimizeSequenceForEColi
         optimizeSequenceForCHO
@@ -312,3 +321,20 @@ scoreFunDifferentGCDesired =
         score conf' "GCCAGCGGCGACAAGACCCACACCTGTCCT" `shouldBe` 80.74362252733329
         score conf' "CCCTGCCCCGCCCCCGAGGCCGCCGGCGGCCCTAGCGTGTTCCTGTTCCCTCCTAAGCCTAAGGACACCCTGATGATCAGCAGAACCCCCGAGGTGACCTGCGTGGTGGTGGACGTGAGCCACGAGGACCCTGAGGTGAAGTTCAATTGGTACGTGGACGGCGTGGAGGTGCACAACGCCAAGACCAAGCCTAGAGAGGAGCAGTACAACAGCACCTACAGAGTGGTGAGCGTGCTGACCGTGCTGCACCAAGACTGGCTGAACGGCAAGGAGTACAAGTGCAAGGTGAGCAACAAGGCCCTGCCCGCCCCTATCGAGAAGACCATCAGCAAGGCCAAG"
          `shouldBe` 96.19662511761598
+
+optimizedAgainstRandom :: CodonScoreConfig -> Spec
+optimizedAgainstRandom conf = describe "optimizedAgainstRandom" $ do
+        let ak = "GQPREPQVYTLPPSRDELTKNQVSLTCLVKGFYPSDIAVEWESNGQPENNYKTTPPVLDSDGSFFLYSKLTVDKSRWQQGNVFSCSVMHEALHNHYTQKSLSLSPGK"
+        gen <- runIO $ genNKSequence ak
+        prop "optimized sequence should have better score than any random sequence" (runBatchCheck ak gen)
+  where
+    runBatchCheck :: [AA] -> Gen [DNA] -> Property
+    runBatchCheck ak gen = forAll gen (\nk -> scoreSequence conf res >= scoreSequence conf nk)
+      where
+        res = optimizeAA conf ak
+
+genNKSequence :: [AA] -> IO (Gen [DNA])
+genNKSequence aa = elements <$> variants aa
+
+variants :: [AA] -> IO [[DNA]]
+variants aa = replicateM 100 (toRandomNKSequ aa)
