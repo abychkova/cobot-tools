@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module SpecOligoDesigner where
+module OligoDesigner.SpecOligoDesignerSplitter where
 
 import           Bio.Tools.Sequence.OligoDesigner.Splitter  (split)
 import           Bio.Tools.Sequence.OligoDesigner.Types (MinOverlap,
@@ -18,9 +18,9 @@ import           Test.QuickCheck                        (Gen, Property,
 emptySplitting :: OligSplitting
 emptySplitting = OligSplitting [] []
 
-oligoDesignerSpec :: Spec
-oligoDesignerSpec =
-    describe "Oligo-Designer spec" $ do
+oligoDesignerSplitterSpec :: Spec
+oligoDesignerSplitterSpec =
+    describe "Oligo-Designer splitter spec" $ do
         splitSequence
         splitSequence2
         splitSequence3

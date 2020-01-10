@@ -4,6 +4,7 @@ module Bio.Tools.Sequence.OligoDesigner.Scorer
  ) where
 
 import Bio.Tools.Sequence.OligoDesigner.Types (Olig(..), OligSet(..), standardTemperature)
+import Bio.Tools.Sequence.OligoDesigner.Utils (assemble)
 import Bio.Tools.Sequence.ViennaRNA.Internal.Cofold (cofold)
 import Bio.NucleicAcid.Nucleotide.Type (DNA(..))
 
@@ -27,8 +28,10 @@ rnaCofoldScore (OligSet forward reversed) = score where
     mix x [] = x
     mix [] y = y
 
-gcScore :: [DNA] -> Double -> Double
-gcScore sequ target = score where
+gcScore :: OligSet -> Double -> Double
+gcScore (OligSet [] [])     _      = 0
+gcScore oligs@(OligSet _ _) target = score where
+    sequ = assemble oligs
     gc = length $ filter (\nk -> nk == DC || nk == DG) sequ
     gcContent = realToFrac gc / realToFrac (length sequ)
     deltaGC = abs(target - gcContent)

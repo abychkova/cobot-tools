@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module SpecOligoDesignerScorer where
+module OligoDesigner.SpecOligoDesignerScorer where
 
 import Bio.Tools.Sequence.OligoDesigner.Scorer (rnaCofoldScore, gcScore)
 import Bio.Tools.Sequence.OligoDesigner.Types (Olig(..), OligSet(..))
@@ -13,6 +13,7 @@ oligoDesignerScoreSpec = describe "Oligo-Designer score spec" $ do
     scoreRNAFoldingSpec
     scoreRNAFoldingSpec2
     gcScoreSpec
+    gcScoreEmptySpec
 
 scoreRNAFoldingSpec :: Spec
 scoreRNAFoldingSpec =
@@ -55,11 +56,15 @@ scoreRNAFoldingSpec2 =
                 ]
         let oligSet = OligSet forward reversed
         rnaCofoldScore oligSet `shouldBe` 5.5999985
-        
+
 gcScoreSpec :: Spec
-gcScoreSpec = 
-   describe "" $ it "" $ do
-       let sequ = "GAAGTGCAGCTGGTGGAGTCTGGGGGAGGCGTGGTACAGCCTGGCAGGTCCCTGTCTCCTGTGCAGCCTCTGGATTCACCTTTAA" ++ 
-                  "CGATTATACCATGCACTGGGTCCAGCTCCAGGGAAGGGCCTGGAGTGGGTCTCAGGTATTAGTTGGAATGGCGGTAG"
-       let target = 64
-       gcScore sequ target `shouldBe` 0.009066358024691357
+gcScoreSpec =
+   describe "gcScoreSpec" $ it "should correct score gc-content" $ do
+       let oligs = OligSet [Olig "GAAGTGCAGCTGGTGGAGTCTGGGGGAGGCGTGGTACAGCCTGGCAGGTCCCTGTCTCCTGTGCAGCCTCTGGATTCACCTTTAA" 0 0] [Olig "CGATTATACCATGCACTGGGTCCAGCTCCAGGGAAGGGCCTGGAGTGGGTCTCAGGTATTAGTTGGAATGGCGGTAG" 0 0]
+       gcScore oligs 64 `shouldBe` 0.009066358024691357
+
+gcScoreEmptySpec :: Spec
+gcScoreEmptySpec =
+   describe "gcScoreEmptySpec" $ it "should return zero gc-content for empty" $ do
+       let oligs = OligSet [] []
+       gcScore oligs 64 `shouldBe` 0.0

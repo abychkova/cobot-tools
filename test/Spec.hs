@@ -1,7 +1,8 @@
 import           SpecPrimers
 import           SpecCodonOptimization
-import           SpecOligoDesigner
-import           SpecOligoDesignerScorer
+import           OligoDesigner.SpecOligoDesignerSplitter
+import           OligoDesigner.SpecOligoDesignerScorer
+import           OligoDesigner.SpecUtils
 import           SpecViennaRNA
 import           System.IO
 import           Test.Hspec
@@ -10,7 +11,7 @@ main :: IO ()
 main = do
     hSetBuffering stdout NoBuffering
     hspec $ do
---         -- Primers
+         -- Primers
 --         testPrimers
 --
 --         -- ViennaRNA
@@ -20,7 +21,8 @@ main = do
 --         -- CodonOptimization
 --         codonOptimizationSpec
 
-         --OligoDesigner
---         oligoDesignerSpec
-        oligoDesignerScoreSpec
+         -- OligoDesigner
+         oligoDesignerSplitterSpec
+         oligoDesignerScoreSpec
+         utilsSpec
 

@@ -38,7 +38,7 @@ pretty (OligSplitting strand5 strand3) = "5': " ++ str5 ++ "\n3': " ++ str3 wher
     conc (res, prev) (x, y) = (res ++ replicate (x - prev) ' ' ++ "(" ++ replicate (y - x) '_' ++ ")", y)
 
 data Olig = Olig {sequ :: [DNA], start :: Int, end :: Int} deriving (Show, Eq, Generic)
-data OligSet = OligSet {forward :: [Olig], reversed :: [Olig]}
+data OligSet = OligSet {forward :: [Olig], reversed :: [Olig]} deriving (Show, Eq, Generic)
 
 standardTemperature :: Double
 standardTemperature = 37
