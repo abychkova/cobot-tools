@@ -7,7 +7,7 @@ import Bio.Tools.Sequence.OligoDesigner.Algo (generateOligs)
 import Bio.Tools.Sequence.OligoDesigner.Types (Olig(..), OligSet(..))
 import Bio.Tools.Sequence.OligoDesigner.Utils (assemble, weightedRandom)
 import Debug.Trace (trace)
-import Test.Hspec (Spec, describe, it, shouldBe, shouldSatisfy)
+import Test.Hspec (Spec, describe, it, shouldBe, shouldSatisfy, shouldThrow, anyException)
 
 utilsSpec :: Spec
 utilsSpec =
@@ -18,6 +18,7 @@ utilsSpec =
         weightedRandomSpec
         weightedRandomAllZeroSpec
         weightedRandomForUnsortedSpec
+        weightedRandomForEmptySpec
 
 assembleSpec :: Spec
 assembleSpec =
@@ -78,3 +79,10 @@ weightedRandomAllZeroSpec =
     it "should return weigthed random element" $ do
         res <- weightedRandom [(1, 0), (2, 0)]
         res `shouldBe` 1
+
+weightedRandomForEmptySpec :: Spec
+weightedRandomForEmptySpec =
+    describe "weightedRandomForEmptySpec" $
+    it "should return weigthed random element" $ do
+        let empty = [] :: [(Double, Double)]
+        weightedRandom empty `shouldThrow` anyException

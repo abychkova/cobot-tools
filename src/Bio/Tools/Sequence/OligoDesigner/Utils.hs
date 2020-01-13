@@ -36,14 +36,15 @@ assemble (OligSet fwd rvd) = constract fwd rvd 0 [] where
         res = acc ++ drop (prevEnd - startLeft) seq1 ++ translateDNA (drop (endLeft - startRight) seq2)
 
 randomCodon :: Organism -> AA -> IO [DNA]
-randomCodon org aa = weightedRandom codonToWeight where
+randomCodon organism aa = weightedRandom codonToWeight where
     codons = fromMaybe [] (Map.lookup aa ak2Codon)
     codonToWeight = map (\codon -> (codon, codonWeight codon)) codons
 
     codonWeight :: [DNA] -> Double
-    codonWeight codon = fromMaybe 0 (Map.lookup codon (codonFrequencies org))
+    codonWeight codon = fromMaybe 0 (Map.lookup codon (codonFrequencies organism))
 
 weightedRandom :: Show a => [(a, Double)] -> IO a
+weightedRandom []    = fail "cannot get random for empty array"
 weightedRandom items = do
     random <- randomRIO (0, sum $ map snd items)
     return $ getWeightedItem random 0 (sortOn snd items)
