@@ -1,31 +1,33 @@
 module Bio.Tools.Sequence.OligoDesigner.Types
     (SequenceLen
-    ,MaxOligSize
-    ,MinOverlap
-    ,Quality
     ,GapSize
+    ,Codon
+    ,MatrixCell(..)
     ,Olig(..)
     ,OligSet(..)
     ,OligsCount
     ,OligSize
     ,OligBounds
     ,OligSplitting(..)
+    ,OligoDesignerConfig(..)
+    ,OligSplittingConfig(..)
     ,standardTemperature
     ,pretty) where
 
-import           GHC.Generics                (Generic)
-import Data.List (foldl')
-import           Bio.NucleicAcid.Nucleotide.Type                (DNA (..))
+import           Bio.NucleicAcid.Nucleotide.Type      (DNA (..))
+import           Bio.Tools.Sequence.CodonOptimization (CodonOptimizationConfig (..))
+import           Data.List                            (foldl')
+import           GHC.Generics                         (Generic)
 
 type SequenceLen =  Int
-type MaxOligSize =  Int
-type MinOverlap =  Int
-type Quality =  Double
 type GapSize = Int
 
 type OligsCount = Int
 type OligSize = Int
 type OligBounds = (Int, Int)
+type Codon = [DNA]
+
+data MatrixCell = MatrixCell {olig1 :: Olig, olig2 :: Olig, rna :: Float}
 
 data OligSplitting = OligSplitting {strand5 :: [OligBounds], strand3 :: [OligBounds]} deriving (Show, Eq, Generic)
 
@@ -38,7 +40,19 @@ pretty (OligSplitting strand5 strand3) = "5': " ++ str5 ++ "\n3': " ++ str3 wher
     conc (res, prev) (x, y) = (res ++ replicate (x - prev) ' ' ++ "(" ++ replicate (y - x) '_' ++ ")", y)
 
 data Olig = Olig {sequ :: [DNA], start :: Int, end :: Int} deriving (Show, Eq, Generic)
-data OligSet = OligSet {forward :: [Olig], reversed :: [Olig]} deriving (Show, Eq, Generic)
+data OligSet = OligSet {forward :: [Olig], reversed :: [Olig], coordinates :: OligSplitting} deriving (Show, Eq, Generic)
 
 standardTemperature :: Double
 standardTemperature = 37
+
+data OligSplittingConfig = OligSplittingConfig {
+    maxOligSize    :: Int,
+    overlapQuality :: Double,
+    minOverlap     :: Int
+}
+
+data OligoDesignerConfig = OligoDesignerConfig {
+    codonOptimizationConfing :: CodonOptimizationConfig,
+    balanceFactor            :: Double,
+    oligSplittingConfig      :: OligSplittingConfig
+}

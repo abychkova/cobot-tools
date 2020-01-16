@@ -1,48 +1,37 @@
 module Bio.Tools.Sequence.OligoDesigner.Algo
- (generateOligs
+ (designOligsDNA
+ ,designOligsAA
+ ,getRandomSeed
  ) where
 
-import           Bio.NucleicAcid.Nucleotide.Type                (DNA (..))
-import Bio.Tools.Sequence.OligoDesigner.Types (Olig(..), OligSet(..), OligSplitting(..), OligBounds)
-import Bio.Tools.Sequence.OligoDesigner.Utils (translateDNA, assemble)
-import Bio.Tools.Sequence.OligoDesigner.Splitter (split)
-import Bio.Tools.Sequence.OligoDesigner.Optimizer (optimize)
-import Bio.Tools.Sequence.CodonOptimization.Algo (optimizeAA, scoreSequence)
-import Bio.Protein.AminoAcid (AA)
-import Bio.Tools.Sequence.CodonOptimization.Types (CodonScoreConfig)
-import Bio.Tools.Sequence.OligoDesigner.Scorer (rnaCofoldScore, gcScore)
-import GHC.Float (float2Double)
-import Data.List (maximumBy)
-import Data.Default (def)
+import           Bio.NucleicAcid.Nucleotide.Type            (DNA (..))
+import           Bio.Protein.AminoAcid                      (AA)
+import qualified Bio.Tools.Sequence.CodonOptimization       as CodonOptimization (optimizeCodonForAA)
+import           Bio.Tools.Sequence.OligoDesigner.Optimizer (minMaxOptimize)
+import           Bio.Tools.Sequence.OligoDesigner.Splitter  (split)
+import           Bio.Tools.Sequence.OligoDesigner.Types     (OligSet (..), OligSplittingConfig (..),
+                                                             OligoDesignerConfig (..))
+import           Bio.Tools.Sequence.OligoDesigner.Utils     (buildOligSet)
+import           Control.Monad.Except                       (Except, throwError)
+import           Control.Monad.IO.Class                     (MonadIO, liftIO)
+import           Control.Monad.State                        (State, evalState)
+import           System.Random                              (StdGen, getStdGen)
 
-generateOligs :: [DNA] -> Maybe OligSet
-generateOligs sequ = do
-    splitting <- split (length sequ) 70 1 18
-    let strand5' = map (toOlig sequ) (strand5 splitting)
-    let strand3' = map (toOlig $ translateDNA sequ) (strand3 splitting)
-    return $ OligSet strand5' strand3'
+designOligsDNA :: OligSplittingConfig -> [DNA] -> Except String OligSet
+designOligsDNA conf sequ =
+    case split conf (length sequ) of
+        Just splitting -> return $ buildOligSet splitting sequ
+        _              -> throwError "Cannot find splitting for parameters"
+
+getRandomSeed :: MonadIO m => m StdGen
+getRandomSeed = liftIO getStdGen
+
+designOligsAA :: StdGen -> OligoDesignerConfig -> [AA] -> Except String OligSet
+designOligsAA gen conf@(OligoDesignerConfig codonConf _ splittingConf) aa = do
+    let dna = CodonOptimization.optimizeCodonForAA codonConf aa
+    oligs <- designOligsDNA splittingConf dna
+    let state = findOptimal oligs []
+    return $ evalState state gen
   where
-    toOlig :: [DNA] -> OligBounds -> Olig
-    toOlig dna (start, end) = Olig (slice start end dna) start end
-
-    slice :: Int -> Int -> [a] -> [a]
-    slice start end xs = take (end - start) (drop start xs)
-
-generateAndOptimizeOligs :: [AA] -> Maybe OligSet
-generateAndOptimizeOligs aa = do
-    let dna = optimizeAA def aa
-    oligs <- generateOligs dna
-    return $ maximumBy scoreCmp [optimize oligs | _ <- [0..5]] --TODO: better do this with threads
-  where
-    commonScore :: OligSet -> Double --TODO: better move to Scorer.hs as globalScore and add codon-optimization-score
-    commonScore oligs = if rna <= 0 then realToFrac rna else gc ** 50 * rna
-      where
-        rna = realToFrac $ rnaCofoldScore oligs
-        gc = gcScore oligs 60
-        codonOpt = scoreSequence $ def assemble oligs
-
-    scoreCmp :: OligSet -> OligSet -> Ordering
-    scoreCmp oligs1 oligs2 = compare score1 score2
-      where
-        score1 = commonScore oligs1
-        score2 = commonScore oligs2
+    findOptimal :: OligSet -> [(OligSet, Double)] -> State StdGen OligSet
+    findOptimal oligs _ = minMaxOptimize conf oligs --TODO: do optimization while score isn't stable

@@ -1,8 +1,8 @@
-import           SpecPrimers
-import           SpecCodonOptimization
-import           OligoDesigner.SpecOligoDesignerSplitter
 import           OligoDesigner.SpecOligoDesignerScorer
+import           OligoDesigner.SpecOligoDesignerSplitter
 import           OligoDesigner.SpecUtils
+import           SpecCodonOptimization
+import           SpecPrimers
 import           SpecViennaRNA
 import           System.IO
 import           Test.Hspec
@@ -13,12 +13,12 @@ main = do
     hspec $ do
          -- Primers
 --         testPrimers
---
---         -- ViennaRNA
+
+         -- ViennaRNA
 --         foldTest
 --         cofoldTest
---
---         -- CodonOptimization
+
+         -- CodonOptimization
 --         codonOptimizationSpec
 
          -- OligoDesigner

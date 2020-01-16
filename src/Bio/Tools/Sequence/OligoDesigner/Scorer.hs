@@ -1,38 +1,55 @@
 module Bio.Tools.Sequence.OligoDesigner.Scorer
- (rnaCofoldScore
- ,gcScore
+ (rnaScore
+ ,commonScore
+ ,rnaMatrixScore
+ ,rnaMatrix
  ) where
 
-import Bio.Tools.Sequence.OligoDesigner.Types (Olig(..), OligSet(..), standardTemperature)
-import Bio.Tools.Sequence.OligoDesigner.Utils (assemble)
-import Bio.Tools.Sequence.ViennaRNA.Internal.Cofold (cofold)
-import Bio.NucleicAcid.Nucleotide.Type (DNA(..))
+import qualified Bio.Tools.Sequence.CodonOptimization         as CodonOptimization
+                                                                                    (score)
+import           Bio.Tools.Sequence.OligoDesigner.Types       (MatrixCell (..),
+                                                               Olig (..),
+                                                               OligSet (..),
+                                                               OligoDesignerConfig (..),
+                                                               standardTemperature)
+import           Bio.Tools.Sequence.OligoDesigner.Utils       (assemble)
+import           Bio.Tools.Sequence.ViennaRNA.Internal.Cofold (cofold)
+import           Data.Matrix                                  (Matrix (..),
+                                                               matrix, (!))
 
-rnaCofoldScore :: OligSet -> Float
-rnaCofoldScore (OligSet forward reversed) = score where
+commonScore :: OligoDesignerConfig -> OligSet -> Double
+commonScore (OligoDesignerConfig codonOptimizationConf balanceFactor _) oligs = scoreValue
+  where
+    sequ = assemble oligs
+    codonScore = CodonOptimization.score codonOptimizationConf sequ
+    rnaValue = realToFrac $ rnaMatrixScore $ rnaMatrix oligs
+    scoreValue = balanceFactor * codonScore + (1 - balanceFactor) * rnaValue
+
+rnaMatrix :: OligSet -> Matrix MatrixCell
+rnaMatrix (OligSet forward reversed _) = matrix rowCount rowCount generator
+  where
     allOligs = mix forward reversed
-    len = length allOligs - 1
+    rowCount = length allOligs
 
-    diagonal      = [(sequ $ allOligs !! x, sequ $ allOligs !! y) | x <- [0 .. len], y <- [x .. len],  x == y]
-    underDiagonal = [(sequ $ allOligs !! x, sequ $ allOligs !! y) | x <- [0 .. len], y <- [x .. len], abs (x - y) == 1]
-    matrix        = [(sequ $ allOligs !! x, sequ $ allOligs !! y) | x <- [0 .. len], y <- [x .. len], abs (x - y) > 1]
-
-    diagonalScore      = maximum $ map (abs . fst . cofold standardTemperature) diagonal
-    underDiagonalScore = minimum $ map (abs . fst . cofold standardTemperature) underDiagonal
-    matrixScore        = maximum $ map (abs . fst . cofold standardTemperature) matrix
-
-    score = underDiagonalScore - max diagonalScore matrixScore
-    
     mix :: [a] -> [a] -> [a]
     mix (x:xs) (y:ys) = x : y : mix xs ys
-    mix x [] = x
-    mix [] y = y
+    mix x []          = x
+    mix [] y          = y
 
-gcScore :: OligSet -> Double -> Double
-gcScore (OligSet [] [])     _      = 0
-gcScore oligs@(OligSet _ _) target = score where
-    sequ = assemble oligs
-    gc = length $ filter (\nk -> nk == DC || nk == DG) sequ
-    gcContent = realToFrac gc / realToFrac (length sequ)
-    deltaGC = abs(target - gcContent)
-    score = 1 - deltaGC / target
+    generator :: (Int, Int) -> MatrixCell
+    generator (i, j) =  MatrixCell olig1 olig2 score
+      where
+        olig1 = allOligs !! (i - 1)
+        olig2 = allOligs !! (j - 1)
+        score = abs . fst $ cofold standardTemperature (sequ olig1, sequ olig2)
+
+rnaMatrixScore :: Matrix MatrixCell -> Float
+rnaMatrixScore oligsMatrix = underDiagonalScore - otherScore
+  where
+    rowsCnt = nrows oligsMatrix
+    colsCnt = ncols oligsMatrix
+    underDiagonalScore = minimum [rna $ oligsMatrix ! (x , y) | x <- [1 .. rowsCnt], y <- [1 .. colsCnt], abs (x - y) == 1]
+    otherScore         = maximum [rna $ oligsMatrix ! (x , y) | x <- [1 .. rowsCnt], y <- [1 .. colsCnt], abs (x - y) /= 1]
+
+rnaScore :: OligSet -> Float
+rnaScore oligs = rnaMatrixScore $ rnaMatrix oligs

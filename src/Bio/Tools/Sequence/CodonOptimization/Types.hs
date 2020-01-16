@@ -1,12 +1,12 @@
 module Bio.Tools.Sequence.CodonOptimization.Types
-    ( CodonScoreConfig(..)
+    ( CodonOptimizationConfig(..)
     , Organism(..)
     , standardTemperature
     , defaultForbiddenRegexp
     ) where
 
-import           Data.Default                (Default (..))
-import           GHC.Generics                (Generic)
+import           Data.Default (Default (..))
+import           GHC.Generics (Generic)
 
 standardTemperature :: Double
 standardTemperature = 37
@@ -15,8 +15,8 @@ data Organism = CHO | EColi | Human
     deriving (Eq, Show, Generic)
 
 -- | all parameters for codon optimization
-data CodonScoreConfig =
-    CodonScoreConfig
+data CodonOptimizationConfig =
+    CodonOptimizationConfig
         { organism           :: Organism
         , initLen            :: Int                -- ^ number of first ak from initial sequence, which will optimised without scoring function
         , windowLen          :: Int                -- ^ length of variation window
@@ -33,8 +33,8 @@ data CodonScoreConfig =
         }
     deriving (Eq, Show, Generic)
 
-instance Default CodonScoreConfig where
-  def = CodonScoreConfig CHO 3 1 1 0.5 1.4 40 0.001 2.6 100 1 43 defaultForbiddenRegexp
+instance Default CodonOptimizationConfig where
+  def = CodonOptimizationConfig CHO 3 1 1 0.5 1.4 40 0.001 2.6 100 1 43 defaultForbiddenRegexp
 
 defaultForbiddenRegexp :: [String]
 defaultForbiddenRegexp =

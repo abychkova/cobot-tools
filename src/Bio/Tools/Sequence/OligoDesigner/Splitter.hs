@@ -2,16 +2,15 @@ module Bio.Tools.Sequence.OligoDesigner.Splitter
     (split
     ) where
 
-import           Bio.Tools.Sequence.OligoDesigner.Types (GapSize, MaxOligSize,
-                                                         MinOverlap, OligSize,
+import           Bio.Tools.Sequence.OligoDesigner.Types (GapSize, OligSize,
                                                          OligSplitting (..),
-                                                         OligsCount, Quality,
+                                                         OligSplittingConfig (..),
+                                                         OligsCount,
                                                          SequenceLen)
-import           Debug.Trace                            (trace)
 
 
-split :: SequenceLen -> MaxOligSize -> Quality -> MinOverlap -> Maybe OligSplitting
-split sequLen maxOligSize quality minOverlap = do
+split :: OligSplittingConfig -> SequenceLen -> Maybe OligSplitting
+split (OligSplittingConfig maxOligSize quality minOverlap) sequLen = do
 
     let minOligSize = minOverlap * 2
     let realMaxOligSize = minimum [maxOligSize, sequLen]
@@ -48,7 +47,7 @@ split sequLen maxOligSize quality minOverlap = do
                 (Just oligsCount) -> return (x, oligsCount)
 
     splittingForOligsCount :: GapSize -> OligSize -> [OligsCount] -> Maybe OligsCount
-    splittingForOligsCount _ _ []                               = trace "splittingForOligsCount : Nothing" Nothing
+    splittingForOligsCount _ _ []                               = Nothing
     splittingForOligsCount gapSize oligSize (x : xs) = do
         let expectedRest = oligSize - div (oligSize - gapSize) 2
         let realRest = sequLen - x * (oligSize + gapSize) + gapSize

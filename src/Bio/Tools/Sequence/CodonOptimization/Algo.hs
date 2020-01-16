@@ -1,8 +1,8 @@
 module Bio.Tools.Sequence.CodonOptimization.Algo
-    ( optimizeAA
-    , optimizeDNA
+    ( optimizeCodonForAA
+    , optimizeCodonForDNA
+    , scoreByWindow
     , score
-    , scoreSequence
     , scoreCmp
     ) where
 
@@ -11,9 +11,11 @@ import           Bio.NucleicAcid.Nucleotide.Type                (DNA (..))
 import           Bio.Protein.AminoAcid.Type                     (AA (..))
 import           Bio.Tools.Sequence.CodonOptimization.Constants (ak2Codon, ak2MaxFrequCodon,
                                                                  codon2ak,
-                                                                 codonFrequencies, motiveScoreWindow, defaultMotiveScore, 
-                                                                 forbiddenMotiveScore)
-import           Bio.Tools.Sequence.CodonOptimization.Types     (CodonScoreConfig (..),
+                                                                 codonFrequencies,
+                                                                 defaultMotiveScore,
+                                                                 forbiddenMotiveScore,
+                                                                 motiveScoreWindow)
+import           Bio.Tools.Sequence.CodonOptimization.Types     (CodonOptimizationConfig (..),
                                                                  standardTemperature)
 import           Bio.Tools.Sequence.ViennaRNA.Fold              (fold)
 import           Data.List                                      (foldl',
@@ -23,11 +25,11 @@ import           Data.Map                                       as Map (lookup)
 import           Data.Maybe                                     (fromMaybe)
 import           Text.Regex.TDFA                                ((=~))
 
--- | 'optimizeDNA' function does translation from [DNA] to [AA] and then calls 'optimizeAA'
-optimizeDNA :: CodonScoreConfig -- ^ Config data object. Contains main parameters of codon-optimization and all parameters for scoring function
+-- | optimizeCodonForDNA function does translation from [DNA] to [AA] and then calls 'optimizeCodonForAA'
+optimizeCodonForDNA :: CodonOptimizationConfig -- ^ Config data object. Contains main parameters of codon-optimization and all parameters for scoring function
             -> [DNA]            -- ^ Initial, not optimized nucleotide sequence
             -> [DNA]            -- ^ Result, optimized nucleotide sequence
-optimizeDNA cfg dna = optimizeAA cfg (translate dna)
+optimizeCodonForDNA cfg dna = optimizeCodonForAA cfg (translate dna)
   where
     translate :: [DNA] -> [AA]
     translate [] = []
@@ -36,13 +38,13 @@ optimizeDNA cfg dna = optimizeAA cfg (translate dna)
             Just ak -> ak : translate (drop 3 dnaSeq)
             _       -> error $ "Unknown codon: " ++ show (take 3 dnaSeq)
 
--- | 'optimizeAA' function does codon-optimisation for incoming amino-acid sequence.
+-- | 'optimizeCodonForAA' function does codon-optimisation for incoming amino-acid sequence.
 -- Incoming amino-acid sequence transformed to nucleotide sequence and optimized used the codon-optimization algorithm.
 -- Algorithm described here doi: 10.1007/s11693-010-9062-3
-optimizeAA :: CodonScoreConfig  -- ^ Config data object. Contains main parameters of codon-optimization and all parameters for scoring function
+optimizeCodonForAA :: CodonOptimizationConfig  -- ^ Config data object. Contains main parameters of codon-optimization and all parameters for scoring function
            -> [AA]              -- ^ Initial, not optimized amino-acid sequence
            -> [DNA]             -- ^ Result, optimized nucleotide sequence
-optimizeAA cfg@(CodonScoreConfig organism initLen winLen _ _ _ _ _ _ _ _ _ _) aa = foldl' concatByScore initial variants
+optimizeCodonForAA cfg@(CodonOptimizationConfig organism initLen winLen _ _ _ _ _ _ _ _ _ _) aa = foldl' concatByScore initial variants
   where
     lenAA = length aa
     variants = generateVariants (drop initLen aa) winLen
@@ -83,22 +85,22 @@ windowVariants sequ winLen = map concat . mapM getCodons . take (winLen + 1) $ s
 getCodons :: AA -> [[DNA]]
 getCodons ak = fromMaybe [] (Map.lookup ak ak2Codon)
 
--- | 'scoreSequence' function calculates the average score for full sequence
-scoreSequence :: CodonScoreConfig -> [DNA] -> Double
-scoreSequence cnf@(CodonScoreConfig _ initLen winLen _ _ _ _ _ _ _ _ _ _) nkSequ = sum res / realToFrac (length res)
+-- | 'score' function calculates the average score for full sequence
+score :: CodonOptimizationConfig -> [DNA] -> Double
+score cnf@(CodonOptimizationConfig _ initLen winLen _ _ _ _ _ _ _ _ _ _) nkSequ = sum res / realToFrac (length res)
   where
     res = scr ((initLen + winLen + 1) * 3) []
 
     scr :: Int -> [Double] -> [Double]
     scr partLen acc | partLen > length nkSequ = acc
-                    | otherwise = scr (partLen + winLen * 3) (score cnf (take partLen nkSequ) : acc)
+                    | otherwise = scr (partLen + winLen * 3) (scoreByWindow cnf (take partLen nkSequ) : acc)
 
--- | 'score' function gets scoring for incoming string.
+-- | 'scoreByWindow' function gets scoring for incoming string.
 -- Scoring function is a composite function of several scoring. More about scoring algorithm see here doi: 10.1007/s11693-010-9062-3
-score :: CodonScoreConfig  -- ^ Config data object. Contains main parameters of codon-optimization and all parameters for scoring function
+scoreByWindow :: CodonOptimizationConfig  -- ^ Config data object. Contains main parameters of codon-optimization and all parameters for scoring function
       -> [DNA]             -- ^ nucleotide sequence to score
       -> Double            -- ^ result score value
-score (CodonScoreConfig organism _ winLen codonUsageWeight gcWeight gcFactor gcWindow rnaFoldingWeight
+scoreByWindow (CodonOptimizationConfig organism _ winLen codonUsageWeight gcWeight gcFactor gcWindow rnaFoldingWeight
                         rnaFoldingFactor rnaFoldingWindow forbiddenDNAWeight gcContentDesired forbiddenRegexp) nkSequ =
     scoreCU + scoreGC - scoreMT - realToFrac scoreRNAFold
   where
@@ -155,8 +157,8 @@ score (CodonScoreConfig organism _ winLen codonUsageWeight gcWeight gcFactor gcW
         result = fst $ fold standardTemperature (drop (length sequ - rnaFoldingWindow) sequ)
 
 -- | 'scoreCmp' is compare function for two strings using 'score' function
-scoreCmp :: CodonScoreConfig -> [DNA] -> [DNA] -> [DNA] -> Ordering
+scoreCmp :: CodonOptimizationConfig -> [DNA] -> [DNA] -> [DNA] -> Ordering
 scoreCmp cfg optimized str1 str2 = compare score1 score2
   where
-    score1 = score cfg (optimized ++ str1)
-    score2 = score cfg (optimized ++ str2)
+    score1 = scoreByWindow cfg (optimized ++ str1)
+    score2 = scoreByWindow cfg (optimized ++ str2)
