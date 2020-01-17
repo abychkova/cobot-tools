@@ -1,5 +1,6 @@
 import           OligoDesigner.SpecOligoDesignerScorer
 import           OligoDesigner.SpecOligoDesignerSplitter
+import           OligoDesigner.SpecOligoDesignerOptimizer
 import           OligoDesigner.SpecUtils
 import           SpecCodonOptimization
 import           SpecPrimers
@@ -22,7 +23,7 @@ main = do
 --         codonOptimizationSpec
 
          -- OligoDesigner
-         oligoDesignerSplitterSpec
-         oligoDesignerScoreSpec
+--         oligoDesignerSplitterSpec
+--         oligoDesignerScoreSpec
          utilsSpec
 

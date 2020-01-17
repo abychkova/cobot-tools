@@ -1,5 +1,6 @@
 module Bio.Tools.Sequence.OligoDesigner.Optimizer
     ( minMaxOptimize
+    , maxPairMutationIndexes
     ) where
 
 import           Bio.NucleicAcid.Nucleotide.Type            (DNA)
@@ -47,6 +48,7 @@ mutationIndexes oligsMatrix = minPairMutationIndexes minPair ++ maxPairMutationI
     colsCnt = ncols oligsMatrix
     minPair = minimumBy orderByRna [oligsMatrix ! (x, y) | x <- [1 .. rowsCnt], y <- [1 .. colsCnt], abs (x - y) == 1]
     maxPair = maximumBy orderByRna [oligsMatrix ! (x, y) | x <- [1 .. rowsCnt], y <- [1 .. colsCnt], abs (x - y) /= 1]
+    
     orderByRna :: MatrixCell -> MatrixCell -> Ordering
     orderByRna (MatrixCell _ _ rna1) (MatrixCell _ _ rna2) = compare rna1 rna2
 

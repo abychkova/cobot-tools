@@ -6,7 +6,9 @@ import           Bio.Tools.Sequence.OligoDesigner.Types (Olig (..),
                                                          OligSet (..),
                                                          OligSplitting (..))
 import           Bio.Tools.Sequence.OligoDesigner.Utils (assemble,
-                                                         weightedRandom)
+                                                         weightedRandom,
+                                                         slice,
+                                                         buildOligSet)
 import           Control.Exception                      (evaluate)
 import           Control.Monad.State                    (State, evalState, get,
                                                          put, runState)
@@ -17,18 +19,32 @@ import           Test.Hspec                             (Spec, describe,
                                                          shouldBe,
                                                          shouldSatisfy,
                                                          shouldThrow)
+import Bio.NucleicAcid.Nucleotide (DNA, cNA)
 
 utilsSpec :: Spec
 utilsSpec =
     describe "utilsSpec" $ do
         assembleSpec
         assembleWithGapSpec
+
         weightedRandomSimpleSpec
         weightedRandomMultipleCallSpec
         weightedRandomSpec
         weightedRandomAllZeroSpec
         weightedRandomForUnsortedSpec
         weightedRandomForEmptySpec
+
+        sliceSpec
+        sliceOutOfBoundIndexSpec
+        sliceWrongIndexesSpec
+
+        buildEmptyOligSetSpec
+        buildOligSetForEmptySplittingSpec
+        buildOligSetSplittingSpec
+        buildOligSetWithGapSplittingSpec
+        buildOligSetWithIncorrectSplittingSpec
+        buildOligSetWithOutOfBoundSplittingSpec
+        buildOligSetWithOneSplittingCoordinateSpec
 
 assembleSpec :: Spec
 assembleSpec =
@@ -114,6 +130,120 @@ weightedRandomForEmptySpec =
         let empty = [] :: [(Double, Double)]
         gen <- getStdGen
         evaluate (evalState (weightedRandom empty) gen) `shouldThrow` errorCall "cannot get random for empty array"
+
+sliceSpec :: Spec
+sliceSpec =
+    describe "sliceSpec" $
+    it "should correct get slice from sequence" $ do
+        let sequence = [0..19] :: [Integer]
+        let res = slice 3 6 sequence
+        res `shouldBe` [3, 4, 5]
+
+sliceWrongIndexesSpec :: Spec
+sliceWrongIndexesSpec =
+    describe "sliceWrongIndexesSpec" $
+    it "should return empty slice for wrong indexes" $ do
+        let sequence = [0..19] :: [Integer]
+        evaluate (slice 6 3 sequence)    `shouldThrow` errorCall "incorrect coordinates"
+        evaluate (slice (-6) 0 sequence) `shouldThrow` errorCall "incorrect coordinates"
+        slice 20 22 sequence `shouldBe` []
+        slice 0 0 sequence `shouldBe` []
+        evaluate (slice (-3) 2 sequence) `shouldThrow` errorCall "incorrect coordinates"
+
+sliceOutOfBoundIndexSpec :: Spec
+sliceOutOfBoundIndexSpec =
+    describe "sliceOutOfBoundIndexSpec" $
+    it "should return tail for out of bound indexes" $ do
+        let sequence = [0..19] :: [Integer]
+        slice 17 33 sequence `shouldBe` [17, 18, 19]
+        slice 19 20 sequence `shouldBe` [19]
+
+buildEmptyOligSetSpec :: Spec
+buildEmptyOligSetSpec =
+    describe "buildEmptyOligSetSpec" $
+    it "should build empty oligs from splitting and sequence" $ do
+        let splitting = OligSplitting [] []
+        let dna = ""
+        let res = buildOligSet splitting dna
+        res `shouldBe` (OligSet [] [] splitting)
+
+buildOligSetForEmptySplittingSpec :: Spec
+buildOligSetForEmptySplittingSpec =
+    describe "buildOligSetForEmptySplittingSpec" $
+    it "should build empty oligs from empty splitting and sequence" $ do
+        let splitting = OligSplitting [] []
+        let dna = "ATGGAGACCGACACCCTGCTGCTGTGGGTGCTGCTGCTGTGGGTGCCTGGGTCGACCGGCATGGCTTCCATGTCGGCAGAATGCTTAATGAATTACAACAGTACTGCGATGAGTGGCAGGGGG"
+        let res = buildOligSet splitting dna
+        res `shouldBe` (OligSet [] [] splitting)
+
+buildOligSetSplittingSpec :: Spec
+buildOligSetSplittingSpec =
+    describe "buildOligSetSplittingSpec" $
+    it "should correct build oligs from splitting and sequence" $ do
+        let splitting = OligSplitting [(0, 57), (57, 114)] [(29, 86), (86, 123)]
+        let dna = "ATGGAGACCGACACCCTGCTGCTGTGGGTGCTGCTGCTGTGGGTGCCTGGGTCGACCGGCATGGCTTCCATGTCGGCAGAATGCTTAATGAATTACAACAGTACTGCGATGAGTGGCAGGGGG"
+        let res = buildOligSet splitting dna
+        res `shouldBe` OligSet [ Olig "ATGGAGACCGACACCCTGCTGCTGTGGGTGCTGCTGCTGTGGGTGCCTGGGTCGACC" 0 57
+                               , Olig "GGCATGGCTTCCATGTCGGCAGAATGCTTAATGAATTACAACAGTACTGCGATGAGT" 57 114]
+                               [ Olig (translate "GCTGCTGCTGTGGGTGCCTGGGTCGACCGGCATGGCTTCCATGTCGGCAGAATGCTT") 29 86
+                               , Olig (translate "AATGAATTACAACAGTACTGCGATGAGTGGCAGGGGG") 86 123]
+                                splitting
+        assemble res `shouldBe` dna
+
+buildOligSetWithGapSplittingSpec :: Spec
+buildOligSetWithGapSplittingSpec =
+    describe "buildOligSetWithGapSplittingSpec" $
+    it "should build oligs for splitting with gap and sequence" $ do
+        let splitting = OligSplitting [(0, 57), (60, 117)] [(26, 83), (86, 123)]
+        let dna = "ATGGAGACCGACACCCTGCTGCTGTGGGTGCTGCTGCTGTGGGTGCCTGGGTCGACCGGCATGGCTTCCATGTCGGCAGAATGCTTAATGAATTACAACAGTACTGCGATGAGTGGCAGGGGG"
+        let res = buildOligSet splitting dna
+        res `shouldBe` OligSet [ Olig "ATGGAGACCGACACCCTGCTGCTGTGGGTGCTGCTGCTGTGGGTGCCTGGGTCGACC" 0 57
+                               , Olig "ATGGCTTCCATGTCGGCAGAATGCTTAATGAATTACAACAGTACTGCGATGAGTGGC" 60 117]
+                               [ Olig (translate "GGTGCTGCTGCTGTGGGTGCCTGGGTCGACCGGCATGGCTTCCATGTCGGCAGAATG") 26 83
+                               , Olig (translate "AATGAATTACAACAGTACTGCGATGAGTGGCAGGGGG") 86 123]
+                                splitting
+        assemble res `shouldBe` dna
+
+buildOligSetWithOutOfBoundSplittingSpec :: Spec
+buildOligSetWithOutOfBoundSplittingSpec =
+    describe "buildOligSetWithOutOfBoundSplittingSpec" $
+    it "should build oligs for splitting with out of bound end coordinate and sequence" $ do
+        let splitting = OligSplitting [(0, 57), (60, 117)] [(26, 83), (86, 224)]
+        let dna = "ATGGAGACCGACACCCTGCTGCTGTGGGTGCTGCTGCTGTGGGTGCCTGGGTCGACCGGCATGGCTTCCATGTCGGCAGAATGCTTAATGAATTACAACAGTACTGCGATGAGTGGCAGGGGG"
+        let res = buildOligSet splitting dna
+        res `shouldBe` OligSet [ Olig "ATGGAGACCGACACCCTGCTGCTGTGGGTGCTGCTGCTGTGGGTGCCTGGGTCGACC" 0 57
+                               , Olig "ATGGCTTCCATGTCGGCAGAATGCTTAATGAATTACAACAGTACTGCGATGAGTGGC" 60 117]
+                               [ Olig (translate "GGTGCTGCTGCTGTGGGTGCCTGGGTCGACCGGCATGGCTTCCATGTCGGCAGAATG") 26 83
+                               , Olig (translate "AATGAATTACAACAGTACTGCGATGAGTGGCAGGGGG") 86 224]
+                                splitting
+        assemble res `shouldBe` dna
+
+buildOligSetWithOneSplittingCoordinateSpec :: Spec
+buildOligSetWithOneSplittingCoordinateSpec =
+    describe "buildOligSetWithOneSplittingCoordinateSpec'" $
+    it "should build oligs for splitting with one coordinate and sequence" $ do
+        let splitting = OligSplitting [(0, 123)] [(26, 123)]
+        let dna = "ATGGAGACCGACACCCTGCTGCTGTGGGTGCTGCTGCTGTGGGTGCCTGGGTCGACCGGCATGGCTTCCATGTCGGCAGAATGCTTAATGAATTACAACAGTACTGCGATGAGTGGCAGGGGG"
+        let res = buildOligSet splitting dna
+        res `shouldBe` OligSet [ Olig dna 0 123]
+                               [ Olig (translate $ drop 26 dna) 26 123]
+                                splitting
+        assemble res `shouldBe` dna
+
+buildOligSetWithIncorrectSplittingSpec :: Spec
+buildOligSetWithIncorrectSplittingSpec =
+    describe "buildOligSetWithIncorrectSplittingSpec" $
+    it "should build oligs for incorrect splitting and sequence" $ do
+        let splitting = OligSplitting [(-10, 569)] [(29, 670)]
+        let dna = "ATGGAGACCGACACCCTGCTGCTGTGGGTGCTGCTGCTGTGGGTGCCTGGGTCGACCGGCATGGCTTCCATGTCGGCAGAATGCTTAATGAATTACAACAGTACTGCGATGAGTGGCAGGGGG"
+        let res = evaluate (buildOligSet splitting dna) `shouldThrow` errorCall "incorrect coordinates"
+
+        let splitting' = OligSplitting [(10, 5)] [(29, 670)]
+        let res' = evaluate (buildOligSet splitting dna) `shouldThrow` errorCall "incorrect coordinates"
+        True `shouldBe` True
+
+translate :: [DNA] -> [DNA]
+translate = map cNA
 
 runWeightedRandomNTimes :: StdGen -> [(Integer, Double)] -> Int -> [Integer]
 runWeightedRandomNTimes gen arg n = evalState (helper n []) gen

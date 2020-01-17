@@ -65,12 +65,11 @@ weightedRandom items = do
     return value
   where
     getWeightedItem :: Double -> Double -> [(a, Double)] -> a
-    getWeightedItem _ _ []       = error "=("
+    getWeightedItem _ _ []       = error "some strange situation"
     getWeightedItem _ _ [(x, _)] = x
     getWeightedItem randomValue acc ((x, w) : xs) | acc + w >= randomValue = x
                                                   | otherwise = getWeightedItem randomValue (acc + w) xs
 
---TODO: test me
 buildOligSet :: OligSplitting -> [DNA] -> OligSet
 buildOligSet splitting sequ = OligSet strand5' strand3' splitting
   where
@@ -80,6 +79,7 @@ buildOligSet splitting sequ = OligSet strand5' strand3' splitting
     buildOlig :: [DNA] -> OligBounds -> Olig
     buildOlig dna (start, end) = Olig (slice start end dna) start end
 
---TODO: test me
+--excluding end
 slice :: Int -> Int -> [a] -> [a]
-slice start end xs = take (end - start) (drop start xs)
+slice start end xs | start < 0 || end < 0 || start > end = error "incorrect coordinates"
+                   | otherwise = take (end - start) (drop start xs)
