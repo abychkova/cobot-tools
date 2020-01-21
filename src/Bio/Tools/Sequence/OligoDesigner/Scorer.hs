@@ -42,7 +42,7 @@ rnaMatrix (OligSet forward reversed _) = matrix rowCount rowCount generator
       where
         olig1 = allOligs !! (i - 1)
         olig2 = allOligs !! (j - 1)
-        score = abs . fst $ cofold standardTemperature (sequ olig1, sequ olig2)
+        score = fst $ cofold standardTemperature (sequ olig1, sequ olig2)
 
 --TODO: test me
 rnaMatrixScore :: Matrix MatrixCell -> Float

@@ -25,5 +25,6 @@ main = do
          -- OligoDesigner
 --         oligoDesignerSplitterSpec
 --         oligoDesignerScoreSpec
-         utilsSpec
+--         utilsSpec
+           optimizerSpec
 

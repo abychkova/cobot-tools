@@ -8,23 +8,29 @@ import           Bio.Tools.Sequence.OligoDesigner.Types (Olig (..),
 import           Bio.Tools.Sequence.OligoDesigner.Utils (assemble,
                                                          weightedRandom,
                                                          slice,
-                                                         buildOligSet)
+                                                         buildOligSet,
+                                                         randomCodon, oneMutation, translate)
 import           Control.Exception                      (evaluate)
 import           Control.Monad.State                    (State, evalState, get,
                                                          put, runState)
 import           Data.List                              (nub)
-import           System.Random                          (StdGen, getStdGen)
+import           System.Random                          (StdGen, getStdGen, mkStdGen)
 import           Test.Hspec                             (Spec, describe,
                                                          errorCall, it,
                                                          shouldBe,
                                                          shouldSatisfy,
-                                                         shouldThrow)
-import Bio.NucleicAcid.Nucleotide (DNA, cNA)
+                                                         shouldThrow, shouldNotBe)
+import Bio.NucleicAcid.Nucleotide (DNA(..), cNA)
+import Bio.Tools.Sequence.CodonOptimization.Types (Organism(..))
+import Bio.Protein.AminoAcid (AA(..))
+import Debug.Trace (trace)
+import Control.DeepSeq (force)
 
 utilsSpec :: Spec
 utilsSpec =
     describe "utilsSpec" $ do
         assembleSpec
+        assembleRealSpec
         assembleWithGapSpec
 
         weightedRandomSimpleSpec
@@ -46,6 +52,14 @@ utilsSpec =
         buildOligSetWithOutOfBoundSplittingSpec
         buildOligSetWithOneSplittingCoordinateSpec
 
+        randomCodonSpec
+        randomCodonForAAWithOneCodonSpec
+        randomCodonWeightedSpec
+        randomCodonForDifferentOrganismSpec
+
+        oneMutationSpec
+        oneMutationForAAWithOneCodonSpec
+
 assembleSpec :: Spec
 assembleSpec =
     describe "assembleSpec" $
@@ -54,6 +68,26 @@ assembleSpec =
         let rsd = [Olig "TA" 1 3, Olig "AC" 3 5, Olig "CG" 5 7, Olig "GT" 7 9, Olig "TA" 9 11]
         let oligs = OligSet fwd rsd (OligSplitting [] [])
         assemble oligs `shouldBe` "AATTGGCCAAT"
+
+assembleRealSpec :: Spec
+assembleRealSpec =
+    describe "assembleRealSpec'" $
+    it "assembleRealSpec" $ do
+        let coords = OligSplitting [(0, 60), (60, 120), (120, 180), (180, 240)] [(30, 90), (90, 150), (150, 210), (210, 270)]
+        let oligs =
+                OligSet
+                    [ Olig "GCTAGCACCAAGGGCCCCAGCGTGTTTCCTCTGGCCCCTAGCAGCAAGAGCACCAGCGGC" 0 60
+                    , Olig "GGCACCGCCGCCCTGGGCTGCCTGGTGAAGGACTACTTCCCTGAGCCTGTGACCGTGAGC" 60 120
+                    , Olig "TGGAACAGCGGCGCCCTGACCAGCGGCGTGCACACCTTCCCTGCCGTGCTGCAGAGCAGC" 120 180
+                    , Olig "GGCCTGTACAGCCTGAGCAGCGTGGTGACCGTGCCTAGCAGCAGCCTGGGCACCCAGACC" 180 240
+                    ]
+                    [ Olig "GACCGGGGATCGTCGTTCTCGTGGTCGCCGCCGTGGCGGCGGGACCCGACGGACCACTTC" 30 90
+                    , Olig "CTGATGAAGGGACTCGGACACTGGCACTCGACCTTGTCGCCGCGGGACTGGTCGCCGCAC" 90 150
+                    , Olig "GTGTGGAAGGGACGGCACGACGTCTCGTCGCCGGACATGTCGGACTCGTCGCACCACTGG" 150 210
+                    , Olig "CACGGATCGTCGTCGGACCCGTGGGTCTGGATGTAGACGTTGCACTTGGTGTTCGGATCG" 210 270
+                    ]
+                    coords
+        assemble oligs `shouldBe` "GCTAGCACCAAGGGCCCCAGCGTGTTTCCTCTGGCCCCTAGCAGCAAGAGCACCAGCGGCGGCACCGCCGCCCTGGGCTGCCTGGTGAAGGACTACTTCCCTGAGCCTGTGACCGTGAGCTGGAACAGCGGCGCCCTGACCAGCGGCGTGCACACCTTCCCTGCCGTGCTGCAGAGCAGCGGCCTGTACAGCCTGAGCAGCGTGGTGACCGTGCCTAGCAGCAGCCTGGGCACCCAGACCTACATCTGCAACGTGAACCACAAGCCTAGC"
 
 assembleWithGapSpec :: Spec
 assembleWithGapSpec =
@@ -239,11 +273,76 @@ buildOligSetWithIncorrectSplittingSpec =
         let res = evaluate (buildOligSet splitting dna) `shouldThrow` errorCall "incorrect coordinates"
 
         let splitting' = OligSplitting [(10, 5)] [(29, 670)]
-        let res' = evaluate (buildOligSet splitting dna) `shouldThrow` errorCall "incorrect coordinates"
-        True `shouldBe` True
+        (evaluate . force) (buildOligSet splitting dna) `shouldThrow` errorCall "incorrect coordinates"
 
-translate :: [DNA] -> [DNA]
-translate = map cNA
+randomCodonSpec :: Spec
+randomCodonSpec =
+    describe "randomCodonSpec" $
+    it "should return two different codons for HIS for defferent random" $ do
+        let gen = mkStdGen 3
+        let res = evalState (randomCodon CHO HIS) gen
+        let res2 = evalState (randomCodon CHO HIS) gen
+        res `shouldBe` [DC, DA, DT]
+        res `shouldBe` res2
+
+        let gen' = mkStdGen 5
+        let res' = evalState (randomCodon CHO HIS) gen'
+        res' `shouldBe` [DC, DA, DC]
+
+randomCodonForAAWithOneCodonSpec :: Spec
+randomCodonForAAWithOneCodonSpec =
+    describe "randomCodonForAAWithOneCodonSpec" $
+    it "should return only codon for MET for defferent random" $ do
+        let gen = mkStdGen 3
+        let res = evalState (randomCodon CHO MET) gen
+        let gen' = mkStdGen 500
+        let res' = evalState (randomCodon CHO MET) gen'
+        res `shouldBe` [DA, DT, DG]
+        res' `shouldBe` [DA, DT, DG]
+
+randomCodonWeightedSpec :: Spec
+randomCodonWeightedSpec =
+    describe "randomCodonWeightedSpec" $
+    it "should return most weghted codon for LEU maximum timmes" $ do
+        let gens = [mkStdGen x | x <- [0,10..300]]
+        let res = [evalState (randomCodon CHO LEU) gen | gen <- gens]
+        let ctg = length (filter (== [DC, DT, DG]) res)
+        let tta = length (filter (== [DT, DT, DA]) res)
+        let ttg = length (filter (== [DT, DT, DG]) res)
+        let ctt = length (filter (== [DC, DT, DT]) res)
+        let ctc = length (filter (== [DC, DT, DC]) res)
+        let cta = length (filter (== [DC, DT, DA]) res)
+
+        ctg `shouldSatisfy` (>= tta)
+        ctg `shouldSatisfy` (>= ttg)
+        ctg `shouldSatisfy` (>= ctt)
+        ctg `shouldSatisfy` (>= ctc)
+        ctg `shouldSatisfy` (>= cta)
+
+randomCodonForDifferentOrganismSpec :: Spec
+randomCodonForDifferentOrganismSpec =
+    describe "randomCodonForDifferentOrganismSpec" $
+    it "should return defferent codon for ILE for different organism" $ do
+        let gen = mkStdGen 7
+        let humanRes = evalState (randomCodon Human ILE) gen
+        let ecoliRes = evalState (randomCodon EColi ILE) gen
+        humanRes `shouldNotBe` ecoliRes
+
+oneMutationSpec :: Spec
+oneMutationSpec =
+    describe "oneMutationSpec" $
+    it "should return another codon for LYS (aa with 2 codons) for any random value" $ do
+        gen <- getStdGen
+        let res = evalState (oneMutation CHO [DA, DA, DA]) gen
+        res `shouldBe` [DA, DA, DG]
+
+oneMutationForAAWithOneCodonSpec :: Spec
+oneMutationForAAWithOneCodonSpec =
+    describe "oneMutationForAAWithOneCodonSpec" $
+    it "should return the same codon for TRP (aa with 1 codon) for any random value" $ do
+        gen <- getStdGen
+        let res = evalState (oneMutation CHO [DT, DG, DG]) gen
+        res `shouldBe` [DT, DG, DG]
 
 runWeightedRandomNTimes :: StdGen -> [(Integer, Double)] -> Int -> [Integer]
 runWeightedRandomNTimes gen arg n = evalState (helper n []) gen

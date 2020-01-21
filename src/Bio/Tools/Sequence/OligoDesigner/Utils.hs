@@ -5,10 +5,12 @@ module Bio.Tools.Sequence.OligoDesigner.Utils
  ,buildOligSet
  ,oneMutation
  ,slice
+ ,prettyDNA
+ ,translate
  ) where
 
 import           Bio.NucleicAcid.Nucleotide.Type                (DNA (..), cNA)
-import           Bio.Protein.AminoAcid.Type                     (AA)
+import           Bio.Protein.AminoAcid.Type                     (AA (..))
 import           Bio.Tools.Sequence.CodonOptimization.Constants (ak2Codon,
                                                                  codon2ak,
                                                                  codonFrequencies)
@@ -25,27 +27,29 @@ import           Data.Map                                       as Map (lookup)
 import           Data.Maybe                                     (fromMaybe)
 import           System.Random                                  (StdGen,
                                                                  randomR)
+import Debug.Trace (trace)
 
 assemble :: OligSet -> [DNA]
 assemble (OligSet fwd rvd _) = constract fwd rvd 0 [] where
+
     constract :: [Olig] -> [Olig] -> Int -> [DNA] -> [DNA]
     constract _ [] _ acc = acc
     constract [] _ _ acc = acc
     constract (Olig seq1 startLeft endLeft : xs) (Olig seq2 startRight endRight : ys) prevEnd acc = constract xs ys endRight res
       where
-        res = acc ++ drop (prevEnd - startLeft) seq1 ++ map cNA (drop (endLeft - startRight) seq2)
+        partFormOlig1 = drop (prevEnd - startLeft) seq1
+        partFormOlig2 = map cNA (drop (endLeft - startRight) seq2)
+        res = acc ++ partFormOlig1 ++ partFormOlig2
 
---TODO: test me
 --TODO: correct exception instead
 oneMutation :: Organism -> Codon -> State StdGen [DNA]
 oneMutation organism codon = do
     let aa = fromMaybe (error ("cannot find aa for codon " ++ show codon)) (Map.lookup codon codon2ak)
     newCodon <- randomCodon organism aa
-    if newCodon == codon
+    if newCodon == codon && aa /= TRP && aa /= MET
         then oneMutation organism codon
         else return newCodon
 
---TODO: test me
 randomCodon :: Organism -> AA -> State StdGen Codon
 randomCodon organism aa = do
     let codons = fromMaybe [] (Map.lookup aa ak2Codon)
@@ -83,3 +87,15 @@ buildOligSet splitting sequ = OligSet strand5' strand3' splitting
 slice :: Int -> Int -> [a] -> [a]
 slice start end xs | start < 0 || end < 0 || start > end = error "incorrect coordinates"
                    | otherwise = take (end - start) (drop start xs)
+
+prettyDNA :: [DNA] -> String
+prettyDNA = map prettyOneDNA
+  where
+    prettyOneDNA :: DNA -> Char
+    prettyOneDNA DA = 'A'
+    prettyOneDNA DT = 'T'
+    prettyOneDNA DC = 'C'
+    prettyOneDNA DG = 'G'
+    
+translate :: [DNA] -> [DNA]
+translate = map cNA
