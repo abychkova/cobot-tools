@@ -38,7 +38,7 @@ assemble (OligSet fwd rvd _) = constract fwd rvd 0 [] where
     constract (Olig seq1 startLeft endLeft : xs) (Olig seq2 startRight endRight : ys) prevEnd acc = constract xs ys endRight res
       where
         partFormOlig1 = drop (prevEnd - startLeft) seq1
-        partFormOlig2 = map cNA (drop (endLeft - startRight) seq2)
+        partFormOlig2 = map cNA (drop (endLeft - startRight) (reverse seq2))
         res = acc ++ partFormOlig1 ++ partFormOlig2
 
 --TODO: correct exception instead
@@ -77,11 +77,13 @@ weightedRandom items = do
 buildOligSet :: OligSplitting -> [DNA] -> OligSet
 buildOligSet splitting sequ = OligSet strand5' strand3' splitting
   where
-    strand5' = map (buildOlig sequ) (strand5 splitting)
-    strand3' = map (buildOlig $ map cNA sequ) (strand3 splitting)
+    strand5' = map (buildOlig id sequ) (strand5 splitting)
+    strand3' = map (buildOlig reverse (map cNA sequ)) (strand3 splitting)
 
-    buildOlig :: [DNA] -> OligBounds -> Olig
-    buildOlig dna (start, end) = Olig (slice start end dna) start end
+    buildOlig :: ([DNA] -> [DNA]) -> [DNA] -> OligBounds -> Olig
+    buildOlig fun dna (start, end) = Olig sliceDNA start end
+      where
+        sliceDNA = fun $ slice start end dna
 
 --excluding end
 slice :: Int -> Int -> [a] -> [a]
@@ -96,6 +98,6 @@ prettyDNA = map prettyOneDNA
     prettyOneDNA DT = 'T'
     prettyOneDNA DC = 'C'
     prettyOneDNA DG = 'G'
-    
+
 translate :: [DNA] -> [DNA]
 translate = map cNA

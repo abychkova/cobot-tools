@@ -65,7 +65,7 @@ assembleSpec =
     describe "assembleSpec" $
     it "assembleSpec" $ do
         let fwd = [Olig "AA" 0 2, Olig "TT" 2 4, Olig "GG" 4 6, Olig "CC" 6 8, Olig "AA" 8 10]
-        let rsd = [Olig "TA" 1 3, Olig "AC" 3 5, Olig "CG" 5 7, Olig "GT" 7 9, Olig "TA" 9 11]
+        let rsd = [Olig "AT" 1 3, Olig "CA" 3 5, Olig "GC" 5 7, Olig "TG" 7 9, Olig "AT" 9 11]
         let oligs = OligSet fwd rsd (OligSplitting [] [])
         assemble oligs `shouldBe` "AATTGGCCAAT"
 
@@ -81,10 +81,10 @@ assembleRealSpec =
                     , Olig "TGGAACAGCGGCGCCCTGACCAGCGGCGTGCACACCTTCCCTGCCGTGCTGCAGAGCAGC" 120 180
                     , Olig "GGCCTGTACAGCCTGAGCAGCGTGGTGACCGTGCCTAGCAGCAGCCTGGGCACCCAGACC" 180 240
                     ]
-                    [ Olig "GACCGGGGATCGTCGTTCTCGTGGTCGCCGCCGTGGCGGCGGGACCCGACGGACCACTTC" 30 90
-                    , Olig "CTGATGAAGGGACTCGGACACTGGCACTCGACCTTGTCGCCGCGGGACTGGTCGCCGCAC" 90 150
-                    , Olig "GTGTGGAAGGGACGGCACGACGTCTCGTCGCCGGACATGTCGGACTCGTCGCACCACTGG" 150 210
-                    , Olig "CACGGATCGTCGTCGGACCCGTGGGTCTGGATGTAGACGTTGCACTTGGTGTTCGGATCG" 210 270
+                    [ Olig "CTTCACCAGGCAGCCCAGGGCGGCGGTGCCGCCGCTGGTGCTCTTGCTGCTAGGGGCCAG" 30 90
+                    , Olig "CACGCCGCTGGTCAGGGCGCCGCTGTTCCAGCTCACGGTCACAGGCTCAGGGAAGTAGTC" 90 150
+                    , Olig "GGTCACCACGCTGCTCAGGCTGTACAGGCCGCTGCTCTGCAGCACGGCAGGGAAGGTGTG" 150 210
+                    , Olig "GCTAGGCTTGTGGTTCACGTTGCAGATGTAGGTCTGGGTGCCCAGGCTGCTGCTAGGCAC" 210 270
                     ]
                     coords
         assemble oligs `shouldBe` "GCTAGCACCAAGGGCCCCAGCGTGTTTCCTCTGGCCCCTAGCAGCAAGAGCACCAGCGGCGGCACCGCCGCCCTGGGCTGCCTGGTGAAGGACTACTTCCCTGAGCCTGTGACCGTGAGCTGGAACAGCGGCGCCCTGACCAGCGGCGTGCACACCTTCCCTGCCGTGCTGCAGAGCAGCGGCCTGTACAGCCTGAGCAGCGTGGTGACCGTGCCTAGCAGCAGCCTGGGCACCCAGACCTACATCTGCAACGTGAACCACAAGCCTAGC"
@@ -94,7 +94,7 @@ assembleWithGapSpec =
     describe "assembleWithGapSpec" $
     it "assembleWithGapSpec" $ do
         let fwd = [Olig "AATT" 0 4, Olig "CCAA" 6 10]
-        let rsd = [Olig "ACCG" 3 7, Olig "TTA" 8 11]
+        let rsd = [Olig "GCCA" 3 7, Olig "ATT" 8 11]
         let oligs = OligSet fwd rsd (OligSplitting [] [])
         assemble oligs `shouldBe` "AATTGGCCAAT"
 
@@ -219,8 +219,8 @@ buildOligSetSplittingSpec =
         let res = buildOligSet splitting dna
         res `shouldBe` OligSet [ Olig "ATGGAGACCGACACCCTGCTGCTGTGGGTGCTGCTGCTGTGGGTGCCTGGGTCGACC" 0 57
                                , Olig "GGCATGGCTTCCATGTCGGCAGAATGCTTAATGAATTACAACAGTACTGCGATGAGT" 57 114]
-                               [ Olig (translate "GCTGCTGCTGTGGGTGCCTGGGTCGACCGGCATGGCTTCCATGTCGGCAGAATGCTT") 29 86
-                               , Olig (translate "AATGAATTACAACAGTACTGCGATGAGTGGCAGGGGG") 86 123]
+                               [ Olig (reverse $ translate "GCTGCTGCTGTGGGTGCCTGGGTCGACCGGCATGGCTTCCATGTCGGCAGAATGCTT") 29 86
+                               , Olig (reverse $ translate "AATGAATTACAACAGTACTGCGATGAGTGGCAGGGGG") 86 123]
                                 splitting
         assemble res `shouldBe` dna
 
@@ -233,8 +233,8 @@ buildOligSetWithGapSplittingSpec =
         let res = buildOligSet splitting dna
         res `shouldBe` OligSet [ Olig "ATGGAGACCGACACCCTGCTGCTGTGGGTGCTGCTGCTGTGGGTGCCTGGGTCGACC" 0 57
                                , Olig "ATGGCTTCCATGTCGGCAGAATGCTTAATGAATTACAACAGTACTGCGATGAGTGGC" 60 117]
-                               [ Olig (translate "GGTGCTGCTGCTGTGGGTGCCTGGGTCGACCGGCATGGCTTCCATGTCGGCAGAATG") 26 83
-                               , Olig (translate "AATGAATTACAACAGTACTGCGATGAGTGGCAGGGGG") 86 123]
+                               [ Olig (reverse $ translate "GGTGCTGCTGCTGTGGGTGCCTGGGTCGACCGGCATGGCTTCCATGTCGGCAGAATG") 26 83
+                               , Olig (reverse $ translate "AATGAATTACAACAGTACTGCGATGAGTGGCAGGGGG") 86 123]
                                 splitting
         assemble res `shouldBe` dna
 
@@ -247,8 +247,8 @@ buildOligSetWithOutOfBoundSplittingSpec =
         let res = buildOligSet splitting dna
         res `shouldBe` OligSet [ Olig "ATGGAGACCGACACCCTGCTGCTGTGGGTGCTGCTGCTGTGGGTGCCTGGGTCGACC" 0 57
                                , Olig "ATGGCTTCCATGTCGGCAGAATGCTTAATGAATTACAACAGTACTGCGATGAGTGGC" 60 117]
-                               [ Olig (translate "GGTGCTGCTGCTGTGGGTGCCTGGGTCGACCGGCATGGCTTCCATGTCGGCAGAATG") 26 83
-                               , Olig (translate "AATGAATTACAACAGTACTGCGATGAGTGGCAGGGGG") 86 224]
+                               [ Olig (reverse $ translate "GGTGCTGCTGCTGTGGGTGCCTGGGTCGACCGGCATGGCTTCCATGTCGGCAGAATG") 26 83
+                               , Olig (reverse $ translate "AATGAATTACAACAGTACTGCGATGAGTGGCAGGGGG") 86 224]
                                 splitting
         assemble res `shouldBe` dna
 
@@ -260,7 +260,7 @@ buildOligSetWithOneSplittingCoordinateSpec =
         let dna = "ATGGAGACCGACACCCTGCTGCTGTGGGTGCTGCTGCTGTGGGTGCCTGGGTCGACCGGCATGGCTTCCATGTCGGCAGAATGCTTAATGAATTACAACAGTACTGCGATGAGTGGCAGGGGG"
         let res = buildOligSet splitting dna
         res `shouldBe` OligSet [ Olig dna 0 123]
-                               [ Olig (translate $ drop 26 dna) 26 123]
+                               [ Olig (reverse $ translate $ drop 26 dna) 26 123]
                                 splitting
         assemble res `shouldBe` dna
 

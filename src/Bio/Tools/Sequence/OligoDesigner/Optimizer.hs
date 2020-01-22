@@ -36,8 +36,7 @@ minMaxOptimize conf@(OligoDesignerConfig codonConf _ _) oligs@(OligSet _ _ split
     let mutateFunction = mutate codonConf dna
     varSequences <- concat <$> mapM mutateFunction indexesToMutate
     let variants = map (buildOligSet splitting) varSequences
-    let max = maximumBy scoreCmp variants
-    return max
+    return $ maximumBy scoreCmp variants
   where
     scoreCmp :: OligSet -> OligSet -> Ordering
     scoreCmp oligs1 oligs2 = compare score1 score2
@@ -51,7 +50,7 @@ mutationIndexes oligsMatrix = nub (minPairMutationIndexes minPair ++ maxPairMuta
     rowsCnt = nrows oligsMatrix
     colsCnt = ncols oligsMatrix
     minPair = minimumBy compareByRna [oligsMatrix ! (x, y) | x <- [1 .. rowsCnt], y <- [1 .. colsCnt], abs (x - y) == 1]
-    maxPair = maximumBy compareByRna [oligsMatrix ! (x, y) | x <- [1 .. rowsCnt], y <- [1 .. colsCnt], abs (x - y) /= 1]
+    maxPair = maximumBy compareByRna [oligsMatrix ! (x, y) | x <- [1 .. rowsCnt], y <- [1 .. colsCnt], x <= y && abs (x - y) /= 1]
 
     compareByRna :: MatrixCell -> MatrixCell -> Ordering
     compareByRna (MatrixCell _ _ rna1) (MatrixCell _ _ rna2) = compare rna1 rna2

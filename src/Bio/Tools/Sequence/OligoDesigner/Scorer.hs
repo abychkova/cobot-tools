@@ -25,7 +25,6 @@ commonScore (OligoDesignerConfig codonOptimizationConf balanceFactor _) oligs = 
     rnaValue = realToFrac $ rnaMatrixScore $ rnaMatrix oligs
     scoreValue = balanceFactor * codonScore + (1 - balanceFactor) * rnaValue
 
---TODO: test me
 rnaMatrix :: OligSet -> Matrix MatrixCell
 rnaMatrix (OligSet forward reversed _) = matrix rowCount rowCount generator
   where
@@ -38,7 +37,8 @@ rnaMatrix (OligSet forward reversed _) = matrix rowCount rowCount generator
     mix [] y          = y
 
     generator :: (Int, Int) -> MatrixCell
-    generator (i, j) =  MatrixCell olig1 olig2 score
+    generator (i, j) | i > j     = MatrixCell (Olig "" 0 0 ) (Olig "" 0 0 ) 0 --ignore all above diagonal
+                     | otherwise = MatrixCell olig1 olig2 score
       where
         olig1 = allOligs !! (i - 1)
         olig2 = allOligs !! (j - 1)
@@ -46,12 +46,12 @@ rnaMatrix (OligSet forward reversed _) = matrix rowCount rowCount generator
 
 --TODO: test me
 rnaMatrixScore :: Matrix MatrixCell -> Float
-rnaMatrixScore oligsMatrix = underDiagonalScore - otherScore
+rnaMatrixScore oligsMatrix = aboveDiagonalScore - otherScore
   where
     rowsCnt = nrows oligsMatrix
     colsCnt = ncols oligsMatrix
-    underDiagonalScore = minimum [rna $ oligsMatrix ! (x , y) | x <- [1 .. rowsCnt], y <- [1 .. colsCnt], abs (x - y) == 1]
-    otherScore         = maximum [rna $ oligsMatrix ! (x , y) | x <- [1 .. rowsCnt], y <- [1 .. colsCnt], abs (x - y) /= 1]
+    aboveDiagonalScore = minimum [rna $ oligsMatrix ! (x , y) | x <- [1 .. rowsCnt], y <- [1 .. colsCnt], abs (x - y) == 1]
+    otherScore         = maximum [rna $ oligsMatrix ! (x , y) | x <- [1 .. rowsCnt], y <- [1 .. colsCnt], x <= y && abs (x - y) /= 1]
 
 rnaScore :: OligSet -> Float
 rnaScore oligs = rnaMatrixScore $ rnaMatrix oligs

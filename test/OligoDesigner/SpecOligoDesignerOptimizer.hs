@@ -17,30 +17,30 @@ import Bio.Tools.Sequence.OligoDesigner.Utils (assemble, translate)
 optimizerSpec :: Spec
 optimizerSpec =
     describe "optimizerSpec" $ do
---        minPairMutationIndexesSpec
---        minPairMutationIndexesWithEvenIndexesSpec
---        minPairMutationIndexesWithoutIntersectionSpec
---        minPairMutationIndexesWithOneNKIntersectionSpec
---        minPairMutationIndexesReverseIntersectionSpec
---        minPairMutationIndexesWithBorderIndexesSpec
---
---        maxPairMutationIndexesSpec
---        maxPairMutationIndexesWithBorderIndexesSpec
---        maxPairMutationIndexesWithEvenIndexesSpec
+        minPairMutationIndexesSpec
+        minPairMutationIndexesWithEvenIndexesSpec
+        minPairMutationIndexesWithoutIntersectionSpec
+        minPairMutationIndexesWithOneNKIntersectionSpec
+        minPairMutationIndexesReverseIntersectionSpec
+        minPairMutationIndexesWithBorderIndexesSpec
 
---        mutationIndexesSpec
---        mutationIndexesWithoutMinSpec
+        maxPairMutationIndexesSpec
+        maxPairMutationIndexesWithBorderIndexesSpec
+        maxPairMutationIndexesWithEvenIndexesSpec
 
---        mutateSliceSpec
---        mutateSliceWhenThereIsNoVariantsSpec
---        mutateSliceRealRandomSpec
+        mutationIndexesSpec
+        mutationIndexesWithoutMinSpec
 
---        mutateSpec
---        mutateFromStartSpec
---        mutateInvalidIntervalSpec
---        mutateOneAASpec
+        mutateSliceSpec
+        mutateSliceWhenThereIsNoVariantsSpec
+        mutateSliceRealRandomSpec
 
-        minMaxOptimizeForScoreSpec
+        mutateSpec
+        mutateFromStartSpec
+        mutateInvalidIntervalSpec
+        mutateOneAASpec
+
+        minMaxOptimizeSpec
 
 minPairMutationIndexesSpec :: Spec
 minPairMutationIndexesSpec =
@@ -210,9 +210,9 @@ mutateInvalidIntervalSpec =
         evaluate (evalState (mutate def "AATATGCATATG" (3, 5)) gen) `shouldThrow` errorCall "invalid interval for mutation: (3,5)"
         evaluate (evalState (mutate def "AATATGCATATG" (5, 40)) gen) `shouldThrow` errorCall "invalid interval for mutation: (5,40)"
 
-minMaxOptimizeForScoreSpec :: Spec
-minMaxOptimizeForScoreSpec =
-    describe "minMaxOptimizeForScore" $
+minMaxOptimizeSpec :: Spec
+minMaxOptimizeSpec =
+    describe "minMaxOptimizeScore" $
     it "" $ do
         let coords = OligSplitting [(0, 60), (60, 120), (120, 180), (180, 240)] [(30, 90), (90, 150), (150, 210), (210, 270)]
         let oligs =
@@ -222,27 +222,27 @@ minMaxOptimizeForScoreSpec =
                     , Olig "TGGAACAGCGGCGCCCTGACCAGCGGCGTGCACACCTTCCCTGCCGTGCTGCAGAGCAGC" 120 180
                     , Olig "GGCCTGTACAGCCTGAGCAGCGTGGTGACCGTGCCTAGCAGCAGCCTGGGCACCCAGACC" 180 240
                     ]
-                    [ Olig "GACCGGGGATCGTCGTTCTCGTGGTCGCCGCCGTGGCGGCGGGACCCGACGGACCACTTC" 30 90
-                    , Olig "CTGATGAAGGGACTCGGACACTGGCACTCGACCTTGTCGCCGCGGGACTGGTCGCCGCAC" 90 150
-                    , Olig "GTGTGGAAGGGACGGCACGACGTCTCGTCGCCGGACATGTCGGACTCGTCGCACCACTGG" 150 210
-                    , Olig "CACGGATCGTCGTCGGACCCGTGGGTCTGGATGTAGACGTTGCACTTGGTGTTCGGATCG" 210 270
+                    [ Olig "CTTCACCAGGCAGCCCAGGGCGGCGGTGCCGCCGCTGGTGCTCTTGCTGCTAGGGGCCAG" 30 90
+                    , Olig "CACGCCGCTGGTCAGGGCGCCGCTGTTCCAGCTCACGGTCACAGGCTCAGGGAAGTAGTC" 90 150
+                    , Olig "GGTCACCACGCTGCTCAGGCTGTACAGGCCGCTGCTCTGCAGCACGGCAGGGAAGGTGTG" 150 210
+                    , Olig "GCTAGGCTTGTGGTTCACGTTGCAGATGTAGGTCTGGGTGCCCAGGCTGCTGCTAGGCAC" 210 270
                     ]
                     coords
         let conf = OligoDesignerConfig def 0 (OligSplittingConfig 60 1 10)
         let gen = mkStdGen 499
         let res = evalState (minMaxOptimize conf oligs) gen
-        
-        assemble res `shouldBe` "GCTAGCACCAAGGGCCCCAGCGTGTTTCCTCTGGCCCCTAGCAGCAAGAGCACTAGCGGCGGCACCGCCGCCCTGGGCTGCCTGGTGAAGGACTACTTCCCTGAGCCTGTGACCGTGAGCTGGAACAGCGGCGCCCTGACCAGCGGCGTGCACACCTTCCCTGCCGTGCTGCAGAGCAGCGGCCTGTACAGCCTGAGCAGCGTGGTGACCGTGCCTAGCAGCAGCCTGGGCACCCAGACCTACATCTGCAACGTGAACCACAAGCCTAGC"
+
+        assemble res `shouldBe` "GCTAGCACCAAGGGCCCCAGCGTGTTTCCTCTGGCCCCTAGCTCTAAGAGCACCAGCGGCGGCACCGCCGCCCTGGGCTGCCTGGTGAAGGACTACTTCCCTGAGCCTGTGACCGTGAGCTGGAACAGCGGCGCCCTGACCAGCGGCGTGCACACCTTCCCTGCCGTGCTGCAGAGCAGCGGCCTGTACAGCCTGAGCAGCGTGGTGACCGTGCCTAGCAGCAGCCTGGGCACCCAGACCTACATCTGCAACGTGAACCACAAGCCTAGC"
         res `shouldBe` OligSet
-                           [ Olig "GCTAGCACCAAGGGCCCCAGCGTGTTTCCTCTGGCCCCTAGCAGCAAGAGCACTAGCGGC" 0 60
+                           [ Olig "GCTAGCACCAAGGGCCCCAGCGTGTTTCCTCTGGCCCCTAGCTCTAAGAGCACCAGCGGC" 0 60
                            , Olig "GGCACCGCCGCCCTGGGCTGCCTGGTGAAGGACTACTTCCCTGAGCCTGTGACCGTGAGC" 60 120
                            , Olig "TGGAACAGCGGCGCCCTGACCAGCGGCGTGCACACCTTCCCTGCCGTGCTGCAGAGCAGC" 120 180
                            , Olig "GGCCTGTACAGCCTGAGCAGCGTGGTGACCGTGCCTAGCAGCAGCCTGGGCACCCAGACC" 180 240
                            ]
-                           [ Olig (translate "CTGGCCCCTAGCAGCAAGAGCACTAGCGGCGGCACCGCCGCCCTGGGCTGCCTGGTGAAG") 30 90
-                           , Olig (translate "GACTACTTCCCTGAGCCTGTGACCGTGAGCTGGAACAGCGGCGCCCTGACCAGCGGCGTG") 90 150
-                           , Olig (translate "CACACCTTCCCTGCCGTGCTGCAGAGCAGCGGCCTGTACAGCCTGAGCAGCGTGGTGACC") 150 210
-                           , Olig (translate "GTGCCTAGCAGCAGCCTGGGCACCCAGACCTACATCTGCAACGTGAACCACAAGCCTAGC") 210 270
+                           [ Olig "CTTCACCAGGCAGCCCAGGGCGGCGGTGCCGCCGCTGGTGCTCTTAGAGCTAGGGGCCAG" 30 90
+                           , Olig "CACGCCGCTGGTCAGGGCGCCGCTGTTCCAGCTCACGGTCACAGGCTCAGGGAAGTAGTC" 90 150
+                           , Olig "GGTCACCACGCTGCTCAGGCTGTACAGGCCGCTGCTCTGCAGCACGGCAGGGAAGGTGTG" 150 210
+                           , Olig "GCTAGGCTTGTGGTTCACGTTGCAGATGTAGGTCTGGGTGCCCAGGCTGCTGCTAGGCAC" 210 270
                            ]
                            coords
         commonScore conf res `shouldSatisfy` (>= commonScore conf oligs)
