@@ -2,7 +2,7 @@
 
 module OligoDesigner.SpecOligoDesignerScorer where
 
-import           Bio.Tools.Sequence.OligoDesigner.Scorer (rnaScore, rnaMatrix)
+import           Bio.Tools.Sequence.OligoDesigner.Scorer (rnaScore, rnaMatrix, rnaMatrixScore)
 import           Bio.Tools.Sequence.OligoDesigner.Types  (Olig (..),
                                                           OligSet (..),
                                                           OligSplitting (..), MatrixCell(..))
@@ -13,52 +13,53 @@ import Bio.Tools.Sequence.OligoDesigner.Utils (assemble)
 
 oligoDesignerScoreSpec :: Spec
 oligoDesignerScoreSpec = describe "Oligo-Designer score spec" $ do
---    scoreRNAFoldingSpec
---    scoreRNAFoldingSpec2
+    scoreRNAFoldingSpec
+    scoreRNAFoldingSpec2
     rnaMatrixSpec
     rnaMatrixSimpleSpec
+    rnaMatrixScoreSpec
+
 
 scoreRNAFoldingSpec :: Spec
 scoreRNAFoldingSpec =
     describe "scoreRNAFoldingSpec" $
     it "should correct score oligs" $ do
-        let fwd =
-                [ Olig "TCTCTGGCCTAACTGGCCGGTACCTGAGCTCAGGGTTCCTGGAAGGGAATTATT" 0 54
-                , Olig "CTGAGAAAAGGAGCTTAGCTATGACTCATCCGGAAGCTCAGATTCCGGGAATCC" 54 108
-                , Olig "CTACTTTCTTAGAAAATTGTATTAGTCATCGCTATTACCATGATCCTTCTGGGA" 108 162
-                , Olig "ATTCTGGTGTTCCTAGAAGAGGGATAGCGGTTTGACTCACGGGGATGATATCAA" 162 216
-                ]
-        let rvsd =
-                [ Olig "GAGTCATAGCTAAGCTCCTTTTCTCAGAATAATTCCCTTCCAGGAACCCTGAGC" 27 81
-                , Olig "GACTAATACAATTTTCTAAGAAAGTAGGGATTCCCGGAATCTGAGCTTCCGGAT" 81 135
-                , Olig "CTATCCCTCTTCTAGGAACACCAGAATTCCCAGAAGGATCATGGTAATAGCGAT" 135 189
-                , Olig "ATATACCCTCTAGAGTCTAGATCTTGATATCATCCCCGTGAGTCAAACCG" 189 239
-                ]
-        let oligSet = OligSet fwd rvsd (OligSplitting [] [])
-        rnaScore oligSet `shouldBe` -7.6000023
+        let coords = OligSplitting [(0, 60), (60, 120)] [(30, 90), (90, 150)]
+        let oligs =
+                OligSet
+                    [ Olig "GCTAGCACCAAGGGCCCCAGCGTGTTTCCTCTGGCCCCTAGCAGCAAGAGCACCAGCGGC" 0 60
+                    , Olig "GGCACCGCCGCCCTGGGCTGCCTGGTGAAGGACTACTTCCCTGAGCCTGTGACCGTGAGC" 60 120
+                    ]
+                    [ Olig "CTTCACCAGGCAGCCCAGGGCGGCGGTGCCGCCGCTGGTGCTCTTGCTGCTAGGGGCCAG" 30 90
+                    , Olig "CACGCCGCTGGTCAGGGCGCCGCTGTTCCAGCTCACGGTCACAGGCTCAGGGAAGTAGTC" 90 150
+                    ]
+                    coords
+        rnaScore oligs `shouldBe` -55.299995
 
 scoreRNAFoldingSpec2 :: Spec
 scoreRNAFoldingSpec2 =
     describe "scoreRNAFoldingSpec2" $
     it "should correct score oligs" $ do
-        let fwd =
-                [ Olig "GAAGTGCAGCTGGTGGAGTCTGGGGGAGGCGTGGTACAGCCTGGCAGGTCCCTG" 0 0
-                , Olig "TCTCCTGTGCAGCCTCTGGATTCACCTTTAACGATTATACCATGCACTGGGTCC" 0 0
-                , Olig "AGCTCCAGGGAAGGGCCTGGAGTGGGTCTCAGGTATTAGTTGGAATGGCGGTAG" 0 0
-                , Olig "GGCTATGCGGACTCTGTGAAGGGCCGATTCACCATCTCCAGAGACAACGCCAAG" 0 0
-                , Olig "CCCTGTATCTGCAAATGAACAGTCTGAGAGCTGAGGACACGGCCTTGTATTACT" 0 0
-                , Olig "AAAAGATAATAGTGGCTACGGTCACTACTACTACGGAATGGACATCTGGGGCCA" 0 0
-                ]
-        let rvsd =
-                [ Olig "GTGAATCCAGAGGCTGCACAGGAGAGTCTCAGGGACCTGCCAGGCTGTACCACG" 0 0
-                , Olig "CCACTCCAGGCCCTTCCCTGGAGCTTGCCGGACCCAGTGCATGGTATAATCGTT" 0 0
-                , Olig "GGCCCTTCACAGAGTCCGCATAGCCTATACTACCGCCATTCCAACTAATACCTG" 0 0
-                , Olig "AGACTGTTCATTTGCAGATACAGGGAGTTCTTGGCGTTGTCTCTGGAGATGGTG" 0 0
-                , Olig "GTGACCGTAGCCACTATTATCTTTTGCACAGTAATACAAGGCCGTGTCCTCAGC" 0 0
-                , Olig "TGAACTGACGGTGACCGTGGTCCCTTGGCCCCAGATGTCCATTCCGTAGT" 0 0
-                ]
-        let oligSet = OligSet fwd rvsd (OligSplitting [] [])
-        rnaScore oligSet `shouldBe` 5.5999985
+         let coords = OligSplitting [(0, 60), (60, 120), (120, 180), (180, 240), (240, 300), (300, 360)]
+                                    [(30, 90), (90, 150), (150, 210), (210, 270), (270, 330), (330, 390)]
+         let oligs =
+                 OligSet
+                     [ Olig "GCTAGCACCAAGGGCCCCAGCGTGTTTCCTCTGGCCCCTAGCAGCAAGAGCACCAGCGGC" 0 60
+                     , Olig "GGCACCGCCGCCCTGGGCTGCCTGGTGAAGGACTACTTCCCTGAGCCTGTGACCGTGAGC" 60 120
+                     , Olig "TGGAACAGCGGCGCCCTGACCAGCGGCGTGCACACCTTCCCTGCCGTGCTGCAGAGCAGC" 120 180
+                     , Olig "GGCCTGTACAGCCTGAGCAGCGTGGTGACCGTGCCTAGCAGCAGCCTGGGCACCCAGACC" 180 240
+                     , Olig "TACATCTGCAACGTGAACCACAAGCCTAGCAACACCAAGGTGGACAAGAAGGTGGAGCCC" 240 300
+                     , Olig "AAGAGCTGCGACCGTACGCACACCTGCCCCCCCTGCCCCGCCCCCGAGCTGCTGGGCGGC" 300 360
+                     ]
+                     [ Olig "CTTCACCAGGCAGCCCAGGGCGGCGGTGCCGCCGCTGGTGCTCTTGCTGCTAGGGGCCAG" 30 90
+                     , Olig "CACGCCGCTGGTCAGGGCGCCGCTGTTCCAGCTCACGGTCACAGGCTCAGGGAAGTAGTC" 90 150
+                     , Olig "GGTCACCACGCTGCTCAGGCTGTACAGGCCGCTGCTCTGCAGCACGGCAGGGAAGGTGTG" 150 210
+                     , Olig "GCTAGGCTTGTGGTTCACGTTGCAGATGTAGGTCTGGGTGCCCAGGCTGCTGCTAGGCAC" 210 270
+                     , Olig "GGGGCAGGTGTGCGTACGGTCGCAGCTCTTGGGCTCCACCTTCTTGTCCACCTTGGTGTT" 270 330
+                     , Olig "AGGCTTAGGAGGGAACAGGAACACGCTAGGGCCGCCCAGCAGCTCGGGGGCGGGGCAGGG" 330 390
+                     ]
+                     coords
+         rnaScore oligs `shouldBe` -71.1
 
 rnaMatrixSpec :: Spec
 rnaMatrixSpec =
@@ -75,30 +76,7 @@ rnaMatrixSpec =
                     ]
                     coords
         let res = rnaMatrix oligs
-        res `shouldBe` matrix 4 4 generator
-      where
-        generator :: (Int, Int) -> MatrixCell
-        generator (1, 1) = MatrixCell (Olig "GCTAGCACCAAGGGCCCCAGCGTGTTTCCTCTGGCCCCTAGCAGCAAGAGCACCAGCGGC" 0 60)
-                                      (Olig "GCTAGCACCAAGGGCCCCAGCGTGTTTCCTCTGGCCCCTAGCAGCAAGAGCACCAGCGGC" 0 60) (-36.9)
-        generator (1, 2) = MatrixCell (Olig "GCTAGCACCAAGGGCCCCAGCGTGTTTCCTCTGGCCCCTAGCAGCAAGAGCACCAGCGGC" 0 60)
-                                      (Olig "CTTCACCAGGCAGCCCAGGGCGGCGGTGCCGCCGCTGGTGCTCTTGCTGCTAGGGGCCAG" 30 90) (-84.9)
-        generator (1, 3) = MatrixCell (Olig "GCTAGCACCAAGGGCCCCAGCGTGTTTCCTCTGGCCCCTAGCAGCAAGAGCACCAGCGGC" 0 60)
-                                      (Olig "GGCACCGCCGCCCTGGGCTGCCTGGTGAAGGACTACTTCCCTGAGCCTGTGACCGTGAGC" 60 120) (-41.8)
-        generator (1, 4) = MatrixCell (Olig "GCTAGCACCAAGGGCCCCAGCGTGTTTCCTCTGGCCCCTAGCAGCAAGAGCACCAGCGGC" 0 60)
-                                      (Olig "CACGCCGCTGGTCAGGGCGCCGCTGTTCCAGCTCACGGTCACAGGCTCAGGGAAGTAGTC" 90 150) (-48.5)
-        generator (2, 2) = MatrixCell (Olig "CTTCACCAGGCAGCCCAGGGCGGCGGTGCCGCCGCTGGTGCTCTTGCTGCTAGGGGCCAG" 30 90)
-                                      (Olig "CTTCACCAGGCAGCCCAGGGCGGCGGTGCCGCCGCTGGTGCTCTTGCTGCTAGGGGCCAG" 30 90) (-68)
-        generator (2, 3) = MatrixCell (Olig "CTTCACCAGGCAGCCCAGGGCGGCGGTGCCGCCGCTGGTGCTCTTGCTGCTAGGGGCCAG" 30 90)
-                                      (Olig "GGCACCGCCGCCCTGGGCTGCCTGGTGAAGGACTACTTCCCTGAGCCTGTGACCGTGAGC" 60 120) (-92.2)
-        generator (2, 4) = MatrixCell (Olig "CTTCACCAGGCAGCCCAGGGCGGCGGTGCCGCCGCTGGTGCTCTTGCTGCTAGGGGCCAG" 30 90)
-                                      (Olig "CACGCCGCTGGTCAGGGCGCCGCTGTTCCAGCTCACGGTCACAGGCTCAGGGAAGTAGTC" 90 150) (-56.4)
-        generator (3, 3) = MatrixCell (Olig "GGCACCGCCGCCCTGGGCTGCCTGGTGAAGGACTACTTCCCTGAGCCTGTGACCGTGAGC" 60 120)
-                                      (Olig "GGCACCGCCGCCCTGGGCTGCCTGGTGAAGGACTACTTCCCTGAGCCTGTGACCGTGAGC" 60 120) (-45.7)
-        generator (3, 4) = MatrixCell (Olig "GGCACCGCCGCCCTGGGCTGCCTGGTGAAGGACTACTTCCCTGAGCCTGTGACCGTGAGC" 60 120)
-                                      (Olig "CACGCCGCTGGTCAGGGCGCCGCTGTTCCAGCTCACGGTCACAGGCTCAGGGAAGTAGTC" 90 150) (-81.7)
-        generator (4, 4) = MatrixCell (Olig "CACGCCGCTGGTCAGGGCGCCGCTGTTCCAGCTCACGGTCACAGGCTCAGGGAAGTAGTC" 90 150)
-                                      (Olig "CACGCCGCTGGTCAGGGCGCCGCTGTTCCAGCTCACGGTCACAGGCTCAGGGAAGTAGTC" 90 150) (-44.5)
-        generator (x, y) = MatrixCell (Olig "" 0 0 ) (Olig "" 0 0 ) 0
+        res `shouldBe` matrix 4 4 generatorRealMatrix
 
 rnaMatrixSimpleSpec :: Spec
 rnaMatrixSimpleSpec =
@@ -140,3 +118,33 @@ rnaMatrixSimpleSpec =
                                       (Olig "ACTTTC" 9 15) 0
         generator (x, y) = MatrixCell (Olig "" 0 0 ) (Olig "" 0 0 ) 0
 
+rnaMatrixScoreSpec :: Spec
+rnaMatrixScoreSpec =
+    describe "rnaMatrixScoreSpec" $
+    it "" $ do
+        let mtx = matrix 4 4 generatorRealMatrix
+        let res = rnaMatrixScore mtx
+        res `shouldBe` -55.299995
+
+generatorRealMatrix :: (Int, Int) -> MatrixCell
+generatorRealMatrix (1, 1) = MatrixCell (Olig "GCTAGCACCAAGGGCCCCAGCGTGTTTCCTCTGGCCCCTAGCAGCAAGAGCACCAGCGGC" 0 60)
+                                      (Olig "GCTAGCACCAAGGGCCCCAGCGTGTTTCCTCTGGCCCCTAGCAGCAAGAGCACCAGCGGC" 0 60) (-36.9)
+generatorRealMatrix (1, 2) = MatrixCell (Olig "GCTAGCACCAAGGGCCCCAGCGTGTTTCCTCTGGCCCCTAGCAGCAAGAGCACCAGCGGC" 0 60)
+                                      (Olig "CTTCACCAGGCAGCCCAGGGCGGCGGTGCCGCCGCTGGTGCTCTTGCTGCTAGGGGCCAG" 30 90) (-84.9)
+generatorRealMatrix (1, 3) = MatrixCell (Olig "GCTAGCACCAAGGGCCCCAGCGTGTTTCCTCTGGCCCCTAGCAGCAAGAGCACCAGCGGC" 0 60)
+                                      (Olig "GGCACCGCCGCCCTGGGCTGCCTGGTGAAGGACTACTTCCCTGAGCCTGTGACCGTGAGC" 60 120) (-41.8)
+generatorRealMatrix (1, 4) = MatrixCell (Olig "GCTAGCACCAAGGGCCCCAGCGTGTTTCCTCTGGCCCCTAGCAGCAAGAGCACCAGCGGC" 0 60)
+                                      (Olig "CACGCCGCTGGTCAGGGCGCCGCTGTTCCAGCTCACGGTCACAGGCTCAGGGAAGTAGTC" 90 150) (-48.5)
+generatorRealMatrix (2, 2) = MatrixCell (Olig "CTTCACCAGGCAGCCCAGGGCGGCGGTGCCGCCGCTGGTGCTCTTGCTGCTAGGGGCCAG" 30 90)
+                                      (Olig "CTTCACCAGGCAGCCCAGGGCGGCGGTGCCGCCGCTGGTGCTCTTGCTGCTAGGGGCCAG" 30 90) (-68)
+generatorRealMatrix (2, 3) = MatrixCell (Olig "CTTCACCAGGCAGCCCAGGGCGGCGGTGCCGCCGCTGGTGCTCTTGCTGCTAGGGGCCAG" 30 90)
+                                      (Olig "GGCACCGCCGCCCTGGGCTGCCTGGTGAAGGACTACTTCCCTGAGCCTGTGACCGTGAGC" 60 120) (-92.2)
+generatorRealMatrix (2, 4) = MatrixCell (Olig "CTTCACCAGGCAGCCCAGGGCGGCGGTGCCGCCGCTGGTGCTCTTGCTGCTAGGGGCCAG" 30 90)
+                                      (Olig "CACGCCGCTGGTCAGGGCGCCGCTGTTCCAGCTCACGGTCACAGGCTCAGGGAAGTAGTC" 90 150) (-56.4)
+generatorRealMatrix (3, 3) = MatrixCell (Olig "GGCACCGCCGCCCTGGGCTGCCTGGTGAAGGACTACTTCCCTGAGCCTGTGACCGTGAGC" 60 120)
+                                      (Olig "GGCACCGCCGCCCTGGGCTGCCTGGTGAAGGACTACTTCCCTGAGCCTGTGACCGTGAGC" 60 120) (-45.7)
+generatorRealMatrix (3, 4) = MatrixCell (Olig "GGCACCGCCGCCCTGGGCTGCCTGGTGAAGGACTACTTCCCTGAGCCTGTGACCGTGAGC" 60 120)
+                                      (Olig "CACGCCGCTGGTCAGGGCGCCGCTGTTCCAGCTCACGGTCACAGGCTCAGGGAAGTAGTC" 90 150) (-81.7)
+generatorRealMatrix (4, 4) = MatrixCell (Olig "CACGCCGCTGGTCAGGGCGCCGCTGTTCCAGCTCACGGTCACAGGCTCAGGGAAGTAGTC" 90 150)
+                                      (Olig "CACGCCGCTGGTCAGGGCGCCGCTGTTCCAGCTCACGGTCACAGGCTCAGGGAAGTAGTC" 90 150) (-44.5)
+generatorRealMatrix (x, y) = MatrixCell (Olig "" 0 0 ) (Olig "" 0 0 ) 0
