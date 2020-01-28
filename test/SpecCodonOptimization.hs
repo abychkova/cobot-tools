@@ -2,7 +2,7 @@
 
 module SpecCodonOptimization where
 
-import           Bio.NucleicAcid.Nucleotide.Type                (DNA)
+import           Bio.NucleicAcid.Nucleotide.Type                (DNA(..))
 import           Bio.Protein.AminoAcid                          ()
 import           Bio.Protein.AminoAcid.Type                     (AA)
 import           Bio.Tools.Sequence.CodonOptimization.Algo      (optimizeCodonForAA,
@@ -24,6 +24,7 @@ import           Test.Hspec                                     (Expectation,
                                                                  Spec, describe,
                                                                  it, shouldBe,
                                                                  shouldSatisfy)
+import Debug.Trace (trace)
 
 confHuman :: CodonOptimizationConfig
 confHuman = CodonOptimizationConfig Human 3 1 1 0.5 1.4 40 0.001 2.6 100 1 60 defaultForbiddenRegexp
@@ -67,27 +68,28 @@ toRandomCodon ak = do
 codonOptimizationSpec :: Spec
 codonOptimizationSpec =
     describe "Codon optimization spec" $ do
-        optimizeSequence
-        optimizeSequenceForEColi
-        optimizeSequenceForCHO
-        optimizeDNASequence
-        optimizeShortSequence
-        optimizeExtremelyShortSequence
-        optimizeSequenceWindow3
-        optimizeSequenceInit5
-        scoreComparing
-        scoreFun
-        scoreFunEColi
-        scoreFunDifferentCodonUsageWeight
-        scoreFunDifferentGCWeight
-        scoreFunDifferentGCFactor
-        scoreFunDifferentGCWindow
-        scoreFunDifferentFoldingWeight
-        scoreFunDifferentFoldingFactor
-        scoreFunDifferentFoldingWindow
-        scoreFunWithForbiddenSeq
-        scoreFunDifferentForbiddenSeqWeight
-        scoreFunDifferentGCDesired
+        optimizeSequenceReal
+--        optimizeSequence
+--        optimizeSequenceForEColi
+--        optimizeSequenceForCHO
+--        optimizeDNASequence
+--        optimizeShortSequence
+--        optimizeExtremelyShortSequence
+--        optimizeSequenceWindow3
+--        optimizeSequenceInit5
+--        scoreComparing
+--        scoreFun
+--        scoreFunEColi
+--        scoreFunDifferentCodonUsageWeight
+--        scoreFunDifferentGCWeight
+--        scoreFunDifferentGCFactor
+--        scoreFunDifferentGCWindow
+--        scoreFunDifferentFoldingWeight
+--        scoreFunDifferentFoldingFactor
+--        scoreFunDifferentFoldingWindow
+--        scoreFunWithForbiddenSeq
+--        scoreFunDifferentForbiddenSeqWeight
+--        scoreFunDifferentGCDesired
 
 scoreComparing :: Spec
 scoreComparing =
@@ -100,6 +102,25 @@ scoreComparing =
         let resMax = minimumBy (scoreCmp cfg optimized) vars
         resMax `shouldBe` "TCGACAGGT"
         resMin `shouldBe` "AGCACCGGC"
+
+optimizeSequenceReal :: Spec
+optimizeSequenceReal =
+    describe "optimizeSequenceReal" $
+    it "should correct optimize sequence" $ do
+        let ak = "METDTLLLWVLLLWVPGSTG"
+        nk <- toRandomNKSequ ak
+        let res = optimizeCodonForAA confCHO ak
+
+        trace ("res:" ++ show (prettyDNA res)) $ res `shouldBe` "ATGGAGACCGACACCCTGCTGCTGTGGGTGCTGCTGCTGTGGGTGCCTGGGTCGACCGGC"
+
+prettyDNA :: [DNA] -> String
+prettyDNA = map prettyOneDNA
+  where
+    prettyOneDNA :: DNA -> Char
+    prettyOneDNA DA = 'A'
+    prettyOneDNA DT = 'T'
+    prettyOneDNA DC = 'C'
+    prettyOneDNA DG = 'G'
 
 optimizeSequence :: Spec
 optimizeSequence =

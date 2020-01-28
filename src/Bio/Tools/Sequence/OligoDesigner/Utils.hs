@@ -7,6 +7,9 @@ module Bio.Tools.Sequence.OligoDesigner.Utils
  ,slice
  ,prettyDNA
  ,translate
+ ,mutate
+ ,mutateSlice
+ ,getAANumber
  ) where
 
 import           Bio.NucleicAcid.Nucleotide.Type                (DNA (..), cNA)
@@ -22,12 +25,13 @@ import           Bio.Tools.Sequence.OligoDesigner.Types         (Codon,
                                                                  OligSplitting (..))
 import           Control.Monad.State                            (State, get,
                                                                  put)
-import           Data.List                                      (sortOn)
+import           Data.List                                      (sortOn, nub)
 import           Data.Map                                       as Map (lookup)
 import           Data.Maybe                                     (fromMaybe)
 import           System.Random                                  (StdGen,
                                                                  randomR)
 import Debug.Trace (trace)
+import Bio.Tools.Sequence.CodonOptimization (CodonOptimizationConfig(..))
 
 assemble :: OligSet -> [DNA]
 assemble (OligSet fwd rvd _) = constract fwd rvd 0 [] where
@@ -101,3 +105,34 @@ prettyDNA = map prettyOneDNA
 
 translate :: [DNA] -> [DNA]
 translate = map cNA
+
+mutate :: Organism -> [DNA] -> (Int, Int) -> State StdGen [[DNA]]
+mutate organism dna interval@(start, end) | validateInterval interval (length dna) = error ("invalid interval for mutation: " ++ show interval)
+                                          | otherwise = do
+    let sliceIndex = (start - 1) * 3
+    let sliceEndIndex = (end - 1) * 3 + 3
+    let begin = take sliceIndex dna
+    let mutated = slice sliceIndex sliceEndIndex dna
+    let final = drop sliceEndIndex dna
+    variants <- mutateSlice organism mutated
+    return $ map (\var -> begin ++ var ++ final) variants
+
+validateInterval :: (Int, Int) -> Int -> Bool
+validateInterval (start, end) len = start > end || start < 0 || end < 0 || start * 3 > len || end * 3 > len
+    
+mutateSlice :: Organism -> [DNA] -> State StdGen [[DNA]]
+mutateSlice organism dna = mutateEachCodon dna 0 [dna]
+  where
+    mutateEachCodon :: [DNA] -> Int -> [[DNA]] -> State StdGen [[DNA]]
+    mutateEachCodon mutated index acc
+        | index * 3 >= length mutated = return $ nub acc
+        | otherwise = do
+            let codonIndex = index * 3
+            let codonEndIndex = codonIndex + 3
+            let codon = take 3 (drop codonIndex mutated)
+            newCodon <- oneMutation organism codon
+            let variant = take codonIndex mutated ++ newCodon ++ drop codonEndIndex mutated
+            mutateEachCodon mutated (index + 1) (acc ++ [variant])
+            
+getAANumber :: Int -> Int
+getAANumber coordinate = ceiling (realToFrac (coordinate + 1) / 3)

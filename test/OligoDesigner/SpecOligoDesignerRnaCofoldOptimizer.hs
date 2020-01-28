@@ -1,9 +1,9 @@
-module OligoDesigner.SpecOligoDesignerOptimizer where
+module OligoDesigner.SpecOligoDesignerRnaCofoldOptimizer where
 
 import Test.Hspec (Spec, shouldBe, it, describe, shouldThrow, errorCall, shouldSatisfy)
 import Bio.Tools.Sequence.OligoDesigner.Scorer (commonScore)
-import Bio.Tools.Sequence.OligoDesigner.Optimizer (maxPairMutationIndexes, minPairMutationIndexes, mutationIndexes,
-                                                   mutateSlice, mutate, minMaxOptimize)
+import Bio.Tools.Sequence.OligoDesigner.RnaCofoldOptimizer (maxPairMutationIndexes, minPairMutationIndexes, 
+    mutationIndexes, minMaxOptimize)
 import Bio.Tools.Sequence.OligoDesigner.Types     (Olig(..), MatrixCell(..), OligBounds, OligSplitting(..), OligSet(..),
                                                     OligSplittingConfig(..), OligoDesignerConfig(..))
 import Data.Matrix (matrix)
@@ -30,15 +30,6 @@ optimizerSpec =
 
         mutationIndexesSpec
         mutationIndexesWithoutMinSpec
-
-        mutateSliceSpec
-        mutateSliceWhenThereIsNoVariantsSpec
-        mutateSliceRealRandomSpec
-
-        mutateSpec
-        mutateFromStartSpec
-        mutateInvalidIntervalSpec
-        mutateOneAASpec
 
         minMaxOptimizeSpec
 
@@ -141,74 +132,6 @@ mutationIndexesWithoutMinSpec =
     generator (2, 5) = MatrixCell (Olig "" 29 51) (Olig "" 53 88) 100500
     generator (x, y) | abs (x - y) == 1 = MatrixCell (Olig "" x y) (Olig "" x y) (fromIntegral $ (-1) * x)
                      | otherwise        = MatrixCell (Olig "" x y) (Olig "" x y) (fromIntegral x)
-
-mutateSliceSpec :: Spec
-mutateSliceSpec =
-    describe "mutateSliceSpec" $
-    it "" $ do
-        let gen = mkStdGen 4
-        let res = evalState (mutateSlice CHO "AATATGCAT") gen
-        res `shouldBe` ["AATATGCAT", "AACATGCAT", "AATATGCAC"]
-
-mutateSliceWhenThereIsNoVariantsSpec :: Spec
-mutateSliceWhenThereIsNoVariantsSpec =
-    describe "mutateSliceWhenThereIsNoVariantsSpec" $
-    it "" $ do
-        let gen = mkStdGen 4
-        let res = evalState (mutateSlice CHO "ATGTGG") gen
-        res `shouldBe` ["ATGTGG"]
-
-mutateSliceRealRandomSpec :: Spec
-mutateSliceRealRandomSpec =
-    describe "mutateSliceRealRandomSpec" $
-    it "" $ do
-        let gen = mkStdGen 9
-        let res = evalState (mutateSlice CHO "TCTTTGCCGAACGAGGGCATG") gen
-        res `shouldBe` ["TCTTTGCCGAACGAGGGCATG", "AGCTTGCCGAACGAGGGCATG", "TCTCTCCCGAACGAGGGCATG", "TCTTTGCCAAACGAGGGCATG",
-            "TCTTTGCCGAATGAGGGCATG", "TCTTTGCCGAACGAAGGCATG", "TCTTTGCCGAACGAGGGAATG"]
-
-mutateSpec :: Spec
-mutateSpec =
-    describe "mutateSpec" $
-    it "" $ do
-        let dna = "ATGGAGACC" ++ "AATATGCAT" ++ "GACACCCTGCTGCTGTGGGTGCTGCTGCTG"
-        let gen = mkStdGen 4
-        let res = evalState (mutate def dna (4, 6)) gen
-        res `shouldBe` ["ATGGAGACCAATATGCATGACACCCTGCTGCTGTGGGTGCTGCTGCTG",
-                        "ATGGAGACCAACATGCATGACACCCTGCTGCTGTGGGTGCTGCTGCTG",
-                        "ATGGAGACCAATATGCACGACACCCTGCTGCTGTGGGTGCTGCTGCTG"]
-
-mutateFromStartSpec :: Spec
-mutateFromStartSpec =
-    describe "mutateFromStartSpec" $
-    it "" $ do
-        let dna = "AATATGCAT" ++ "ATGGAGACCGACACCCTGCTGCTGTGGGTGCTGCTGCTG"
-        let gen = mkStdGen 4
-        let res = evalState (mutate def dna (1, 3)) gen
-        res `shouldBe` ["AATATGCATATGGAGACCGACACCCTGCTGCTGTGGGTGCTGCTGCTG",
-                        "AACATGCATATGGAGACCGACACCCTGCTGCTGTGGGTGCTGCTGCTG",
-                        "AATATGCACATGGAGACCGACACCCTGCTGCTGTGGGTGCTGCTGCTG"]
-
-mutateOneAASpec :: Spec
-mutateOneAASpec =
-    describe "mutateOneAASpec" $
-    it "" $ do
-        let dna = "ATGGAGACC" ++ "AAT" ++ "ATGCATGACACCCTGCTGCTGTGGGTGCTGCTGCTG"
-        let gen = mkStdGen 4
-        let res = evalState (mutate def dna (4, 4)) gen
-        res `shouldBe` ["ATGGAGACCAATATGCATGACACCCTGCTGCTGTGGGTGCTGCTGCTG",
-                        "ATGGAGACCAACATGCATGACACCCTGCTGCTGTGGGTGCTGCTGCTG"]
-
-mutateInvalidIntervalSpec :: Spec
-mutateInvalidIntervalSpec =
-    describe "mutateInvalidIntervalSpec" $
-    it "" $ do
-        let gen = mkStdGen 4
-        evaluate (evalState (mutate def "AATATGCATATG" (3, 1)) gen) `shouldThrow` errorCall "invalid interval for mutation: (3,1)"
-        evaluate (evalState (mutate def "AATATGCATATG" (-1, 1)) gen) `shouldThrow` errorCall "invalid interval for mutation: (-1,1)"
-        evaluate (evalState (mutate def "AATATGCATATG" (3, -10)) gen) `shouldThrow` errorCall "invalid interval for mutation: (3,-10)"
-        evaluate (evalState (mutate def "AATATGCATATG" (3, 5)) gen) `shouldThrow` errorCall "invalid interval for mutation: (3,5)"
-        evaluate (evalState (mutate def "AATATGCATATG" (5, 40)) gen) `shouldThrow` errorCall "invalid interval for mutation: (5,40)"
 
 minMaxOptimizeSpec :: Spec
 minMaxOptimizeSpec =

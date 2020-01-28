@@ -7,7 +7,7 @@ module Bio.Tools.Sequence.OligoDesigner.Algo
 import           Bio.NucleicAcid.Nucleotide.Type            (DNA (..))
 import           Bio.Protein.AminoAcid                      (AA)
 import qualified Bio.Tools.Sequence.CodonOptimization       as CodonOptimization (optimizeCodonForAA)
-import           Bio.Tools.Sequence.OligoDesigner.Optimizer (minMaxOptimize)
+import           Bio.Tools.Sequence.OligoDesigner.RnaCofoldOptimizer (minMaxOptimize)
 import           Bio.Tools.Sequence.OligoDesigner.Splitter  (split)
 import           Bio.Tools.Sequence.OligoDesigner.Types     (OligSet (..), OligSplittingConfig (..),
                                                              OligoDesignerConfig (..))

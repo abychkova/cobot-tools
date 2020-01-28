@@ -28,7 +28,7 @@ data CodonOptimizationConfig =
         , rnaFoldingFactor   :: Float              -- ^ RNA folding score in the power of F_rnaf is used
         , rnaFoldingWindow   :: Int                -- ^ length of the window for RNA folding score calculation (bp)
         , forbiddenDNAWeight :: Double             -- ^ forbidden DNA motifs score weight
-        , gcContentDesired   :: Int                -- ^ desired gc content in percents
+        , gcContentDesired   :: Double             -- ^ desired gc content in percents
         , forbiddenSequence  :: [String]           -- ^ list of forbidden patterns
         }
     deriving (Eq, Show, Generic)

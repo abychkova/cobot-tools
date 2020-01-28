@@ -3,6 +3,8 @@ module Bio.Tools.Sequence.OligoDesigner.Scorer
  ,commonScore
  ,rnaMatrixScore
  ,rnaMatrix
+ ,gcContentDifference
+ ,gcContent
  ) where
 
 import qualified Bio.Tools.Sequence.CodonOptimization         as CodonOptimization
@@ -16,6 +18,7 @@ import           Bio.Tools.Sequence.OligoDesigner.Utils       (assemble)
 import           Bio.Tools.Sequence.ViennaRNA.Internal.Cofold (cofold)
 import           Data.Matrix                                  (Matrix (..),
                                                                matrix, (!))
+import Bio.NucleicAcid.Nucleotide (DNA(..))
 --TODO: test me
 commonScore :: OligoDesignerConfig -> OligSet -> Double
 commonScore (OligoDesignerConfig codonOptimizationConf balanceFactor _) oligs = scoreValue
@@ -54,3 +57,24 @@ rnaMatrixScore oligsMatrix = aboveDiagonalScore - otherScore
 
 rnaScore :: OligSet -> Float
 rnaScore oligs = rnaMatrixScore $ rnaMatrix oligs
+
+--TODO: test me
+gcContentScore :: [DNA] -> Double -> Double
+gcContentScore sequ target = 1 - deltaGC / target 
+  where
+    deltaGC = abs(target - gcContent sequ)
+
+--TODO: test me
+gcContentDifference :: OligSet -> Double
+gcContentDifference (OligSet [] [] _)     = 0
+gcContentDifference (OligSet fwrd rvsd _) = abs (max - min)
+  where
+    gcContents = map (gcContent . sequ) (fwrd ++ rvsd)
+    max = maximum gcContents
+    min = minimum gcContents
+
+--TODO: test me    
+gcContent :: [DNA] -> Double
+gcContent sequ =  100 * gc / realToFrac (length sequ)
+  where
+    gc = realToFrac $ length $ filter (\nk -> nk == DC || nk == DG) sequ

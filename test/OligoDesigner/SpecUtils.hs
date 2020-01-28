@@ -9,7 +9,7 @@ import           Bio.Tools.Sequence.OligoDesigner.Utils (assemble,
                                                          weightedRandom,
                                                          slice,
                                                          buildOligSet,
-                                                         randomCodon, oneMutation, translate)
+                                                         randomCodon, oneMutation, translate, mutateSlice, mutate)
 import           Control.Exception                      (evaluate)
 import           Control.Monad.State                    (State, evalState, get,
                                                          put, runState)
@@ -59,6 +59,15 @@ utilsSpec =
 
         oneMutationSpec
         oneMutationForAAWithOneCodonSpec
+
+        mutateSliceSpec
+        mutateSliceWhenThereIsNoVariantsSpec
+        mutateSliceRealRandomSpec
+
+        mutateSpec
+        mutateFromStartSpec
+        mutateInvalidIntervalSpec
+        mutateOneAASpec
 
 assembleSpec :: Spec
 assembleSpec =
@@ -354,3 +363,72 @@ runWeightedRandomNTimes gen arg n = evalState (helper n []) gen
         let (res, newGen) = runState (weightedRandom arg) random
         put newGen
         helper (count - 1) (res : acc)
+        
+
+mutateSliceSpec :: Spec
+mutateSliceSpec =
+    describe "mutateSliceSpec" $
+    it "" $ do
+        let gen = mkStdGen 4
+        let res = evalState (mutateSlice CHO "AATATGCAT") gen
+        res `shouldBe` ["AATATGCAT", "AACATGCAT", "AATATGCAC"]
+
+mutateSliceWhenThereIsNoVariantsSpec :: Spec
+mutateSliceWhenThereIsNoVariantsSpec =
+    describe "mutateSliceWhenThereIsNoVariantsSpec" $
+    it "" $ do
+        let gen = mkStdGen 4
+        let res = evalState (mutateSlice CHO "ATGTGG") gen
+        res `shouldBe` ["ATGTGG"]
+
+mutateSliceRealRandomSpec :: Spec
+mutateSliceRealRandomSpec =
+    describe "mutateSliceRealRandomSpec" $
+    it "" $ do
+        let gen = mkStdGen 9
+        let res = evalState (mutateSlice CHO "TCTTTGCCGAACGAGGGCATG") gen
+        res `shouldBe` ["TCTTTGCCGAACGAGGGCATG", "AGCTTGCCGAACGAGGGCATG", "TCTCTCCCGAACGAGGGCATG", "TCTTTGCCAAACGAGGGCATG",
+            "TCTTTGCCGAATGAGGGCATG", "TCTTTGCCGAACGAAGGCATG", "TCTTTGCCGAACGAGGGAATG"]
+
+mutateSpec :: Spec
+mutateSpec =
+    describe "mutateSpec" $
+    it "" $ do
+        let dna = "ATGGAGACC" ++ "AATATGCAT" ++ "GACACCCTGCTGCTGTGGGTGCTGCTGCTG"
+        let gen = mkStdGen 4
+        let res = evalState (mutate CHO dna (4, 6)) gen
+        res `shouldBe` ["ATGGAGACCAATATGCATGACACCCTGCTGCTGTGGGTGCTGCTGCTG",
+                        "ATGGAGACCAACATGCATGACACCCTGCTGCTGTGGGTGCTGCTGCTG",
+                        "ATGGAGACCAATATGCACGACACCCTGCTGCTGTGGGTGCTGCTGCTG"]
+
+mutateFromStartSpec :: Spec
+mutateFromStartSpec =
+    describe "mutateFromStartSpec" $
+    it "" $ do
+        let dna = "AATATGCAT" ++ "ATGGAGACCGACACCCTGCTGCTGTGGGTGCTGCTGCTG"
+        let gen = mkStdGen 4
+        let res = evalState (mutate CHO dna (1, 3)) gen
+        res `shouldBe` ["AATATGCATATGGAGACCGACACCCTGCTGCTGTGGGTGCTGCTGCTG",
+                        "AACATGCATATGGAGACCGACACCCTGCTGCTGTGGGTGCTGCTGCTG",
+                        "AATATGCACATGGAGACCGACACCCTGCTGCTGTGGGTGCTGCTGCTG"]
+
+mutateOneAASpec :: Spec
+mutateOneAASpec =
+    describe "mutateOneAASpec" $
+    it "" $ do
+        let dna = "ATGGAGACC" ++ "AAT" ++ "ATGCATGACACCCTGCTGCTGTGGGTGCTGCTGCTG"
+        let gen = mkStdGen 4
+        let res = evalState (mutate CHO dna (4, 4)) gen
+        res `shouldBe` ["ATGGAGACCAATATGCATGACACCCTGCTGCTGTGGGTGCTGCTGCTG",
+                        "ATGGAGACCAACATGCATGACACCCTGCTGCTGTGGGTGCTGCTGCTG"]
+
+mutateInvalidIntervalSpec :: Spec
+mutateInvalidIntervalSpec =
+    describe "mutateInvalidIntervalSpec" $
+    it "" $ do
+        let gen = mkStdGen 4
+        evaluate (evalState (mutate CHO "AATATGCATATG" (3, 1)) gen) `shouldThrow` errorCall "invalid interval for mutation: (3,1)"
+        evaluate (evalState (mutate CHO "AATATGCATATG" (-1, 1)) gen) `shouldThrow` errorCall "invalid interval for mutation: (-1,1)"
+        evaluate (evalState (mutate CHO "AATATGCATATG" (3, -10)) gen) `shouldThrow` errorCall "invalid interval for mutation: (3,-10)"
+        evaluate (evalState (mutate CHO "AATATGCATATG" (3, 5)) gen) `shouldThrow` errorCall "invalid interval for mutation: (3,5)"
+        evaluate (evalState (mutate CHO "AATATGCATATG" (5, 40)) gen) `shouldThrow` errorCall "invalid interval for mutation: (5,40)"
