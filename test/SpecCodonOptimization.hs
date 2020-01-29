@@ -68,28 +68,27 @@ toRandomCodon ak = do
 codonOptimizationSpec :: Spec
 codonOptimizationSpec =
     describe "Codon optimization spec" $ do
-        optimizeSequenceReal
---        optimizeSequence
---        optimizeSequenceForEColi
---        optimizeSequenceForCHO
---        optimizeDNASequence
---        optimizeShortSequence
---        optimizeExtremelyShortSequence
---        optimizeSequenceWindow3
---        optimizeSequenceInit5
---        scoreComparing
---        scoreFun
---        scoreFunEColi
---        scoreFunDifferentCodonUsageWeight
---        scoreFunDifferentGCWeight
---        scoreFunDifferentGCFactor
---        scoreFunDifferentGCWindow
---        scoreFunDifferentFoldingWeight
---        scoreFunDifferentFoldingFactor
---        scoreFunDifferentFoldingWindow
---        scoreFunWithForbiddenSeq
---        scoreFunDifferentForbiddenSeqWeight
---        scoreFunDifferentGCDesired
+        optimizeSequence
+        optimizeSequenceForEColi
+        optimizeSequenceForCHO
+        optimizeDNASequence
+        optimizeShortSequence
+        optimizeExtremelyShortSequence
+        optimizeSequenceWindow3
+        optimizeSequenceInit5
+        scoreComparing
+        scoreFun
+        scoreFunEColi
+        scoreFunDifferentCodonUsageWeight
+        scoreFunDifferentGCWeight
+        scoreFunDifferentGCFactor
+        scoreFunDifferentGCWindow
+        scoreFunDifferentFoldingWeight
+        scoreFunDifferentFoldingFactor
+        scoreFunDifferentFoldingWindow
+        scoreFunWithForbiddenSeq
+        scoreFunDifferentForbiddenSeqWeight
+        scoreFunDifferentGCDesired
 
 scoreComparing :: Spec
 scoreComparing =
@@ -102,16 +101,6 @@ scoreComparing =
         let resMax = minimumBy (scoreCmp cfg optimized) vars
         resMax `shouldBe` "TCGACAGGT"
         resMin `shouldBe` "AGCACCGGC"
-
-optimizeSequenceReal :: Spec
-optimizeSequenceReal =
-    describe "optimizeSequenceReal" $
-    it "should correct optimize sequence" $ do
-        let ak = "METDTLLLWVLLLWVPGSTG"
-        nk <- toRandomNKSequ ak
-        let res = optimizeCodonForAA confCHO ak
-
-        trace ("res:" ++ show (prettyDNA res)) $ res `shouldBe` "ATGGAGACCGACACCCTGCTGCTGTGGGTGCTGCTGCTGTGGGTGCCTGGGTCGACCGGC"
 
 prettyDNA :: [DNA] -> String
 prettyDNA = map prettyOneDNA

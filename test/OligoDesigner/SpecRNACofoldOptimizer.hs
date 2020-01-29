@@ -1,8 +1,8 @@
-module OligoDesigner.SpecOligoDesignerRnaCofoldOptimizer where
+module OligoDesigner.SpecRNACofoldOptimizer where
 
 import Test.Hspec (Spec, shouldBe, it, describe, shouldThrow, errorCall, shouldSatisfy)
 import Bio.Tools.Sequence.OligoDesigner.Scorer (commonScore)
-import Bio.Tools.Sequence.OligoDesigner.RnaCofoldOptimizer (maxPairMutationIndexes, minPairMutationIndexes, 
+import Bio.Tools.Sequence.OligoDesigner.Optimizer.RNACofoldOptimizer (maxPairMutationIndexes, minPairMutationIndexes,
     mutationIndexes, minMaxOptimize)
 import Bio.Tools.Sequence.OligoDesigner.Types     (Olig(..), MatrixCell(..), OligBounds, OligSplitting(..), OligSet(..),
                                                     OligSplittingConfig(..), OligoDesignerConfig(..))
@@ -32,7 +32,7 @@ optimizerSpec =
         mutationIndexesWithoutMinSpec
 
         minMaxOptimizeSpec
-
+        
 minPairMutationIndexesSpec :: Spec
 minPairMutationIndexesSpec =
     describe "minPairMutationIndexes" $

@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module OligoDesigner.SpecOligoDesignerSplitter where
+module OligoDesigner.SpecSplitter where
 
 import           Bio.Tools.Sequence.OligoDesigner.Splitter (split)
 import           Bio.Tools.Sequence.OligoDesigner.Types    (OligSplitting (..), OligSplittingConfig (..),

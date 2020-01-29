@@ -3,10 +3,10 @@ module Bio.Tools.Sequence.OligoDesigner.Utils
  ,weightedRandom
  ,randomCodon
  ,buildOligSet
- ,oneMutation
  ,slice
  ,prettyDNA
  ,translate
+ ,oneMutation
  ,mutate
  ,mutateSlice
  ,getAANumber
@@ -117,6 +117,7 @@ mutate organism dna interval@(start, end) | validateInterval interval (length dn
     variants <- mutateSlice organism mutated
     return $ map (\var -> begin ++ var ++ final) variants
 
+--TODO: test me  
 validateInterval :: (Int, Int) -> Int -> Bool
 validateInterval (start, end) len = start > end || start < 0 || end < 0 || start * 3 > len || end * 3 > len
     
@@ -134,5 +135,6 @@ mutateSlice organism dna = mutateEachCodon dna 0 [dna]
             let variant = take codonIndex mutated ++ newCodon ++ drop codonEndIndex mutated
             mutateEachCodon mutated (index + 1) (acc ++ [variant])
             
+--TODO: test me      
 getAANumber :: Int -> Int
 getAANumber coordinate = ceiling (realToFrac (coordinate + 1) / 3)

@@ -5,6 +5,7 @@ module Bio.Tools.Sequence.OligoDesigner.Scorer
  ,rnaMatrix
  ,gcContentDifference
  ,gcContent
+ ,gcContentScore
  ) where
 
 import qualified Bio.Tools.Sequence.CodonOptimization         as CodonOptimization
@@ -58,22 +59,17 @@ rnaMatrixScore oligsMatrix = aboveDiagonalScore - otherScore
 rnaScore :: OligSet -> Float
 rnaScore oligs = rnaMatrixScore $ rnaMatrix oligs
 
---TODO: test me
 gcContentScore :: [DNA] -> Double -> Double
-gcContentScore sequ target = 1 - deltaGC / target 
-  where
+gcContentScore sequ target = score where
     deltaGC = abs(target - gcContent sequ)
+    score = 1 - deltaGC / target
 
---TODO: test me
 gcContentDifference :: OligSet -> Double
 gcContentDifference (OligSet [] [] _)     = 0
-gcContentDifference (OligSet fwrd rvsd _) = abs (max - min)
+gcContentDifference (OligSet fwrd rvsd _) = maximum gcContents - minimum gcContents
   where
     gcContents = map (gcContent . sequ) (fwrd ++ rvsd)
-    max = maximum gcContents
-    min = minimum gcContents
 
---TODO: test me    
 gcContent :: [DNA] -> Double
 gcContent sequ =  100 * gc / realToFrac (length sequ)
   where

@@ -1,4 +1,4 @@
-module Bio.Tools.Sequence.OligoDesigner.RnaCofoldOptimizer
+module Bio.Tools.Sequence.OligoDesigner.Optimizer.RNACofoldOptimizer
     ( minMaxOptimize
     , maxPairMutationIndexes
     , minPairMutationIndexes

@@ -1,8 +1,8 @@
-module OligoDesigner.SpecOligoDesignerGCContentOptimizer where
+module OligoDesigner.SpecGCContentOptimizer where
 
 import Test.Hspec (Spec, describe, it, shouldBe, shouldSatisfy)
 import Bio.Tools.Sequence.OligoDesigner.Types (OligSplitting(..), OligSet(..), Olig(..))
-import Bio.Tools.Sequence.OligoDesigner.GCContentOptimizer (gcContentOptimize)
+import Bio.Tools.Sequence.OligoDesigner.Optimizer.GCContentOptimizer (gcContentOptimize)
 import Bio.Tools.Sequence.OligoDesigner.Utils (assemble, prettyDNA)
 import Data.Default (def)
 import Control.Monad.State (evalState)
@@ -53,8 +53,8 @@ optimizeGCContentForDifferentTargetSpec =
         res `shouldBe` OligSet
                         [Olig "TTGATCTTCT" 0 10, Olig "TGATAAGAAA" 10 20] -- 30% & 20%
                         [Olig "TATCAAGAAG" 5 15, Olig "TTGTTTTCT" 15 24]  -- 30% & 22%
-                        (OligSplitting [(0, 10), (10, 20)] [(5, 15), (15, 24)]) 
-        
+                        (OligSplitting [(0, 10), (10, 20)] [(5, 15), (15, 24)])
+
 optimizeGCContentRealDataSpec :: Spec
 optimizeGCContentRealDataSpec =
     describe "optimizeGCContentRealDataSpec" $

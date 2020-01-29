@@ -1,7 +1,7 @@
-import           OligoDesigner.SpecOligoDesignerScorer
-import           OligoDesigner.SpecOligoDesignerSplitter
-import           OligoDesigner.SpecOligoDesignerRnaCofoldOptimizer
-import           OligoDesigner.SpecOligoDesignerGCContentOptimizer
+import           OligoDesigner.SpecScorer
+import           OligoDesigner.SpecSplitter
+import           OligoDesigner.SpecRNACofoldOptimizer
+import           OligoDesigner.SpecGCContentOptimizer
 import           OligoDesigner.SpecUtils
 import           SpecCodonOptimization
 import           SpecPrimers
@@ -14,19 +14,19 @@ main = do
     hSetBuffering stdout NoBuffering
     hspec $ do
          -- Primers
---         testPrimers
+         testPrimers
 
          -- ViennaRNA
---         foldTest
---         cofoldTest
+         foldTest
+         cofoldTest
 
          -- CodonOptimization
---         codonOptimizationSpec
+         codonOptimizationSpec
 
          -- OligoDesigner
---         oligoDesignerSplitterSpec
---         oligoDesignerScoreSpec
---         utilsSpec
---         optimizerSpec
+         oligoDesignerSplitterSpec
+         oligoDesignerScoreSpec
+         utilsSpec
+         optimizerSpec
          gcContentOptimizerSpec
 
