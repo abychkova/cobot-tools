@@ -9,8 +9,8 @@ module Bio.Tools.Sequence.OligoDesigner.Types
     ,OligSize
     ,OligBounds
     ,OligSplitting(..)
-    ,OligoDesignerConfig(..)
-    ,OligSplittingConfig(..)
+    ,OligsDesignerConfig(..)
+    ,OligsSplittingConfig(..)
     ,standardTemperature
     ,pretty) where
 
@@ -19,6 +19,7 @@ import           Bio.Tools.Sequence.CodonOptimization (CodonOptimizationConfig (
 import           Data.List                            (foldl')
 import           GHC.Generics                         (Generic)
 import Control.DeepSeq (NFData)
+import           Data.Default (Default (..))
 
 type SequenceLen =  Int
 type GapSize = Int
@@ -46,14 +47,20 @@ data OligSet = OligSet {forward :: [Olig], reversed :: [Olig], coordinates :: Ol
 standardTemperature :: Double
 standardTemperature = 37
 
-data OligSplittingConfig = OligSplittingConfig {
+data OligsSplittingConfig = OligsSplittingConfig {
     maxOligSize    :: Int,
     overlapQuality :: Double,
     minOverlap     :: Int
 }
 
-data OligoDesignerConfig = OligoDesignerConfig {
-    codonOptimizationConfing :: CodonOptimizationConfig,
-    balanceFactor            :: Double,
-    oligSplittingConfig      :: OligSplittingConfig
+instance Default OligsSplittingConfig where
+  def = OligsSplittingConfig 60 1 18
+
+data OligsDesignerConfig = OligsDesignerConfig {
+    codonOptimizationConfing   :: CodonOptimizationConfig,
+    oligSplittingConfig        :: OligsSplittingConfig,
+    rnaScoreFactor             :: Double,
+    oligsGCContentFactor       :: Double,
+    gcContentScoreFactor       :: Double,
+    maxOptimizationIteration   :: Int
 }

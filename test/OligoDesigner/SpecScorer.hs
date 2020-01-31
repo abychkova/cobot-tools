@@ -2,32 +2,39 @@
 
 module OligoDesigner.SpecScorer where
 
-import           Bio.Tools.Sequence.OligoDesigner.Scorer (rnaScore, rnaMatrix', rnaMatrix, rnaMatrixScore, gcContent, gcContentDifference, gcContentScore)
+import           Bio.Tools.Sequence.OligoDesigner.Scorer (rnaScore, rnaMatrix', rnaMatrix, rnaMatrixScore, gcContent,
+                                                            gcContentDifference, dnaGCContentScore, commonScore)
 import           Bio.Tools.Sequence.OligoDesigner.Types  (Olig (..),
                                                           OligSet (..),
-                                                          OligSplitting (..), MatrixCell(..))
+                                                          OligSplitting (..), MatrixCell(..),
+                                                          OligsDesignerConfig(..), OligsSplittingConfig(..))
 import           Test.Hspec                              (Spec, describe, it,
                                                           shouldBe)
 import Data.Matrix (matrix)
 import Bio.Tools.Sequence.OligoDesigner.Utils (assemble)
 import Debug.Trace (trace)
 import Data.Text (toUpper)
+import Data.Default (def)
+import Bio.Tools.Sequence.CodonOptimization (CodonOptimizationConfig(..))
+import Bio.Tools.Sequence.CodonOptimization.Types (Organism(..), defaultForbiddenRegexp)
 
 oligoDesignerScoreSpec :: Spec
 oligoDesignerScoreSpec = describe "Oligo-Designer score spec" $ do
-    scoreRNAFoldingSpec
-    scoreRNAFoldingSpec2
-
-    rnaMatrixSpec
-    rnaMatrixSimpleSpec
-    rnaMatrixScoreSpec
-
-    gcContentSpec
-    gcContentDifferenceSpec
-    gcContentDifferenceForTheSameOligsSpec
-    gcContentDifferenceForEmptyOligsSpec
-
-    gcContentScoreSpec
+--    scoreRNAFoldingSpec
+--    scoreRNAFoldingSpec2
+--
+--    rnaMatrixSpec
+--    rnaMatrixSimpleSpec
+--    rnaMatrixScoreSpec
+--
+--    gcContentSpec
+--    gcContentDifferenceSpec
+--    gcContentDifferenceForTheSameOligsSpec
+--    gcContentDifferenceForEmptyOligsSpec
+--
+--    gcContentScoreSpec
+--
+    commonScoreSpec
 
 --      rnaCofoldSpec
 
@@ -191,21 +198,38 @@ gcContentDifferenceForEmptyOligsSpec =
         let res = gcContentDifference oligs
         res `shouldBe` 0
 
-gcContentScoreSpec :: Spec
-gcContentScoreSpec =
-    describe "gcContentScoreSpec" $
+dnaGCContentScoreSpec :: Spec
+dnaGCContentScoreSpec =
+    describe "dnaGCContentScore" $
     it "" $ do
         let sequ = "GAAGTGCAGCTGGTGGAGTCTGGGGGAGGCGTGGTACAGCCTGGCAGGTCCCTGTCTCCTGTGCAGCCTCTGGATTCACCTTTAA" ++
                         "CGATTATACCATGCACTGGGTCCAGCTCCAGGGAAGGGCCTGGAGTGGGTCTCAGGTATTAGTTGGAATGGCGGTAG"
-        gcContentScore sequ 64 `shouldBe` 0.9066358024691358
-        gcContentScore "GGGGGGGGGG" 100 `shouldBe` 1
-        gcContentScore "AAAAAAAAAA" 100 `shouldBe` 0
-        gcContentScore "AAAAAGGGGG" 100 `shouldBe` 0.5
-        gcContentScore "AAAAAGGGGG" 50 `shouldBe` 1
-        gcContentScore "GGGGGGGGGGGGGGGGGGGG" 50 `shouldBe` 0
-        gcContentScore "G" 50 `shouldBe` 0
-        gcContentScore "AAAAAAAAAA" 50 `shouldBe` 0
-        gcContentScore "GCTAGCACCAAGGGCCCCAGCGTGTTTCCTCTGGCCCCTAGCAGCAAGAGCACCAGCGGCGGCACCGCCGCCCTGGG" 71 `shouldBe` 0.993963782696177 --71%
+        dnaGCContentScore sequ 64 `shouldBe` 0.9066358024691358
+        dnaGCContentScore "GGGGGGGGGG" 100 `shouldBe` 1
+        dnaGCContentScore "AAAAAAAAAA" 100 `shouldBe` 0
+        dnaGCContentScore "AAAAAGGGGG" 100 `shouldBe` 0.5
+        dnaGCContentScore "AAAAAGGGGG" 50 `shouldBe` 1
+        dnaGCContentScore "GGGGGGGGGGGGGGGGGGGG" 50 `shouldBe` 0
+        dnaGCContentScore "G" 50 `shouldBe` 0
+        dnaGCContentScore "AAAAAAAAAA" 50 `shouldBe` 0
+        dnaGCContentScore "GCTAGCACCAAGGGCCCCAGCGTGTTTCCTCTGGCCCCTAGCAGCAAGAGCACCAGCGGCGGCACCGCCGCCCTGGG" 71 `shouldBe` 0.993963782696177 --71%
+
+commonScoreSpec :: Spec
+commonScoreSpec =
+    describe "commonScoreSpec" $
+    it "" $ do
+        let oligs = OligSet
+                        [Olig "TTGATCTTCC" 0 10, Olig "TTATAAGAAA" 10 20] -- 40% & 10%
+                        [Olig "TATAAGGAAG" 5 15, Olig "TTGTTTTCT" 15 24]  -- 30% & 22%
+                        (OligSplitting [(0, 10), (10, 20)] [(5, 15), (15, 24)])
+        let codonConf = CodonOptimizationConfig CHO 3 1 1 0.5 1.4 40 0.001 2.6 100 1 43 defaultForbiddenRegexp
+        commonScore (OligsDesignerConfig codonConf def 1 0 0 0) oligs `shouldBe` -4.900000095367432
+        commonScore (OligsDesignerConfig codonConf def 0 1 0 0) oligs `shouldBe` 30
+        commonScore (OligsDesignerConfig codonConf def 0 0 1 0) oligs `shouldBe` 0.5813953488372092
+        commonScore (OligsDesignerConfig codonConf def 1 1 0 0) oligs `shouldBe` 25.09999990463257
+        commonScore (OligsDesignerConfig codonConf def 1 1 1 0) oligs `shouldBe` 25.681395253469777
+        commonScore (OligsDesignerConfig codonConf def 0 1 1 0) oligs `shouldBe` 30.5813953488372092
+        commonScore (OligsDesignerConfig codonConf def 0 0 0 0) oligs `shouldBe` 0
 
 generatorRealMatrix :: (Int, Int) -> MatrixCell
 generatorRealMatrix (1, 1) = MatrixCell (Olig "GCTAGCACCAAGGGCCCCAGCGTGTTTCCTCTGGCCCCTAGCAGCAAGAGCACCAGCGGC" 0 60)

@@ -3,9 +3,9 @@ module OligoDesigner.SpecRNACofoldOptimizer where
 import Test.Hspec (Spec, shouldBe, it, describe, shouldThrow, errorCall, shouldSatisfy)
 import Bio.Tools.Sequence.OligoDesigner.Scorer (commonScore)
 import Bio.Tools.Sequence.OligoDesigner.Optimizer.RNACofoldOptimizer (maxPairMutationIndexes, minPairMutationIndexes,
-    mutationIndexes, minMaxOptimize)
+    mutationIndexes, rnaOptimize)
 import Bio.Tools.Sequence.OligoDesigner.Types     (Olig(..), MatrixCell(..), OligBounds, OligSplitting(..), OligSet(..),
-                                                    OligSplittingConfig(..), OligoDesignerConfig(..))
+                                                    OligsSplittingConfig(..), OligsDesignerConfig(..))
 import Data.Matrix (matrix)
 import System.Random (mkStdGen)
 import Control.Monad.State (evalState)
@@ -14,9 +14,9 @@ import Data.Default (def)
 import Control.Exception (evaluate)
 import Bio.Tools.Sequence.OligoDesigner.Utils (assemble, translate)
 
-optimizerSpec :: Spec
-optimizerSpec =
-    describe "optimizerSpec" $ do
+rnaOptimizerSpec :: Spec
+rnaOptimizerSpec =
+    describe "rnaOptimizerSpec" $ do
         minPairMutationIndexesSpec
         minPairMutationIndexesWithEvenIndexesSpec
         minPairMutationIndexesWithoutIntersectionSpec
@@ -151,9 +151,9 @@ minMaxOptimizeSpec =
                     , Olig "GCTAGGCTTGTGGTTCACGTTGCAGATGTAGGTCTGGGTGCCCAGGCTGCTGCTAGGCAC" 210 270
                     ]
                     coords
-        let conf = OligoDesignerConfig def 0 (OligSplittingConfig 60 1 10)
+        let conf = OligsDesignerConfig def (OligsSplittingConfig 60 1 10) 0 0 0 0
         let gen = mkStdGen 499
-        let res = evalState (minMaxOptimize conf oligs) gen
+        let res = evalState (rnaOptimize conf oligs) gen
 
         assemble res `shouldBe` "GCTAGCACCAAGGGCCCCAGCGTGTTTCCTCTGGCCCCTAGCTCTAAGAGCACCAGCGGCGGCACCGCCGCCCTGGGCTGCCTGGTGAAGGACTACTTCCCTGAGCCTGTGACCGTGAGCTGGAACAGCGGCGCCCTGACCAGCGGCGTGCACACCTTCCCTGCCGTGCTGCAGAGCAGCGGCCTGTACAGCCTGAGCAGCGTGGTGACCGTGCCTAGCAGCAGCCTGGGCACCCAGACCTACATCTGCAACGTGAACCACAAGCCTAGC"
         res `shouldBe` OligSet

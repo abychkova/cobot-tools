@@ -1,6 +1,7 @@
 import           OligoDesigner.SpecScorer
 import           OligoDesigner.SpecSplitter
 import           OligoDesigner.SpecRNACofoldOptimizer
+import           OligoDesigner.SpecIterationOptimizer
 import           OligoDesigner.SpecGCContentOptimizer
 import           OligoDesigner.SpecUtils
 import           SpecCodonOptimization
@@ -24,9 +25,9 @@ main = do
          codonOptimizationSpec
 
          -- OligoDesigner
-         oligoDesignerSplitterSpec
-         oligoDesignerScoreSpec
-         utilsSpec
-         optimizerSpec
-         gcContentOptimizerSpec
-
+--         oligoDesignerSplitterSpec
+--         oligoDesignerScoreSpec
+--         utilsSpec
+--         rnaOptimizerSpec
+--         gcContentOptimizerSpec
+           optimizerSpec

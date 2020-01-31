@@ -1,5 +1,5 @@
 module Bio.Tools.Sequence.OligoDesigner.Optimizer.RNACofoldOptimizer
-    ( minMaxOptimize
+    ( rnaOptimize
     , maxPairMutationIndexes
     , minPairMutationIndexes
     , mutationIndexes
@@ -12,8 +12,8 @@ import           Bio.Tools.Sequence.OligoDesigner.Scorer    (rnaMatrix, rnaScore
 import           Bio.Tools.Sequence.OligoDesigner.Types     (MatrixCell (..),
                                                              Olig (..),
                                                              OligSet (..),
-                                                             OligoDesignerConfig (..),
-                                                             OligoDesignerConfig (..))
+                                                             OligsDesignerConfig (..),
+                                                             OligsDesignerConfig (..))
 import           Bio.Tools.Sequence.OligoDesigner.Utils     (assemble,
                                                              buildOligSet,
                                                              oneMutation, slice, prettyDNA, mutateSlice, getAANumber, mutate)
@@ -26,19 +26,17 @@ import           Data.Matrix                                (Matrix, ncols,
 import           System.Random                              (StdGen)
 import Debug.Trace (trace)
 
-minMaxOptimize :: OligoDesignerConfig -> OligSet -> State StdGen OligSet
-minMaxOptimize (OligoDesignerConfig (CodonOptimizationConfig organism _ _ _ _ _ _ _ _ _ _ _ _) _ _) oligs@(OligSet _ _ splitting) = do
-    let dna = assemble oligs
+rnaOptimize :: OligsDesignerConfig -> OligSet -> State StdGen OligSet
+rnaOptimize conf oligs@(OligSet _ _ splitting) = do
+    let organismType = organism $ codonOptimizationConfing conf
     let indexesToMutate = mutationIndexes $ rnaMatrix oligs
-    varSequences <- concat <$> mapM (mutate organism dna) indexesToMutate
+    let dna = assemble oligs
+    varSequences <- concat <$> mapM (mutate organismType dna) indexesToMutate
     let variants = map (buildOligSet splitting) varSequences
     return $ maximumBy scoreCmp variants
   where
     scoreCmp :: OligSet -> OligSet -> Ordering
-    scoreCmp oligs1 oligs2 = compare score1 score2
-      where
-        score1 = rnaScore oligs1
-        score2 = rnaScore oligs2
+    scoreCmp oligs1 oligs2 = compare (rnaScore oligs1) (rnaScore oligs2)
 
 mutationIndexes :: Matrix MatrixCell -> [(Int, Int)]
 mutationIndexes oligsMatrix = nub (minPairMutationIndexes minPair ++ maxPairMutationIndexes maxPair)

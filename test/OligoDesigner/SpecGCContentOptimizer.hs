@@ -1,7 +1,7 @@
 module OligoDesigner.SpecGCContentOptimizer where
 
 import Test.Hspec (Spec, describe, it, shouldBe, shouldSatisfy)
-import Bio.Tools.Sequence.OligoDesigner.Types (OligSplitting(..), OligSet(..), Olig(..))
+import Bio.Tools.Sequence.OligoDesigner.Types (OligSplitting(..), OligSet(..), Olig(..), OligsDesignerConfig(..))
 import Bio.Tools.Sequence.OligoDesigner.Optimizer.GCContentOptimizer (gcContentOptimize)
 import Bio.Tools.Sequence.OligoDesigner.Utils (assemble, prettyDNA)
 import Data.Default (def)
@@ -29,7 +29,8 @@ optimizeGCContentSpec =
                         (OligSplitting [(0, 10), (10, 20)] [(5, 15), (15, 24)])
 
         let gen = mkStdGen 6637
-        let conf = CodonOptimizationConfig CHO 3 1 1 0.5 1.4 40 0.001 2.6 100 1 43 defaultForbiddenRegexp
+        let codonConf = CodonOptimizationConfig CHO 3 1 1 0.5 1.4 40 0.001 2.6 100 1 43 defaultForbiddenRegexp
+        let conf = OligsDesignerConfig codonConf def 0 0 0 0
         let res = evalState (gcContentOptimize conf oligs) gen
         gcContentDifference res `shouldSatisfy` (<= gcContentDifference oligs)
         res `shouldBe` OligSet
@@ -47,7 +48,8 @@ optimizeGCContentForDifferentTargetSpec =
                         (OligSplitting [(0, 10), (10, 20)] [(5, 15), (15, 24)])
 
         let gen = mkStdGen 6637
-        let conf = CodonOptimizationConfig CHO 3 1 1 0.5 1.4 40 0.001 2.6 100 1 20 defaultForbiddenRegexp
+        let codonConf = CodonOptimizationConfig CHO 3 1 1 0.5 1.4 40 0.001 2.6 100 1 20 defaultForbiddenRegexp
+        let conf = OligsDesignerConfig codonConf def 0 0 0 0
         let res = evalState (gcContentOptimize conf oligs) gen
         gcContentDifference res `shouldSatisfy` (<= gcContentDifference oligs)
         res `shouldBe` OligSet
@@ -74,8 +76,8 @@ optimizeGCContentRealDataSpec =
                     ]
                     coords
         let gen = mkStdGen 6637
-        let conf = CodonOptimizationConfig CHO 3 1 1 0.5 1.4 40 0.001 2.6 100 1 43 defaultForbiddenRegexp
-        let res = evalState (gcContentOptimize def oligs) gen
+        let conf = OligsDesignerConfig def def 0 0 0 0
+        let res = evalState (gcContentOptimize conf oligs) gen
         gcContentDifference res `shouldSatisfy` (<= gcContentDifference oligs)
         res `shouldBe` OligSet
                     [ Olig "GCTAGCACCAAGGGCCCCAGCGTGTTTCCTCTGGCCCCTAGCAGCAAGAGCACCAGCGGC" 0 60      -- 66%

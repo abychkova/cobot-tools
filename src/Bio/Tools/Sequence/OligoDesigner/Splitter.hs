@@ -4,13 +4,13 @@ module Bio.Tools.Sequence.OligoDesigner.Splitter
 
 import           Bio.Tools.Sequence.OligoDesigner.Types (GapSize, OligSize,
                                                          OligSplitting (..),
-                                                         OligSplittingConfig (..),
+                                                         OligsSplittingConfig (..),
                                                          OligsCount,
                                                          SequenceLen)
 
 
-split :: OligSplittingConfig -> SequenceLen -> Maybe OligSplitting
-split (OligSplittingConfig maxOligSize quality minOverlap) sequLen = do
+split :: OligsSplittingConfig -> SequenceLen -> Maybe OligSplitting
+split (OligsSplittingConfig maxOligSize quality minOverlap) sequLen = do
 
     let minOligSize = minOverlap * 2
     let realMaxOligSize = minimum [maxOligSize, sequLen]

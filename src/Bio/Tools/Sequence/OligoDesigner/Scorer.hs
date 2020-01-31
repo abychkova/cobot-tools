@@ -1,33 +1,36 @@
 module Bio.Tools.Sequence.OligoDesigner.Scorer
  (rnaScore
+ ,rnaMatrix'
  ,commonScore
  ,rnaMatrixScore
  ,rnaMatrix
  ,gcContentDifference
  ,gcContent
- ,gcContentScore
+ ,oligsGCContentScore
+ ,dnaGCContentScore
  ) where
 
-import qualified Bio.Tools.Sequence.CodonOptimization         as CodonOptimization
-                                                                                    (score)
+import qualified Bio.Tools.Sequence.CodonOptimization         as CodonOptimization (score, CodonOptimizationConfig(..))
 import           Bio.Tools.Sequence.OligoDesigner.Types       (MatrixCell (..),
                                                                Olig (..),
                                                                OligSet (..),
-                                                               OligoDesignerConfig (..),
+                                                               OligsDesignerConfig (..),
                                                                standardTemperature)
 import           Bio.Tools.Sequence.OligoDesigner.Utils       (assemble)
 import           Bio.Tools.Sequence.ViennaRNA.Internal.Cofold (cofold)
 import           Data.Matrix                                  (Matrix (..),
                                                                matrix, (!))
 import Bio.NucleicAcid.Nucleotide (DNA(..))
---TODO: test me
-commonScore :: OligoDesignerConfig -> OligSet -> Double
-commonScore (OligoDesignerConfig codonOptimizationConf balanceFactor _) oligs = scoreValue
+import Debug.Trace (trace)
+import Bio.Tools.Sequence.CodonOptimization.Types (gcContentDesired)
+
+commonScore :: OligsDesignerConfig -> OligSet -> Double
+commonScore (OligsDesignerConfig codonConf _ rnaF oligsGCF gcF _) oligs = scoreValue
   where
-    sequ = assemble oligs
-    codonScore = CodonOptimization.score codonOptimizationConf sequ
-    rnaValue = realToFrac $ rnaMatrixScore $ rnaMatrix oligs
-    scoreValue = balanceFactor * codonScore + (1 - balanceFactor) * rnaValue
+    rnaScoreValue = realToFrac $ rnaScore oligs
+    oligsGCValue = gcContentDifference oligs
+    gcScoreValue = oligsGCContentScore oligs (gcContentDesired codonConf)
+    scoreValue = rnaF * rnaScoreValue + oligsGCF * oligsGCValue + gcF * gcScoreValue
 
 rnaMatrix :: OligSet -> Matrix MatrixCell
 rnaMatrix (OligSet forward reversed _) = matrix rowCount rowCount generator
@@ -48,6 +51,19 @@ rnaMatrix (OligSet forward reversed _) = matrix rowCount rowCount generator
         olig2 = allOligs !! (j - 1)
         score = fst $ cofold standardTemperature (sequ olig1, sequ olig2)
 
+rnaMatrix' :: [[DNA]] -> Matrix Float
+rnaMatrix' allOligs = matrix rowCount rowCount generator
+  where
+    rowCount = length allOligs
+
+    generator :: (Int, Int) -> Float
+    generator (i, j) | i > j     = 0 --ignore all above diagonal
+                     | otherwise = score
+      where
+        olig1 = allOligs !! (i - 1)
+        olig2 = allOligs !! (j - 1)
+        score = fst $ cofold standardTemperature (olig1, olig2)
+
 rnaMatrixScore :: Matrix MatrixCell -> Float
 rnaMatrixScore oligsMatrix = aboveDiagonalScore - otherScore
   where
@@ -59,9 +75,13 @@ rnaMatrixScore oligsMatrix = aboveDiagonalScore - otherScore
 rnaScore :: OligSet -> Float
 rnaScore oligs = rnaMatrixScore $ rnaMatrix oligs
 
-gcContentScore :: [DNA] -> Double -> Double
-gcContentScore sequ target = score where
-    deltaGC = abs(target - gcContent sequ)
+--TODO: test me
+oligsGCContentScore :: OligSet -> Double -> Double
+oligsGCContentScore oligs = dnaGCContentScore (assemble oligs)
+
+dnaGCContentScore :: [DNA] -> Double -> Double
+dnaGCContentScore dna target = score where
+    deltaGC = abs(target - gcContent dna)
     score = 1 - deltaGC / target
 
 gcContentDifference :: OligSet -> Double
