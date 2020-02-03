@@ -13,8 +13,8 @@ import Debug.Trace (trace)
 
 gcContentOptimize :: OligsDesignerConfig -> OligSet -> State StdGen OligSet
 gcContentOptimize conf oligs@(OligSet fwd rvsd splitting) = do
-    let targetGC = gcContentDesired $ codonOptimizationConfing conf
-    let organismType = organism $ codonOptimizationConfing conf
+    let targetGC = gcContentDesired $ codonOptimizationConfig conf
+    let organismType = organism $ codonOptimizationConfig conf
     let allOligs = fwd ++ rvsd
     let maximumOlig = maximumBy gcContentComarator allOligs
     let minimumOlig = minimumBy gcContentComarator allOligs

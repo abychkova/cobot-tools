@@ -1,6 +1,5 @@
 module Bio.Tools.Sequence.OligoDesigner.Scorer
  (rnaScore
- ,rnaMatrix'
  ,commonScore
  ,rnaMatrixScore
  ,rnaMatrix
@@ -8,6 +7,7 @@ module Bio.Tools.Sequence.OligoDesigner.Scorer
  ,gcContent
  ,oligsGCContentScore
  ,dnaGCContentScore
+ ,rebuildMatrix
  ) where
 
 import qualified Bio.Tools.Sequence.CodonOptimization         as CodonOptimization (score, CodonOptimizationConfig(..))
@@ -16,7 +16,7 @@ import           Bio.Tools.Sequence.OligoDesigner.Types       (MatrixCell (..),
                                                                OligSet (..),
                                                                OligsDesignerConfig (..),
                                                                standardTemperature)
-import           Bio.Tools.Sequence.OligoDesigner.Utils       (assemble)
+import           Bio.Tools.Sequence.OligoDesigner.Utils       (assemble, mixOligs)
 import           Bio.Tools.Sequence.ViennaRNA.Internal.Cofold (cofold)
 import           Data.Matrix                                  (Matrix (..),
                                                                matrix, (!))
@@ -33,15 +33,10 @@ commonScore (OligsDesignerConfig codonConf _ rnaF oligsGCF gcF _) oligs = scoreV
     scoreValue = rnaF * rnaScoreValue + oligsGCF * oligsGCValue + gcF * gcScoreValue
 
 rnaMatrix :: OligSet -> Matrix MatrixCell
-rnaMatrix (OligSet forward reversed _) = matrix rowCount rowCount generator
+rnaMatrix oligs = matrix rowCount rowCount generator
   where
-    allOligs = mix forward reversed
+    allOligs = mixOligs oligs
     rowCount = length allOligs
-
-    mix :: [a] -> [a] -> [a]
-    mix (x:xs) (y:ys) = x : y : mix xs ys
-    mix x []          = x
-    mix [] y          = y
 
     generator :: (Int, Int) -> MatrixCell
     generator (i, j) | i > j     = MatrixCell (Olig "" 0 0 ) (Olig "" 0 0 ) 0 --ignore all above diagonal
@@ -51,25 +46,30 @@ rnaMatrix (OligSet forward reversed _) = matrix rowCount rowCount generator
         olig2 = allOligs !! (j - 1)
         score = fst $ cofold standardTemperature (sequ olig1, sequ olig2)
 
-rnaMatrix' :: [[DNA]] -> Matrix Float
-rnaMatrix' allOligs = matrix rowCount rowCount generator
+rebuildMatrix :: Matrix MatrixCell -> OligSet -> Matrix MatrixCell
+rebuildMatrix oldMatrix oligs = newMatrix
   where
+    newMatrix = matrix rowCount rowCount generator
+    allOligs = mixOligs oligs
     rowCount = length allOligs
 
-    generator :: (Int, Int) -> Float
-    generator (i, j) | i > j     = 0 --ignore all above diagonal
-                     | otherwise = score
+    generator :: (Int, Int) -> MatrixCell
+    generator (i, j) | i > j     = MatrixCell (Olig "" 0 0 ) (Olig "" 0 0 ) 0
+                     | otherwise = newMatrixCell
       where
+        (MatrixCell oldOlig1 oldOlig2 oldRna) = oldMatrix ! (i, j)
         olig1 = allOligs !! (i - 1)
         olig2 = allOligs !! (j - 1)
-        score = fst $ cofold standardTemperature (olig1, olig2)
+        newMatrixCell = if oldOlig1 `elem` allOligs && oldOlig2 `elem` allOligs
+            then MatrixCell oldOlig1 oldOlig2 oldRna
+            else MatrixCell olig1 olig2 (fst $ cofold standardTemperature (sequ olig1, sequ olig2))
 
 rnaMatrixScore :: Matrix MatrixCell -> Float
 rnaMatrixScore oligsMatrix = aboveDiagonalScore - otherScore
   where
     rowsCnt = nrows oligsMatrix
     colsCnt = ncols oligsMatrix
-    aboveDiagonalScore = minimum [rna $ oligsMatrix ! (x , y) | x <- [1 .. rowsCnt], y <- [1 .. colsCnt], abs (x - y) == 1]
+    aboveDiagonalScore = minimum [rna $ oligsMatrix ! (x , x + 1) | x <- [1 .. rowsCnt - 1]]
     otherScore         = maximum [rna $ oligsMatrix ! (x , y) | x <- [1 .. rowsCnt], y <- [1 .. colsCnt], x <= y && abs (x - y) /= 1]
 
 rnaScore :: OligSet -> Float

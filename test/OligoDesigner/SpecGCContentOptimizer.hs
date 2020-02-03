@@ -3,7 +3,7 @@ module OligoDesigner.SpecGCContentOptimizer where
 import Test.Hspec (Spec, describe, it, shouldBe, shouldSatisfy)
 import Bio.Tools.Sequence.OligoDesigner.Types (OligSplitting(..), OligSet(..), Olig(..), OligsDesignerConfig(..))
 import Bio.Tools.Sequence.OligoDesigner.Optimizer.GCContentOptimizer (gcContentOptimize)
-import Bio.Tools.Sequence.OligoDesigner.Utils (assemble, prettyDNA)
+import Bio.Tools.Sequence.OligoDesigner.Utils (assemble)
 import Data.Default (def)
 import Control.Monad.State (evalState)
 import System.Random (mkStdGen)

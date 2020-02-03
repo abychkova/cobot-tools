@@ -4,12 +4,12 @@ module Bio.Tools.Sequence.OligoDesigner.Utils
  ,randomCodon
  ,buildOligSet
  ,slice
- ,prettyDNA
  ,translate
  ,oneMutation
  ,mutate
  ,mutateSlice
  ,getAANumber
+ ,mixOligs
  ) where
 
 import           Bio.NucleicAcid.Nucleotide.Type                (DNA (..), cNA)
@@ -32,7 +32,15 @@ import           System.Random                                  (StdGen,
                                                                  randomR)
 import Debug.Trace (trace)
 import Bio.Tools.Sequence.CodonOptimization (CodonOptimizationConfig(..))
-
+        
+mixOligs :: OligSet -> [Olig]
+mixOligs (OligSet forward reversed _) = mix forward reversed
+  where
+    mix :: [a] -> [a] -> [a]
+    mix (x:xs) (y:ys) = x : y : mix xs ys
+    mix x []          = x
+    mix [] y          = y
+    
 assemble :: OligSet -> [DNA]
 assemble (OligSet fwd rvd _) = constract fwd rvd 0 [] where
 
@@ -93,15 +101,6 @@ buildOligSet splitting sequ = OligSet strand5' strand3' splitting
 slice :: Int -> Int -> [a] -> [a]
 slice start end xs | start < 0 || end < 0 || start > end = error "incorrect coordinates"
                    | otherwise = take (end - start) (drop start xs)
-
-prettyDNA :: [DNA] -> String
-prettyDNA = map prettyOneDNA
-  where
-    prettyOneDNA :: DNA -> Char
-    prettyOneDNA DA = 'A'
-    prettyOneDNA DT = 'T'
-    prettyOneDNA DC = 'C'
-    prettyOneDNA DG = 'G'
 
 translate :: [DNA] -> [DNA]
 translate = map cNA

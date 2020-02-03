@@ -31,7 +31,7 @@ rnaOptimizerSpec =
         mutationIndexesSpec
         mutationIndexesWithoutMinSpec
 
-        minMaxOptimizeSpec
+        rnaOptimizeSpec
         
 minPairMutationIndexesSpec :: Spec
 minPairMutationIndexesSpec =
@@ -133,9 +133,9 @@ mutationIndexesWithoutMinSpec =
     generator (x, y) | abs (x - y) == 1 = MatrixCell (Olig "" x y) (Olig "" x y) (fromIntegral $ (-1) * x)
                      | otherwise        = MatrixCell (Olig "" x y) (Olig "" x y) (fromIntegral x)
 
-minMaxOptimizeSpec :: Spec
-minMaxOptimizeSpec =
-    describe "minMaxOptimizeScore" $
+rnaOptimizeSpec :: Spec
+rnaOptimizeSpec =
+    describe "rnaOptimizeSpec" $
     it "" $ do
         let coords = OligSplitting [(0, 60), (60, 120), (120, 180), (180, 240)] [(30, 90), (90, 150), (150, 210), (210, 270)]
         let oligs =

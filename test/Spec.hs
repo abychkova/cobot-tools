@@ -4,6 +4,7 @@ import           OligoDesigner.SpecRNACofoldOptimizer
 import           OligoDesigner.SpecIterationOptimizer
 import           OligoDesigner.SpecGCContentOptimizer
 import           OligoDesigner.SpecUtils
+import           OligoDesigner.SpecAlgo
 import           SpecCodonOptimization
 import           SpecPrimers
 import           SpecViennaRNA
@@ -15,14 +16,14 @@ main = do
     hSetBuffering stdout NoBuffering
     hspec $ do
          -- Primers
-         testPrimers
+--         testPrimers
 
          -- ViennaRNA
-         foldTest
-         cofoldTest
+--         foldTest
+--         cofoldTest
 
          -- CodonOptimization
-         codonOptimizationSpec
+--         codonOptimizationSpec
 
          -- OligoDesigner
 --         oligoDesignerSplitterSpec
@@ -30,4 +31,5 @@ main = do
 --         utilsSpec
 --         rnaOptimizerSpec
 --         gcContentOptimizerSpec
-           optimizerSpec
+--         optimizerSpec
+         algoSpec

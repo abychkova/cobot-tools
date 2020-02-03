@@ -4,7 +4,7 @@ module OligoDesigner.SpecSplitter where
 
 import           Bio.Tools.Sequence.OligoDesigner.Splitter (split)
 import           Bio.Tools.Sequence.OligoDesigner.Types    (OligSplitting (..), OligsSplittingConfig (..),
-                                                            SequenceLen, pretty)
+                                                            SequenceLen)
 import           Data.Maybe                                (fromMaybe)
 import           Debug.Trace                               (trace)
 import           Test.Hspec                                (Spec, describe, it,
@@ -12,6 +12,7 @@ import           Test.Hspec                                (Spec, describe, it,
 import           Test.Hspec.QuickCheck                     (modifyMaxSize, prop)
 import           Test.QuickCheck                           (Gen, Property,
                                                             elements, forAll)
+import Bio.Tools.Sequence.OligoDesigner.Prettifier (prettySplitting)
 
 emptySplitting :: OligSplitting
 emptySplitting = OligSplitting [] []
@@ -36,7 +37,7 @@ splitSequence =
     it "should correct split sequence" $ do
         let conf = OligsSplittingConfig 4 1 1
         let res = fromMaybe emptySplitting (split conf 13)
-        trace (pretty res) $ strand5 res `shouldBe` [(0,4), (4,8), (8,12)]
+        trace (prettySplitting res) $ strand5 res `shouldBe` [(0,4), (4,8), (8,12)]
         strand3 res `shouldBe` [(2,6), (6,10), (10,13)]
 
 splitSequence2 :: Spec
@@ -45,7 +46,7 @@ splitSequence2 =
     it "should correct split sequence" $ do
         let conf = OligsSplittingConfig 7 1 1
         let res = fromMaybe emptySplitting (split conf 13)
-        trace (pretty res) $ strand5 res `shouldBe` [(0,5), (5,10)]
+        trace (prettySplitting res) $ strand5 res `shouldBe` [(0,5), (5,10)]
         strand3 res `shouldBe` [(3,8), (8,13)]
 
 splitSequence3 :: Spec
@@ -62,7 +63,7 @@ splitSequence4 =
     it "should correct split sequence" $ do
         let conf = OligsSplittingConfig 6 1 1
         let res = fromMaybe emptySplitting (split conf 11)
-        trace (pretty res) $ strand5 res `shouldBe` [(0,4), (4,8)]
+        trace (prettySplitting res) $ strand5 res `shouldBe` [(0,4), (4,8)]
         strand3 res `shouldBe` [(2,6), (6,11)]
 
 splitSequence5 :: Spec
@@ -71,7 +72,7 @@ splitSequence5 =
     it "should correct split sequence" $ do
         let conf = OligsSplittingConfig 5 1 1
         let res = fromMaybe emptySplitting (split conf 10)
-        trace (pretty res) $ strand5 res `shouldBe` [(0,4), (4,8)]
+        trace (prettySplitting res) $ strand5 res `shouldBe` [(0,4), (4,8)]
         strand3 res `shouldBe` [(2,6), (6,10)]
 
 realExample :: Spec
@@ -80,7 +81,7 @@ realExample =
     it "should correct split sequence" $ do
         let conf = OligsSplittingConfig 60 1 18
         let res = fromMaybe emptySplitting (split conf 600)
-        trace (pretty res) $ strand5 res `shouldBe` [(0,57), (57,114), (114,171), (171,228), (228,285), (285,342), (342,399), (399,456), (456,513), (513,570)]
+        trace (prettySplitting res) $ strand5 res `shouldBe` [(0,57), (57,114), (114,171), (171,228), (228,285), (285,342), (342,399), (399,456), (456,513), (513,570)]
         strand3 res `shouldBe` [(29,86), (86,143), (143,200), (200,257), (257,314), (314,371), (371,428), (428,485), (485,542), (542,600)]
 
 realExampleWithGap :: Spec
@@ -89,7 +90,7 @@ realExampleWithGap =
     it "should correct split sequence" $ do
         let conf = OligsSplittingConfig 60 0.7 18
         let res = fromMaybe emptySplitting (split conf 600)
-        trace (pretty res) $ strand5 res `shouldBe` [(0,60),(63,123),(126,186),(189,249),(252,312),(315,375),(378,438),(441,501),(504,564)]
+        trace (prettySplitting res) $ strand5 res `shouldBe` [(0,60),(63,123),(126,186),(189,249),(252,312),(315,375),(378,438),(441,501),(504,564)]
         strand3 res `shouldBe` [(32,92),(95,155),(158,218),(221,281),(284,344),(347,407),(410,470),(473,533),(536,600)]
 
 realExampleWithGap2 :: Spec
@@ -98,7 +99,7 @@ realExampleWithGap2 =
     it "should correct split sequence" $ do
         let conf = OligsSplittingConfig 60 0.3 18
         let res = fromMaybe emptySplitting (split conf 600)
-        trace (pretty res) $ strand5 res `shouldBe` [(0,60),(63,123),(126,186),(189,249),(252,312),(315,375),(378,438),(441,501),(504,564)]
+        trace (prettySplitting res) $ strand5 res `shouldBe` [(0,60),(63,123),(126,186),(189,249),(252,312),(315,375),(378,438),(441,501),(504,564)]
         strand3 res `shouldBe` [(32,92),(95,155),(158,218),(221,281),(284,344),(347,407),(410,470),(473,533),(536,600)]
 
 realExampleWithGap3 :: Spec
@@ -107,7 +108,7 @@ realExampleWithGap3 =
     it "should correct split sequence" $ do
         let conf = OligsSplittingConfig 60 0.7 18
         let res = fromMaybe emptySplitting (split conf 355)
-        trace (pretty res) $ strand5 res `shouldBe` [(0,60),(65,125),(130,190),(195,255),(260,320)]
+        trace (prettySplitting res) $ strand5 res `shouldBe` [(0,60),(65,125),(130,190),(195,255),(260,320)]
         strand3 res `shouldBe` [(33,93),(98,158),(163,223),(228,288),(293,355)]
 
 quickCheckSpec :: Spec
@@ -127,7 +128,7 @@ splitWithRandom =
 isGood :: Int -> SequenceLen -> Maybe OligSplitting -> Bool
 isGood _ _ Nothing  = trace "Nothing was found for this parameters" False
 isGood minOverlaps sequLen (Just splitting@(OligSplitting strand5' strand3')) =
-    if not res then trace (pretty splitting) res else res where
+    if not res then trace (prettySplitting splitting) res else res where
         zip53 = zip strand5' strand3'
         zip35 = zip strand3' (tail strand5')
 

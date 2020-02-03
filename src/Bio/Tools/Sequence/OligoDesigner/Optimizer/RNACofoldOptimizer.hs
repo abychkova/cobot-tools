@@ -8,35 +8,39 @@ module Bio.Tools.Sequence.OligoDesigner.Optimizer.RNACofoldOptimizer
 import           Bio.NucleicAcid.Nucleotide.Type            (DNA)
 import           Bio.Tools.Sequence.CodonOptimization       (CodonOptimizationConfig (..))
 import           Bio.Tools.Sequence.CodonOptimization.Types (Organism)
-import           Bio.Tools.Sequence.OligoDesigner.Scorer    (rnaMatrix, rnaScore)
+import           Bio.Tools.Sequence.OligoDesigner.Scorer    (rnaMatrix, rnaScore, rnaMatrixScore, rebuildMatrix)
 import           Bio.Tools.Sequence.OligoDesigner.Types     (MatrixCell (..),
                                                              Olig (..),
                                                              OligSet (..),
                                                              OligsDesignerConfig (..),
-                                                             OligsDesignerConfig (..))
+                                                             OligsDesignerConfig (..), standardTemperature)
 import           Bio.Tools.Sequence.OligoDesigner.Utils     (assemble,
                                                              buildOligSet,
-                                                             oneMutation, slice, prettyDNA, mutateSlice, getAANumber, mutate)
+                                                             oneMutation, slice, mutateSlice, getAANumber, mutate)
 import           Control.Monad.State                        (State)
 import           Data.Foldable                              (minimumBy)
 import           Data.List                                  (intersect,
                                                              maximumBy, nub, findIndex)
 import           Data.Matrix                                (Matrix, ncols,
-                                                             nrows, (!), prettyMatrix)
+                                                             nrows, (!), prettyMatrix, matrix)
 import           System.Random                              (StdGen)
 import Debug.Trace (trace)
+import Bio.Tools.Sequence.ViennaRNA.Internal.Cofold (cofold)
 
 rnaOptimize :: OligsDesignerConfig -> OligSet -> State StdGen OligSet
 rnaOptimize conf oligs@(OligSet _ _ splitting) = do
-    let organismType = organism $ codonOptimizationConfing conf
-    let indexesToMutate = mutationIndexes $ rnaMatrix oligs
+    let organismType = organism $ codonOptimizationConfig conf
+    let mtx = rnaMatrix oligs
+    let indexesToMutate = mutationIndexes mtx
     let dna = assemble oligs
-    varSequences <- concat <$> mapM (mutate organismType dna) indexesToMutate
-    let variants = map (buildOligSet splitting) varSequences
-    return $ maximumBy scoreCmp variants
+    sequenceVariants <- concat <$> mapM (mutate organismType dna) indexesToMutate
+    let oligsVariants = map (buildOligSet splitting) sequenceVariants
+    return $ maximumBy (scoreCmp mtx) oligsVariants
   where
-    scoreCmp :: OligSet -> OligSet -> Ordering
-    scoreCmp oligs1 oligs2 = compare (rnaScore oligs1) (rnaScore oligs2)
+    scoreCmp :: Matrix MatrixCell -> OligSet -> OligSet -> Ordering
+    scoreCmp oldMatrix oligs1 oligs2 = compare (score oligs1) (score oligs2)
+      where
+        score = rnaMatrixScore . rebuildMatrix oldMatrix
 
 mutationIndexes :: Matrix MatrixCell -> [(Int, Int)]
 mutationIndexes oligsMatrix = nub (minPairMutationIndexes minPair ++ maxPairMutationIndexes maxPair)
