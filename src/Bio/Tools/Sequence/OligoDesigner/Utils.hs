@@ -42,12 +42,12 @@ mixOligs (OligSet forward reversed _) = mix forward reversed
     mix [] y          = y
     
 assemble :: OligSet -> [DNA]
-assemble (OligSet fwd rvd _) = constract fwd rvd 0 [] where
+assemble (OligSet fwd rvd _) = construct fwd rvd 0 [] where
 
-    constract :: [Olig] -> [Olig] -> Int -> [DNA] -> [DNA]
-    constract _ [] _ acc = acc
-    constract [] _ _ acc = acc
-    constract (Olig seq1 startLeft endLeft : xs) (Olig seq2 startRight endRight : ys) prevEnd acc = constract xs ys endRight res
+    construct :: [Olig] -> [Olig] -> Int -> [DNA] -> [DNA]
+    construct _ [] _ acc = acc
+    construct [] _ _ acc = acc
+    construct (Olig seq1 startLeft endLeft : xs) (Olig seq2 startRight endRight : ys) prevEnd acc = construct xs ys endRight res
       where
         partFormOlig1 = drop (prevEnd - startLeft) seq1
         partFormOlig2 = map cNA (drop (endLeft - startRight) (reverse seq2))
@@ -121,10 +121,10 @@ validateInterval :: (Int, Int) -> Int -> Bool
 validateInterval (start, end) len = start > end || start < 0 || end < 0 || start * 3 > len || end * 3 > len
     
 mutateSlice :: Organism -> [DNA] -> State StdGen [[DNA]]
-mutateSlice organism dna = mutateEachCodon dna 0 [dna]
+mutateSlice organism mutated = mutateEachCodon 0 [mutated]
   where
-    mutateEachCodon :: [DNA] -> Int -> [[DNA]] -> State StdGen [[DNA]]
-    mutateEachCodon mutated index acc
+    mutateEachCodon :: Int -> [[DNA]] -> State StdGen [[DNA]]
+    mutateEachCodon index acc
         | index * 3 >= length mutated = return $ nub acc
         | otherwise = do
             let codonIndex = index * 3
@@ -132,7 +132,7 @@ mutateSlice organism dna = mutateEachCodon dna 0 [dna]
             let codon = take 3 (drop codonIndex mutated)
             newCodon <- oneMutation organism codon
             let variant = take codonIndex mutated ++ newCodon ++ drop codonEndIndex mutated
-            mutateEachCodon mutated (index + 1) (acc ++ [variant])
+            mutateEachCodon (index + 1) (acc ++ [variant])
             
 --TODO: test me      
 getAANumber :: Int -> Int
