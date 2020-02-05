@@ -5,6 +5,7 @@ module OligoDesigner.SpecScorer where
 import           Bio.Tools.Sequence.OligoDesigner.Scorer (rnaScore, rnaMatrix, rnaMatrixScore, gcContent,
                                                             gcContentDifference, dnaGCContentScore, commonScore, rebuildMatrix)
 import           Bio.Tools.Sequence.OligoDesigner.Types  (Olig (..),
+                                                          OligLight (..),
                                                           OligSet (..),
                                                           OligSplitting (..), MatrixCell(..),
                                                           OligsDesignerConfig(..), OligsSplittingConfig(..))
@@ -17,6 +18,7 @@ import Data.Text (toUpper)
 import Data.Default (def)
 import Bio.Tools.Sequence.CodonOptimization (CodonOptimizationConfig(..))
 import Bio.Tools.Sequence.CodonOptimization.Types (Organism(..), defaultForbiddenRegexp)
+import Bio.NucleicAcid.Nucleotide (DNA)
 
 oligoDesignerScoreSpec :: Spec
 oligoDesignerScoreSpec = describe "Oligo-Designer score spec" $ do
@@ -111,27 +113,27 @@ rnaMatrixSimpleSpec =
         res `shouldBe` matrix 4 4 generator
       where
         generator :: (Int, Int) -> MatrixCell
-        generator (1, 1) = MatrixCell (Olig "AATGGC" 0 6)
-                                      (Olig "AATGGC" 0 6) 0
-        generator (1, 2) = MatrixCell (Olig "AATGGC" 0 6)
-                                      (Olig "CCGCTG" 3 9) (-2)
-        generator (1, 3) = MatrixCell (Olig "AATGGC" 0 6)
-                                      (Olig "GACTGA" 6 12) 0
-        generator (1, 4) = MatrixCell (Olig "AATGGC" 0 6)
-                                      (Olig "ACTTTC" 9 15) 0
-        generator (2, 2) = MatrixCell (Olig "CCGCTG" 3 9)
-                                      (Olig "CCGCTG" 3 9) (-2.1)
-        generator (2, 3) = MatrixCell (Olig "CCGCTG" 3 9)
-                                      (Olig "GACTGA" 6 12) 0
-        generator (2, 4) = MatrixCell (Olig "CCGCTG" 3 9)
-                                      (Olig "ACTTTC" 9 15) 0
-        generator (3, 3) = MatrixCell (Olig "GACTGA" 6 12)
-                                      (Olig "GACTGA" 6 12) 0
-        generator (3, 4) = MatrixCell (Olig "GACTGA" 6 12)
-                                      (Olig "ACTTTC" 9 15) 0
-        generator (4, 4) = MatrixCell (Olig "ACTTTC" 9 15)
-                                      (Olig "ACTTTC" 9 15) 0
-        generator (x, y) = MatrixCell (Olig "" 0 0 ) (Olig "" 0 0 ) 0
+        generator (1, 1) = MatrixCell (OligLight (dnaToStr "AATGGC") (Olig "AATGGC" 0 6))
+                                      (OligLight (dnaToStr "AATGGC") (Olig "AATGGC" 0 6)) 0
+        generator (1, 2) = MatrixCell (OligLight (dnaToStr "AATGGC") (Olig "AATGGC" 0 6))
+                                      (OligLight (dnaToStr "CCGCTG") (Olig "CCGCTG" 3 9)) (-2)
+        generator (1, 3) = MatrixCell (OligLight (dnaToStr "AATGGC") (Olig "AATGGC" 0 6))
+                                      (OligLight (dnaToStr "GACTGA") (Olig "GACTGA" 6 12)) 0
+        generator (1, 4) = MatrixCell (OligLight (dnaToStr "AATGGC") (Olig "AATGGC" 0 6))
+                                      (OligLight (dnaToStr "ACTTTC") (Olig "ACTTTC" 9 15)) 0
+        generator (2, 2) = MatrixCell (OligLight (dnaToStr "CCGCTG") (Olig "CCGCTG" 3 9))
+                                      (OligLight (dnaToStr "CCGCTG") (Olig "CCGCTG" 3 9)) (-2.1)
+        generator (2, 3) = MatrixCell (OligLight (dnaToStr "CCGCTG") (Olig "CCGCTG" 3 9))
+                                      (OligLight (dnaToStr "GACTGA") (Olig "GACTGA" 6 12)) 0
+        generator (2, 4) = MatrixCell (OligLight (dnaToStr "CCGCTG") (Olig "CCGCTG" 3 9))
+                                      (OligLight (dnaToStr "ACTTTC") (Olig "ACTTTC" 9 15)) 0
+        generator (3, 3) = MatrixCell (OligLight (dnaToStr "GACTGA") (Olig "GACTGA" 6 12))
+                                      (OligLight (dnaToStr "GACTGA") (Olig "GACTGA" 6 12)) 0
+        generator (3, 4) = MatrixCell (OligLight (dnaToStr "GACTGA") (Olig "GACTGA" 6 12))
+                                      (OligLight (dnaToStr "ACTTTC") (Olig "ACTTTC" 9 15)) 0
+        generator (4, 4) = MatrixCell (OligLight (dnaToStr "ACTTTC") (Olig "ACTTTC" 9 15))
+                                      (OligLight (dnaToStr "ACTTTC") (Olig "ACTTTC" 9 15)) 0
+        generator (x, y) = MatrixCell (OligLight "" (Olig "" 0 0 )) (OligLight "" (Olig "" 0 0)) 0
 
 rnaMatrixScoreSpec :: Spec
 rnaMatrixScoreSpec =
@@ -214,27 +216,27 @@ commonScoreSpec =
         commonScore (OligsDesignerConfig codonConf def 0 0 0 0) oligs `shouldBe` 0
 
 generatorRealMatrix :: (Int, Int) -> MatrixCell
-generatorRealMatrix (1, 1) = MatrixCell (Olig "GCTAGCACCAAGGGCCCCAGCGTGTTTCCTCTGGCCCCTAGCAGCAAGAGCACCAGCGGC" 0 60)
-                                      (Olig "GCTAGCACCAAGGGCCCCAGCGTGTTTCCTCTGGCCCCTAGCAGCAAGAGCACCAGCGGC" 0 60) (-36.9)
-generatorRealMatrix (1, 2) = MatrixCell (Olig "GCTAGCACCAAGGGCCCCAGCGTGTTTCCTCTGGCCCCTAGCAGCAAGAGCACCAGCGGC" 0 60)
-                                      (Olig "CTTCACCAGGCAGCCCAGGGCGGCGGTGCCGCCGCTGGTGCTCTTGCTGCTAGGGGCCAG" 30 90) (-84.9)
-generatorRealMatrix (1, 3) = MatrixCell (Olig "GCTAGCACCAAGGGCCCCAGCGTGTTTCCTCTGGCCCCTAGCAGCAAGAGCACCAGCGGC" 0 60)
-                                      (Olig "GGCACCGCCGCCCTGGGCTGCCTGGTGAAGGACTACTTCCCTGAGCCTGTGACCGTGAGC" 60 120) (-41.8)
-generatorRealMatrix (1, 4) = MatrixCell (Olig "GCTAGCACCAAGGGCCCCAGCGTGTTTCCTCTGGCCCCTAGCAGCAAGAGCACCAGCGGC" 0 60)
-                                      (Olig "CACGCCGCTGGTCAGGGCGCCGCTGTTCCAGCTCACGGTCACAGGCTCAGGGAAGTAGTC" 90 150) (-48.5)
-generatorRealMatrix (2, 2) = MatrixCell (Olig "CTTCACCAGGCAGCCCAGGGCGGCGGTGCCGCCGCTGGTGCTCTTGCTGCTAGGGGCCAG" 30 90)
-                                      (Olig "CTTCACCAGGCAGCCCAGGGCGGCGGTGCCGCCGCTGGTGCTCTTGCTGCTAGGGGCCAG" 30 90) (-68)
-generatorRealMatrix (2, 3) = MatrixCell (Olig "CTTCACCAGGCAGCCCAGGGCGGCGGTGCCGCCGCTGGTGCTCTTGCTGCTAGGGGCCAG" 30 90)
-                                      (Olig "GGCACCGCCGCCCTGGGCTGCCTGGTGAAGGACTACTTCCCTGAGCCTGTGACCGTGAGC" 60 120) (-92.2)
-generatorRealMatrix (2, 4) = MatrixCell (Olig "CTTCACCAGGCAGCCCAGGGCGGCGGTGCCGCCGCTGGTGCTCTTGCTGCTAGGGGCCAG" 30 90)
-                                      (Olig "CACGCCGCTGGTCAGGGCGCCGCTGTTCCAGCTCACGGTCACAGGCTCAGGGAAGTAGTC" 90 150) (-56.4)
-generatorRealMatrix (3, 3) = MatrixCell (Olig "GGCACCGCCGCCCTGGGCTGCCTGGTGAAGGACTACTTCCCTGAGCCTGTGACCGTGAGC" 60 120)
-                                      (Olig "GGCACCGCCGCCCTGGGCTGCCTGGTGAAGGACTACTTCCCTGAGCCTGTGACCGTGAGC" 60 120) (-45.7)
-generatorRealMatrix (3, 4) = MatrixCell (Olig "GGCACCGCCGCCCTGGGCTGCCTGGTGAAGGACTACTTCCCTGAGCCTGTGACCGTGAGC" 60 120)
-                                      (Olig "CACGCCGCTGGTCAGGGCGCCGCTGTTCCAGCTCACGGTCACAGGCTCAGGGAAGTAGTC" 90 150) (-81.7)
-generatorRealMatrix (4, 4) = MatrixCell (Olig "CACGCCGCTGGTCAGGGCGCCGCTGTTCCAGCTCACGGTCACAGGCTCAGGGAAGTAGTC" 90 150)
-                                      (Olig "CACGCCGCTGGTCAGGGCGCCGCTGTTCCAGCTCACGGTCACAGGCTCAGGGAAGTAGTC" 90 150) (-44.5)
-generatorRealMatrix (x, y) = MatrixCell (Olig "" 0 0 ) (Olig "" 0 0 ) 0
+generatorRealMatrix (1, 1) = MatrixCell (OligLight (dnaToStr "GCTAGCACCAAGGGCCCCAGCGTGTTTCCTCTGGCCCCTAGCAGCAAGAGCACCAGCGGC") (Olig "GCTAGCACCAAGGGCCCCAGCGTGTTTCCTCTGGCCCCTAGCAGCAAGAGCACCAGCGGC" 0 60))
+                                        (OligLight (dnaToStr "GCTAGCACCAAGGGCCCCAGCGTGTTTCCTCTGGCCCCTAGCAGCAAGAGCACCAGCGGC") (Olig "GCTAGCACCAAGGGCCCCAGCGTGTTTCCTCTGGCCCCTAGCAGCAAGAGCACCAGCGGC" 0 60)) (-36.9)
+generatorRealMatrix (1, 2) = MatrixCell (OligLight (dnaToStr "GCTAGCACCAAGGGCCCCAGCGTGTTTCCTCTGGCCCCTAGCAGCAAGAGCACCAGCGGC") (Olig "GCTAGCACCAAGGGCCCCAGCGTGTTTCCTCTGGCCCCTAGCAGCAAGAGCACCAGCGGC" 0 60))
+                                        (OligLight (dnaToStr "CTTCACCAGGCAGCCCAGGGCGGCGGTGCCGCCGCTGGTGCTCTTGCTGCTAGGGGCCAG") (Olig "CTTCACCAGGCAGCCCAGGGCGGCGGTGCCGCCGCTGGTGCTCTTGCTGCTAGGGGCCAG" 30 90)) (-84.9)
+generatorRealMatrix (1, 3) = MatrixCell (OligLight (dnaToStr "GCTAGCACCAAGGGCCCCAGCGTGTTTCCTCTGGCCCCTAGCAGCAAGAGCACCAGCGGC") (Olig "GCTAGCACCAAGGGCCCCAGCGTGTTTCCTCTGGCCCCTAGCAGCAAGAGCACCAGCGGC" 0 60))
+                                        (OligLight (dnaToStr "GGCACCGCCGCCCTGGGCTGCCTGGTGAAGGACTACTTCCCTGAGCCTGTGACCGTGAGC") (Olig "GGCACCGCCGCCCTGGGCTGCCTGGTGAAGGACTACTTCCCTGAGCCTGTGACCGTGAGC" 60 120)) (-41.8)
+generatorRealMatrix (1, 4) = MatrixCell (OligLight (dnaToStr "GCTAGCACCAAGGGCCCCAGCGTGTTTCCTCTGGCCCCTAGCAGCAAGAGCACCAGCGGC") (Olig "GCTAGCACCAAGGGCCCCAGCGTGTTTCCTCTGGCCCCTAGCAGCAAGAGCACCAGCGGC" 0 60))
+                                        (OligLight (dnaToStr "CACGCCGCTGGTCAGGGCGCCGCTGTTCCAGCTCACGGTCACAGGCTCAGGGAAGTAGTC") (Olig "CACGCCGCTGGTCAGGGCGCCGCTGTTCCAGCTCACGGTCACAGGCTCAGGGAAGTAGTC" 90 150)) (-48.5)
+generatorRealMatrix (2, 2) = MatrixCell (OligLight (dnaToStr "CTTCACCAGGCAGCCCAGGGCGGCGGTGCCGCCGCTGGTGCTCTTGCTGCTAGGGGCCAG") (Olig "CTTCACCAGGCAGCCCAGGGCGGCGGTGCCGCCGCTGGTGCTCTTGCTGCTAGGGGCCAG" 30 90))
+                                        (OligLight (dnaToStr "CTTCACCAGGCAGCCCAGGGCGGCGGTGCCGCCGCTGGTGCTCTTGCTGCTAGGGGCCAG") (Olig "CTTCACCAGGCAGCCCAGGGCGGCGGTGCCGCCGCTGGTGCTCTTGCTGCTAGGGGCCAG" 30 90)) (-68)
+generatorRealMatrix (2, 3) = MatrixCell (OligLight (dnaToStr "CTTCACCAGGCAGCCCAGGGCGGCGGTGCCGCCGCTGGTGCTCTTGCTGCTAGGGGCCAG") (Olig "CTTCACCAGGCAGCCCAGGGCGGCGGTGCCGCCGCTGGTGCTCTTGCTGCTAGGGGCCAG" 30 90))
+                                        (OligLight (dnaToStr "GGCACCGCCGCCCTGGGCTGCCTGGTGAAGGACTACTTCCCTGAGCCTGTGACCGTGAGC") (Olig "GGCACCGCCGCCCTGGGCTGCCTGGTGAAGGACTACTTCCCTGAGCCTGTGACCGTGAGC" 60 120)) (-92.2)
+generatorRealMatrix (2, 4) = MatrixCell (OligLight (dnaToStr "CTTCACCAGGCAGCCCAGGGCGGCGGTGCCGCCGCTGGTGCTCTTGCTGCTAGGGGCCAG") (Olig "CTTCACCAGGCAGCCCAGGGCGGCGGTGCCGCCGCTGGTGCTCTTGCTGCTAGGGGCCAG" 30 90))
+                                        (OligLight (dnaToStr "CACGCCGCTGGTCAGGGCGCCGCTGTTCCAGCTCACGGTCACAGGCTCAGGGAAGTAGTC") (Olig "CACGCCGCTGGTCAGGGCGCCGCTGTTCCAGCTCACGGTCACAGGCTCAGGGAAGTAGTC" 90 150)) (-56.4)
+generatorRealMatrix (3, 3) = MatrixCell (OligLight (dnaToStr "GGCACCGCCGCCCTGGGCTGCCTGGTGAAGGACTACTTCCCTGAGCCTGTGACCGTGAGC") (Olig "GGCACCGCCGCCCTGGGCTGCCTGGTGAAGGACTACTTCCCTGAGCCTGTGACCGTGAGC" 60 120))
+                                        (OligLight (dnaToStr "GGCACCGCCGCCCTGGGCTGCCTGGTGAAGGACTACTTCCCTGAGCCTGTGACCGTGAGC") (Olig "GGCACCGCCGCCCTGGGCTGCCTGGTGAAGGACTACTTCCCTGAGCCTGTGACCGTGAGC" 60 120)) (-45.7)
+generatorRealMatrix (3, 4) = MatrixCell (OligLight (dnaToStr "GGCACCGCCGCCCTGGGCTGCCTGGTGAAGGACTACTTCCCTGAGCCTGTGACCGTGAGC") (Olig "GGCACCGCCGCCCTGGGCTGCCTGGTGAAGGACTACTTCCCTGAGCCTGTGACCGTGAGC" 60 120))
+                                        (OligLight (dnaToStr "CACGCCGCTGGTCAGGGCGCCGCTGTTCCAGCTCACGGTCACAGGCTCAGGGAAGTAGTC") (Olig "CACGCCGCTGGTCAGGGCGCCGCTGTTCCAGCTCACGGTCACAGGCTCAGGGAAGTAGTC" 90 150)) (-81.7)
+generatorRealMatrix (4, 4) = MatrixCell (OligLight (dnaToStr "CACGCCGCTGGTCAGGGCGCCGCTGTTCCAGCTCACGGTCACAGGCTCAGGGAAGTAGTC") (Olig "CACGCCGCTGGTCAGGGCGCCGCTGTTCCAGCTCACGGTCACAGGCTCAGGGAAGTAGTC" 90 150))
+                                        (OligLight (dnaToStr "CACGCCGCTGGTCAGGGCGCCGCTGTTCCAGCTCACGGTCACAGGCTCAGGGAAGTAGTC") (Olig "CACGCCGCTGGTCAGGGCGCCGCTGTTCCAGCTCACGGTCACAGGCTCAGGGAAGTAGTC" 90 150)) (-44.5)
+generatorRealMatrix (x, y) = MatrixCell (OligLight "" (Olig "" 0 0)) (OligLight "" (Olig "" 0 0)) 0
 
 
 rebuildMatrixSpec :: Spec
@@ -265,24 +267,27 @@ rebuildMatrixSpec =
         newMtx `shouldBe` matrix 4 4 generator
   where
     generator :: (Int, Int) -> MatrixCell
-    generator (1, 1) = MatrixCell (Olig "GCTAGCACCAAGGGCCCCAGCGTGTTTCCTCTGGCCCCTAGCAGCAAGAGCACCAGCGGA" 0 60)
-                                          (Olig "GCTAGCACCAAGGGCCCCAGCGTGTTTCCTCTGGCCCCTAGCAGCAAGAGCACCAGCGGA" 0 60) (-40.1)
-    generator (1, 2) = MatrixCell (Olig "GCTAGCACCAAGGGCCCCAGCGTGTTTCCTCTGGCCCCTAGCAGCAAGAGCACCAGCGGA" 0 60)
-                                          (Olig "CTTCACCAGGCAGCCCAGGGCGGCGGTTCCGCCGCTGGTGCTCTTGCTGCTAGGGGCCAG" 30 90) (-79.3)
-    generator (1, 3) = MatrixCell (Olig "GCTAGCACCAAGGGCCCCAGCGTGTTTCCTCTGGCCCCTAGCAGCAAGAGCACCAGCGGA" 0 60)
-                                          (Olig "GGCACCGCCGCCCTGGGCTGCCTGGTGAAGGACTACTTCCCTGAGCCTGTGACCGTGAGC" 60 120) (-40.1)
-    generator (1, 4) = MatrixCell (Olig "GCTAGCACCAAGGGCCCCAGCGTGTTTCCTCTGGCCCCTAGCAGCAAGAGCACCAGCGGA" 0 60)
-                                          (Olig "CACGCCGCTGGTCAGGGCGCCGCTGTTCCAGCTCACGGTCACAGGCTCAGGGAAGTAGTC" 90 150) (-46.1)
-    generator (2, 2) = MatrixCell (Olig "CTTCACCAGGCAGCCCAGGGCGGCGGTTCCGCCGCTGGTGCTCTTGCTGCTAGGGGCCAG" 30 90)
-                                          (Olig "CTTCACCAGGCAGCCCAGGGCGGCGGTTCCGCCGCTGGTGCTCTTGCTGCTAGGGGCCAG" 30 90) (-60.7)
-    generator (2, 3) = MatrixCell (Olig "CTTCACCAGGCAGCCCAGGGCGGCGGTTCCGCCGCTGGTGCTCTTGCTGCTAGGGGCCAG" 30 90)
-                                          (Olig "GGCACCGCCGCCCTGGGCTGCCTGGTGAAGGACTACTTCCCTGAGCCTGTGACCGTGAGC" 60 120) (-85.5)
-    generator (2, 4) = MatrixCell (Olig "CTTCACCAGGCAGCCCAGGGCGGCGGTTCCGCCGCTGGTGCTCTTGCTGCTAGGGGCCAG" 30 90)
-                                          (Olig "CACGCCGCTGGTCAGGGCGCCGCTGTTCCAGCTCACGGTCACAGGCTCAGGGAAGTAGTC" 90 150) (-54.0)
-    generator (3, 3) = MatrixCell (Olig "GGCACCGCCGCCCTGGGCTGCCTGGTGAAGGACTACTTCCCTGAGCCTGTGACCGTGAGC" 60 120)
-                                          (Olig "GGCACCGCCGCCCTGGGCTGCCTGGTGAAGGACTACTTCCCTGAGCCTGTGACCGTGAGC" 60 120) (-45.7)
-    generator (3, 4) = MatrixCell (Olig "GGCACCGCCGCCCTGGGCTGCCTGGTGAAGGACTACTTCCCTGAGCCTGTGACCGTGAGC" 60 120)
-                                          (Olig "CACGCCGCTGGTCAGGGCGCCGCTGTTCCAGCTCACGGTCACAGGCTCAGGGAAGTAGTC" 90 150) (-81.7)
-    generator (4, 4) = MatrixCell (Olig "CACGCCGCTGGTCAGGGCGCCGCTGTTCCAGCTCACGGTCACAGGCTCAGGGAAGTAGTC" 90 150)
-                                          (Olig "CACGCCGCTGGTCAGGGCGCCGCTGTTCCAGCTCACGGTCACAGGCTCAGGGAAGTAGTC" 90 150) (-44.5)
-    generator (x, y) = MatrixCell (Olig "" 0 0 ) (Olig "" 0 0 ) 0
+    generator (1, 1) = MatrixCell (OligLight (dnaToStr "GCTAGCACCAAGGGCCCCAGCGTGTTTCCTCTGGCCCCTAGCAGCAAGAGCACCAGCGGA") (Olig "GCTAGCACCAAGGGCCCCAGCGTGTTTCCTCTGGCCCCTAGCAGCAAGAGCACCAGCGGA" 0 60))
+                                  (OligLight (dnaToStr "GCTAGCACCAAGGGCCCCAGCGTGTTTCCTCTGGCCCCTAGCAGCAAGAGCACCAGCGGA") (Olig "GCTAGCACCAAGGGCCCCAGCGTGTTTCCTCTGGCCCCTAGCAGCAAGAGCACCAGCGGA" 0 60)) (-40.1)
+    generator (1, 2) = MatrixCell (OligLight (dnaToStr "GCTAGCACCAAGGGCCCCAGCGTGTTTCCTCTGGCCCCTAGCAGCAAGAGCACCAGCGGA") (Olig "GCTAGCACCAAGGGCCCCAGCGTGTTTCCTCTGGCCCCTAGCAGCAAGAGCACCAGCGGA" 0 60))
+                                  (OligLight (dnaToStr "CTTCACCAGGCAGCCCAGGGCGGCGGTTCCGCCGCTGGTGCTCTTGCTGCTAGGGGCCAG") (Olig "CTTCACCAGGCAGCCCAGGGCGGCGGTTCCGCCGCTGGTGCTCTTGCTGCTAGGGGCCAG" 30 90)) (-79.3)
+    generator (1, 3) = MatrixCell (OligLight (dnaToStr "GCTAGCACCAAGGGCCCCAGCGTGTTTCCTCTGGCCCCTAGCAGCAAGAGCACCAGCGGA") (Olig "GCTAGCACCAAGGGCCCCAGCGTGTTTCCTCTGGCCCCTAGCAGCAAGAGCACCAGCGGA" 0 60))
+                                  (OligLight (dnaToStr "GGCACCGCCGCCCTGGGCTGCCTGGTGAAGGACTACTTCCCTGAGCCTGTGACCGTGAGC") (Olig "GGCACCGCCGCCCTGGGCTGCCTGGTGAAGGACTACTTCCCTGAGCCTGTGACCGTGAGC" 60 120)) (-40.1)
+    generator (1, 4) = MatrixCell (OligLight (dnaToStr "GCTAGCACCAAGGGCCCCAGCGTGTTTCCTCTGGCCCCTAGCAGCAAGAGCACCAGCGGA") (Olig "GCTAGCACCAAGGGCCCCAGCGTGTTTCCTCTGGCCCCTAGCAGCAAGAGCACCAGCGGA" 0 60))
+                                  (OligLight (dnaToStr "CACGCCGCTGGTCAGGGCGCCGCTGTTCCAGCTCACGGTCACAGGCTCAGGGAAGTAGTC") (Olig "CACGCCGCTGGTCAGGGCGCCGCTGTTCCAGCTCACGGTCACAGGCTCAGGGAAGTAGTC" 90 150)) (-46.1)
+    generator (2, 2) = MatrixCell (OligLight (dnaToStr "CTTCACCAGGCAGCCCAGGGCGGCGGTTCCGCCGCTGGTGCTCTTGCTGCTAGGGGCCAG") (Olig "CTTCACCAGGCAGCCCAGGGCGGCGGTTCCGCCGCTGGTGCTCTTGCTGCTAGGGGCCAG" 30 90))
+                                  (OligLight (dnaToStr "CTTCACCAGGCAGCCCAGGGCGGCGGTTCCGCCGCTGGTGCTCTTGCTGCTAGGGGCCAG") (Olig "CTTCACCAGGCAGCCCAGGGCGGCGGTTCCGCCGCTGGTGCTCTTGCTGCTAGGGGCCAG" 30 90)) (-60.7)
+    generator (2, 3) = MatrixCell (OligLight (dnaToStr "CTTCACCAGGCAGCCCAGGGCGGCGGTTCCGCCGCTGGTGCTCTTGCTGCTAGGGGCCAG") (Olig "CTTCACCAGGCAGCCCAGGGCGGCGGTTCCGCCGCTGGTGCTCTTGCTGCTAGGGGCCAG" 30 90))
+                                  (OligLight (dnaToStr "GGCACCGCCGCCCTGGGCTGCCTGGTGAAGGACTACTTCCCTGAGCCTGTGACCGTGAGC") (Olig "GGCACCGCCGCCCTGGGCTGCCTGGTGAAGGACTACTTCCCTGAGCCTGTGACCGTGAGC" 60 120)) (-85.5)
+    generator (2, 4) = MatrixCell (OligLight (dnaToStr "CTTCACCAGGCAGCCCAGGGCGGCGGTTCCGCCGCTGGTGCTCTTGCTGCTAGGGGCCAG") (Olig "CTTCACCAGGCAGCCCAGGGCGGCGGTTCCGCCGCTGGTGCTCTTGCTGCTAGGGGCCAG" 30 90))
+                                  (OligLight (dnaToStr "CACGCCGCTGGTCAGGGCGCCGCTGTTCCAGCTCACGGTCACAGGCTCAGGGAAGTAGTC") (Olig "CACGCCGCTGGTCAGGGCGCCGCTGTTCCAGCTCACGGTCACAGGCTCAGGGAAGTAGTC" 90 150)) (-54.0)
+    generator (3, 3) = MatrixCell (OligLight (dnaToStr "GGCACCGCCGCCCTGGGCTGCCTGGTGAAGGACTACTTCCCTGAGCCTGTGACCGTGAGC") (Olig "GGCACCGCCGCCCTGGGCTGCCTGGTGAAGGACTACTTCCCTGAGCCTGTGACCGTGAGC" 60 120))
+                                  (OligLight (dnaToStr "GGCACCGCCGCCCTGGGCTGCCTGGTGAAGGACTACTTCCCTGAGCCTGTGACCGTGAGC") (Olig "GGCACCGCCGCCCTGGGCTGCCTGGTGAAGGACTACTTCCCTGAGCCTGTGACCGTGAGC" 60 120)) (-45.7)
+    generator (3, 4) = MatrixCell (OligLight (dnaToStr "GGCACCGCCGCCCTGGGCTGCCTGGTGAAGGACTACTTCCCTGAGCCTGTGACCGTGAGC") (Olig "GGCACCGCCGCCCTGGGCTGCCTGGTGAAGGACTACTTCCCTGAGCCTGTGACCGTGAGC" 60 120))
+                                  (OligLight (dnaToStr "CACGCCGCTGGTCAGGGCGCCGCTGTTCCAGCTCACGGTCACAGGCTCAGGGAAGTAGTC") (Olig "CACGCCGCTGGTCAGGGCGCCGCTGTTCCAGCTCACGGTCACAGGCTCAGGGAAGTAGTC" 90 150)) (-81.7)
+    generator (4, 4) = MatrixCell (OligLight (dnaToStr "CACGCCGCTGGTCAGGGCGCCGCTGTTCCAGCTCACGGTCACAGGCTCAGGGAAGTAGTC") (Olig "CACGCCGCTGGTCAGGGCGCCGCTGTTCCAGCTCACGGTCACAGGCTCAGGGAAGTAGTC" 90 150))
+                                  (OligLight (dnaToStr "CACGCCGCTGGTCAGGGCGCCGCTGTTCCAGCTCACGGTCACAGGCTCAGGGAAGTAGTC") (Olig "CACGCCGCTGGTCAGGGCGCCGCTGTTCCAGCTCACGGTCACAGGCTCAGGGAAGTAGTC" 90 150)) (-44.5)
+    generator (x, y) = MatrixCell (OligLight "" (Olig "" 0 0)) (OligLight "" (Olig "" 0 0)) 0
+    
+dnaToStr :: [DNA] -> String
+dnaToStr = show

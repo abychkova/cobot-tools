@@ -22,7 +22,7 @@ algoSpec :: Spec
 algoSpec =
     describe "algoSpec" $ do
         designOligsAASpec
---        optSpec
+--        optCodonSpec
 --        designOligsDNASpec
 --        splitToOligsAndOptimizeSpec
 --        splitToOligsAndRnaOptimizeSpec
@@ -31,7 +31,7 @@ algoSpec =
 --        rebuildMatrixSpec
 --        mutateSpec
 
---107.8754 seconds = 40 codon optimization + 57 rnaOptimization (= 20 matrix and mutation + 37 scoring)
+--56.9986 seconds = 26 codon optimization +  37 rnaOptimization
 designOligsAASpec :: Spec
 designOligsAASpec =
     describe "designOligsAASpec " $
@@ -44,7 +44,7 @@ designOligsAASpec =
             trace ("score:" ++ show(commonScore conf res)) $
             True `shouldBe` True
 
---46.2891 seconds
+--26.2891 seconds
 optCodonSpec :: Spec
 optCodonSpec =
     describe "optSpec" $
@@ -76,7 +76,7 @@ splitToOligsAndOptimizeSpec =
         res `shouldNotBe` oligs
         trace ("res:" ++ show res) $ True `shouldBe` True
 
--- 57.6580 seconds
+--  31.2713 seconds
 splitToOligsAndRnaOptimizeSpec :: Spec
 splitToOligsAndRnaOptimizeSpec =
     describe "splitToOligsAndRnaOptimizeSpec" $

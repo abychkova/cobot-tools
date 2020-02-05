@@ -34,4 +34,4 @@ gcContentOptimize conf oligs@(OligSet fwd rvsd splitting) = do
     scoreCmp oligs1 oligs2 = compare (gcContentDifference oligs1) (gcContentDifference oligs2)
 
 gcContentComarator :: Olig -> Olig -> Ordering
-gcContentComarator o1 o2 = compare (gcContent $ sequ o1) (gcContent $ sequ o2)
+gcContentComarator o1 o2 = compare (gcContent $ sequDNA o1) (gcContent $ sequDNA o2)

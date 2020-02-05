@@ -13,7 +13,7 @@ import           Bio.Tools.Sequence.OligoDesigner.Types     (MatrixCell (..),
                                                              Olig (..),
                                                              OligSet (..),
                                                              OligsDesignerConfig (..),
-                                                             OligsDesignerConfig (..), standardTemperature)
+                                                             OligsDesignerConfig (..), standardTemperature, OligLight(..))
 import           Bio.Tools.Sequence.OligoDesigner.Utils     (assemble,
                                                              buildOligSet,
                                                              oneMutation, slice, mutateSlice, getAANumber, mutate)
@@ -36,11 +36,11 @@ rnaOptimize conf oligs@(OligSet _ _ splitting) = do
     sequenceVariants <- concat <$> mapM (mutate organismType dna) indexesToMutate
     let oligsVariants = map (buildOligSet splitting) sequenceVariants
     let oligs2score = map (scoreOligs mtx) oligsVariants
-    return $ fst $ maximumBy sndCmp oligs2score
+    return $ fst $ maximumBy compareBySecond oligs2score
   where
-    sndCmp :: (OligSet, Float) -> (OligSet, Float) -> Ordering
-    sndCmp p1 p2 = compare (snd p1) (snd p2)
-    
+    compareBySecond :: (a, Float) -> (a, Float) -> Ordering
+    compareBySecond p1 p2 = compare (snd p1) (snd p2)
+
     scoreOligs :: Matrix MatrixCell -> OligSet -> (OligSet, Float)
     scoreOligs mtx oligs = (oligs, rnaMatrixScore $ rebuildMatrix mtx oligs)
 
@@ -56,7 +56,7 @@ mutationIndexes oligsMatrix = nub (minPairMutationIndexes minPair ++ maxPairMuta
     compareByRna (MatrixCell _ _ rna1) (MatrixCell _ _ rna2) = compare rna1 rna2
 
 minPairMutationIndexes :: MatrixCell -> [(Int, Int)]
-minPairMutationIndexes (MatrixCell (Olig _ start1 end1) (Olig _ start2 end2) _) = indexes
+minPairMutationIndexes (MatrixCell (OligLight _ (Olig _ start1 end1)) (OligLight _ (Olig _ start2 end2)) _) = indexes
   where
     intersection = [start1 .. end1 - 1] `intersect` [start2 .. end2 - 1]
     indexes =
@@ -65,5 +65,5 @@ minPairMutationIndexes (MatrixCell (Olig _ start1 end1) (Olig _ start2 end2) _) 
             else [(getAANumber (head intersection), getAANumber (last intersection))]
 
 maxPairMutationIndexes :: MatrixCell -> [(Int, Int)]
-maxPairMutationIndexes (MatrixCell (Olig _ start1 end1) (Olig _ start2 end2) _) =
+maxPairMutationIndexes (MatrixCell (OligLight _ (Olig _ start1 end1)) (OligLight _ (Olig _ start2 end2)) _) =
     [(getAANumber start1, getAANumber $ end1 - 1), (getAANumber start2, getAANumber $ end2 - 1)]

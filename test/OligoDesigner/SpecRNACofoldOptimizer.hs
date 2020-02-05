@@ -4,8 +4,8 @@ import Test.Hspec (Spec, shouldBe, it, describe, shouldThrow, errorCall, shouldS
 import Bio.Tools.Sequence.OligoDesigner.Scorer (commonScore)
 import Bio.Tools.Sequence.OligoDesigner.Optimizer.RNACofoldOptimizer (maxPairMutationIndexes, minPairMutationIndexes,
     mutationIndexes, rnaOptimize)
-import Bio.Tools.Sequence.OligoDesigner.Types     (Olig(..), MatrixCell(..), OligBounds, OligSplitting(..), OligSet(..),
-                                                    OligsSplittingConfig(..), OligsDesignerConfig(..))
+import Bio.Tools.Sequence.OligoDesigner.Types     (MatrixCell(..), OligBounds, OligSplitting(..), OligSet(..),
+                                                    OligsSplittingConfig(..), OligsDesignerConfig(..), Olig(..), OligLight(..))
 import Data.Matrix (matrix)
 import System.Random (mkStdGen)
 import Control.Monad.State (evalState)
@@ -37,7 +37,8 @@ minPairMutationIndexesSpec :: Spec
 minPairMutationIndexesSpec =
     describe "minPairMutationIndexes" $
     it "" $ do
-        let matrixCell = MatrixCell (Olig "GCGGATTCAGCAGTT" 0 15) (Olig "ATTGGCGCATGCTTT" 10 25) (-34.993)
+        let matrixCell = MatrixCell (OligLight "GCGGATTCAGCAGTT" (Olig "GCGGATTCAGCAGTT" 0 15)) 
+                                    (OligLight "ATTGGCGCATGCTTT" (Olig "ATTGGCGCATGCTTT" 10 25)) (-34.993)
         let res = minPairMutationIndexes matrixCell
         res `shouldBe` [(4, 5)]
 
@@ -45,7 +46,7 @@ minPairMutationIndexesWithEvenIndexesSpec :: Spec
 minPairMutationIndexesWithEvenIndexesSpec =
     describe "minPairMutationIndexesWithEvenIndexesSpec" $
     it "" $ do
-        let matrixCell = MatrixCell (Olig "GCGGATTC" 0 8) (Olig "ATTGGCGC" 6 15) (-34.993)
+        let matrixCell = MatrixCell (OligLight "" (Olig "" 0 8)) (OligLight "" (Olig "" 6 15)) (-34.993)
         let res = minPairMutationIndexes matrixCell
         res `shouldBe` [(3, 3)]
 
@@ -53,7 +54,7 @@ minPairMutationIndexesWithBorderIndexesSpec :: Spec
 minPairMutationIndexesWithBorderIndexesSpec =
     describe "minPairMutationIndexesWithEvenIndexesSpec" $
     it "" $ do
-        let matrixCell = MatrixCell (Olig "GCGGATTCA" 0 9) (Olig "ATTGGCGCA" 6 15) (-34.993)
+        let matrixCell = MatrixCell (OligLight "" (Olig "" 0 9)) (OligLight "" (Olig "" 6 15)) (-34.993)
         let res = minPairMutationIndexes matrixCell
         res `shouldBe` [(3, 3)]
 
@@ -61,7 +62,7 @@ minPairMutationIndexesWithoutIntersectionSpec :: Spec
 minPairMutationIndexesWithoutIntersectionSpec =
     describe "minPairMutationIndexesWithoutIntersectionSpec" $
     it "" $ do
-        let matrixCell = MatrixCell (Olig "GCGGATTC" 0 8) (Olig "ATTGGCGC" 9 18) (-34.993)
+        let matrixCell = MatrixCell (OligLight "" (Olig "" 0 8)) (OligLight "" (Olig "" 9 18)) (-34.993)
         let res = minPairMutationIndexes matrixCell
         res `shouldBe` []
 
@@ -69,7 +70,7 @@ minPairMutationIndexesWithOneNKIntersectionSpec :: Spec
 minPairMutationIndexesWithOneNKIntersectionSpec =
     describe "minPairMutationIndexesWithOneNKIntersectionSpec" $
     it "" $ do
-        let matrixCell = MatrixCell (Olig "GCGGATTC" 0 8) (Olig "ATTGGCGC" 8 17) (-34.993)
+        let matrixCell = MatrixCell (OligLight "" (Olig "" 0 8)) (OligLight "" (Olig "" 8 17)) (-34.993)
         let res = minPairMutationIndexes matrixCell
         res `shouldBe` []
 
@@ -77,7 +78,7 @@ minPairMutationIndexesReverseIntersectionSpec :: Spec
 minPairMutationIndexesReverseIntersectionSpec =
     describe "minPairMutationIndexesReverseIntersectionSpec" $
     it "" $ do
-        let matrixCell = MatrixCell (Olig "GCGGATTC" 12 20) (Olig "ATTGGCGC" 1 10) (-34.993)
+        let matrixCell = MatrixCell (OligLight "" (Olig "" 12 20)) (OligLight "" (Olig "" 1 10)) (-34.993)
         let res = minPairMutationIndexes matrixCell
         res `shouldBe` []
 
@@ -85,7 +86,7 @@ maxPairMutationIndexesSpec :: Spec
 maxPairMutationIndexesSpec =
     describe "maxPairMutationIndexesSpec" $
     it "" $ do
-        let matrixCell = MatrixCell (Olig "GCGGATTC" 0 8) (Olig "ATTGGCGC" 8 17) (-34.993)
+        let matrixCell = MatrixCell (OligLight "" (Olig "" 0 8)) (OligLight "" (Olig "" 8 17)) (-34.993)
         let res = maxPairMutationIndexes matrixCell
         res `shouldBe` [(1, 3), (3, 6)]
 
@@ -93,7 +94,7 @@ maxPairMutationIndexesWithBorderIndexesSpec :: Spec
 maxPairMutationIndexesWithBorderIndexesSpec =
     describe "maxPairMutationIndexesWithBorderIndexesSpec" $
     it "" $ do
-        let matrixCell = MatrixCell (Olig "GCGGATTCA" 0 9) (Olig "ATTGGCAAA" 9 15) (-34.993)
+        let matrixCell = MatrixCell (OligLight "" (Olig "" 0 9)) (OligLight "" (Olig "" 9 15)) (-34.993)
         let res = maxPairMutationIndexes matrixCell
         res `shouldBe` [(1, 3), (4, 5)]
 
@@ -101,7 +102,7 @@ maxPairMutationIndexesWithEvenIndexesSpec :: Spec
 maxPairMutationIndexesWithEvenIndexesSpec =
     describe "maxPairMutationIndexesWithEvenIndexesSpec" $
     it "" $ do
-        let matrixCell = MatrixCell (Olig "GCGGATTC" 0 8) (Olig "ATTGGCAAATTT" 3 15) (-34.993)
+        let matrixCell = MatrixCell (OligLight "" (Olig "" 0 8)) (OligLight "" (Olig "" 3 15)) (-34.993)
         let res = maxPairMutationIndexes matrixCell
         res `shouldBe` [(1, 3), (2, 5)]
 
@@ -114,10 +115,10 @@ mutationIndexesSpec =
         res `shouldBe` [(7, 9), (10, 17), (18, 30)]
   where
     generator :: (Int, Int) -> MatrixCell
-    generator (1, 2) = MatrixCell (Olig "" 0 25) (Olig "" 20 36) (fromIntegral (-100500))
-    generator (2, 5) = MatrixCell (Olig "" 29 51) (Olig "" 53 88) 100500
-    generator (x, y) | abs (x - y) == 1 = MatrixCell (Olig "" x y) (Olig "" x y) (fromIntegral $ (-1) * x)
-                     | otherwise        = MatrixCell (Olig "" x y) (Olig "" x y) (fromIntegral x)
+    generator (1, 2) = MatrixCell (OligLight "" (Olig "" 0 25)) (OligLight "" (Olig "" 20 36)) (fromIntegral (-100500))
+    generator (2, 5) = MatrixCell (OligLight "" (Olig "" 29 51)) (OligLight "" (Olig "" 53 88)) 100500
+    generator (x, y) | abs (x - y) == 1 = MatrixCell (OligLight "" (Olig "" x y)) (OligLight "" (Olig "" x y)) (fromIntegral $ (-1) * x)
+                     | otherwise        = MatrixCell (OligLight "" (Olig "" x y)) (OligLight "" (Olig "" x y)) (fromIntegral x)
 
 mutationIndexesWithoutMinSpec :: Spec
 mutationIndexesWithoutMinSpec =
@@ -128,10 +129,10 @@ mutationIndexesWithoutMinSpec =
         res `shouldBe` [(10, 17), (18, 30)]
   where
     generator :: (Int, Int) -> MatrixCell
-    generator (1, 2) = MatrixCell (Olig "" 0 25) (Olig "" 35 51) (fromIntegral (-100500))
-    generator (2, 5) = MatrixCell (Olig "" 29 51) (Olig "" 53 88) 100500
-    generator (x, y) | abs (x - y) == 1 = MatrixCell (Olig "" x y) (Olig "" x y) (fromIntegral $ (-1) * x)
-                     | otherwise        = MatrixCell (Olig "" x y) (Olig "" x y) (fromIntegral x)
+    generator (1, 2) = MatrixCell (OligLight "" (Olig "" 0 25)) (OligLight "" (Olig "" 35 51)) (fromIntegral (-100500))
+    generator (2, 5) = MatrixCell (OligLight "" (Olig "" 29 51)) (OligLight "" (Olig "" 53 88)) 100500
+    generator (x, y) | abs (x - y) == 1 = MatrixCell (OligLight "" (Olig "" x y)) (OligLight "" (Olig "" x y)) (fromIntegral $ (-1) * x)
+                     | otherwise        = MatrixCell (OligLight "" (Olig "" x y)) (OligLight "" (Olig "" x y)) (fromIntegral x)
 
 rnaOptimizeSpec :: Spec
 rnaOptimizeSpec =

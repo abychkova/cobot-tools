@@ -32,4 +32,4 @@ main = do
 --         rnaOptimizerSpec
 --         gcContentOptimizerSpec
 --         optimizerSpec
-         algoSpec
+--         algoSpec
