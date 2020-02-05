@@ -3,7 +3,6 @@ module Bio.Tools.Sequence.CodonOptimization.Algo
     , optimizeCodonForDNA
     , scoreByWindow
     , score
-    , scoreCmp
     ) where
 
 import           Bio.NucleicAcid.Nucleotide                     (symbol)
@@ -23,7 +22,7 @@ import           Data.List                                      (foldl',
                                                                  take)
 import           Data.Map                                       as Map (lookup)
 import           Data.Maybe                                     (fromMaybe)
-import           Text.Regex.TDFA                                ((=~))
+import           Text.Regex.TDFA                                ((=~), makeRegex, Regex, match)
 
 -- | optimizeCodonForDNA function does translation from [DNA] to [AA] and then calls 'optimizeCodonForAA'
 optimizeCodonForDNA :: CodonOptimizationConfig -- ^ Config data object. Contains main parameters of codon-optimization and all parameters for scoring function
@@ -44,8 +43,10 @@ optimizeCodonForDNA cfg dna = optimizeCodonForAA cfg (translate dna)
 optimizeCodonForAA :: CodonOptimizationConfig  -- ^ Config data object. Contains main parameters of codon-optimization and all parameters for scoring function
            -> [AA]              -- ^ Initial, not optimized amino-acid sequence
            -> [DNA]             -- ^ Result, optimized nucleotide sequence
-optimizeCodonForAA cfg@(CodonOptimizationConfig organism initLen winLen _ _ _ _ _ _ _ _ _ _) aa = foldl' concatByScore initial variants
+optimizeCodonForAA cfg@(CodonOptimizationConfig organism initLen winLen _ _ _ _ _ _ _ _ _ forbiddenRegexp) aa =
+    foldl' concatByScore initial variants
   where
+    regex = map makeRegex forbiddenRegexp :: [Regex]
     lenAA = length aa
     variants = generateVariants (drop initLen aa) winLen
     fequCodonsMap = ak2MaxFrequCodon organism
@@ -56,8 +57,14 @@ optimizeCodonForAA cfg@(CodonOptimizationConfig organism initLen winLen _ _ _ _ 
                   -> [[DNA]] -- ^ list of variable string
                   -> [DNA]   -- ^ result string
     concatByScore result vars
-        | length result == 3 * (lenAA - winLen - 1) = result ++ maximumBy (scoreCmp cfg result) vars
-        | otherwise = result ++ take 3 (maximumBy (scoreCmp cfg result) vars)
+        | length result == 3 * (lenAA - winLen - 1) =  result ++ fst (maximumBy compareBySecond (map var2score vars))
+        | otherwise = result ++ take 3 (fst (maximumBy compareBySecond (map var2score vars)))
+      where
+        var2score :: [DNA] -> ([DNA], Double)
+        var2score dna = (dna, scoreByWindow cfg regex (result ++ dna))
+
+        compareBySecond :: (a, Double) -> (a, Double) -> Ordering
+        compareBySecond p1 p2 = compare (snd p1) (snd p2)
 
 
 -- | 'generateVariants' function generates list of all possible variants of nucleotide sequence for amino-acid sequence.
@@ -87,21 +94,24 @@ getCodons ak = fromMaybe [] (Map.lookup ak ak2Codon)
 
 -- | 'score' function calculates the average score for full sequence
 score :: CodonOptimizationConfig -> [DNA] -> Double
-score cnf@(CodonOptimizationConfig _ initLen winLen _ _ _ _ _ _ _ _ _ _) nkSequ = sum res / realToFrac (length res)
+score cnf@(CodonOptimizationConfig _ initLen winLen _ _ _ _ _ _ _ _ _ forbiddenRegexp) nkSequ = 
+    sum res / realToFrac (length res)
   where
+    regex = map makeRegex forbiddenRegexp :: [Regex]
     res = scr ((initLen + winLen + 1) * 3) []
 
     scr :: Int -> [Double] -> [Double]
     scr partLen acc | partLen > length nkSequ = acc
-                    | otherwise = scr (partLen + winLen * 3) (scoreByWindow cnf (take partLen nkSequ) : acc)
+                    | otherwise = scr (partLen + winLen * 3) (scoreByWindow cnf regex (take partLen nkSequ) : acc)
 
 -- | 'scoreByWindow' function gets scoring for incoming string.
 -- Scoring function is a composite function of several scoring. More about scoring algorithm see here doi: 10.1007/s11693-010-9062-3
 scoreByWindow :: CodonOptimizationConfig  -- ^ Config data object. Contains main parameters of codon-optimization and all parameters for scoring function
+      -> [Regex]           -- ^ compiled regexes for forbidden sequences
       -> [DNA]             -- ^ nucleotide sequence to score
       -> Double            -- ^ result score value
 scoreByWindow (CodonOptimizationConfig organism _ winLen codonUsageWeight gcWeight gcFactor gcWindow rnaFoldingWeight
-                        rnaFoldingFactor rnaFoldingWindow forbiddenDNAWeight gcContentDesired forbiddenRegexp) nkSequ =
+                        rnaFoldingFactor rnaFoldingWindow forbiddenDNAWeight gcContentDesired _) forbiddenRegexes nkSequ =
     scoreCU + scoreGC - scoreMT - realToFrac scoreRNAFold
   where
     sequLen = length nkSequ
@@ -144,21 +154,15 @@ scoreByWindow (CodonOptimizationConfig organism _ winLen codonUsageWeight gcWeig
 
     -- | 'motiveScore' counts score for the occurrence of desired and unwanted DNA motifs.
     motiveScore :: [DNA] -> Double
-    motiveScore sequ =
-        if any (drop (length sequ - motiveScoreWindow) (map symbol sequ) =~) forbiddenRegexp
+    motiveScore sequ = res
+      where
+        dnaStr = drop (length sequ - motiveScoreWindow) (map symbol sequ)
+        res = if any (`match` dnaStr) forbiddenRegexes
             then forbiddenMotiveScore
             else defaultMotiveScore
-
 
     -- | 'scoreRnaf' counts energy of RNA folding
     scoreRnaf :: [DNA] -> Int
     scoreRnaf sequ = truncate $ rnaFoldingWeight * (abs result ** rnaFoldingFactor)
       where
         result = fst $ fold standardTemperature (drop (length sequ - rnaFoldingWindow) sequ)
-
--- | 'scoreCmp' is compare function for two strings using 'score' function
-scoreCmp :: CodonOptimizationConfig -> [DNA] -> [DNA] -> [DNA] -> Ordering
-scoreCmp cfg optimized str1 str2 = compare score1 score2
-  where
-    score1 = scoreByWindow cfg (optimized ++ str1)
-    score2 = scoreByWindow cfg (optimized ++ str2)
