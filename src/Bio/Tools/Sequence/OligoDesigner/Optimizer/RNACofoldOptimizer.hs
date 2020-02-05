@@ -35,12 +35,14 @@ rnaOptimize conf oligs@(OligSet _ _ splitting) = do
     let dna = assemble oligs
     sequenceVariants <- concat <$> mapM (mutate organismType dna) indexesToMutate
     let oligsVariants = map (buildOligSet splitting) sequenceVariants
-    return $ maximumBy (scoreCmp mtx) oligsVariants
+    let oligs2score = map (scoreOligs mtx) oligsVariants
+    return $ fst $ maximumBy sndCmp oligs2score
   where
-    scoreCmp :: Matrix MatrixCell -> OligSet -> OligSet -> Ordering
-    scoreCmp oldMatrix oligs1 oligs2 = compare (score oligs1) (score oligs2)
-      where
-        score = rnaMatrixScore . rebuildMatrix oldMatrix
+    sndCmp :: (OligSet, Float) -> (OligSet, Float) -> Ordering
+    sndCmp p1 p2 = compare (snd p1) (snd p2)
+    
+    scoreOligs :: Matrix MatrixCell -> OligSet -> (OligSet, Float)
+    scoreOligs mtx oligs = (oligs, rnaMatrixScore $ rebuildMatrix mtx oligs)
 
 mutationIndexes :: Matrix MatrixCell -> [(Int, Int)]
 mutationIndexes oligsMatrix = nub (minPairMutationIndexes minPair ++ maxPairMutationIndexes maxPair)

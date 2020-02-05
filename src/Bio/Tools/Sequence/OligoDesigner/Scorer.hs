@@ -57,11 +57,11 @@ rebuildMatrix oldMatrix oligs = newMatrix
     generator (i, j) | i > j     = MatrixCell (Olig "" 0 0 ) (Olig "" 0 0 ) 0
                      | otherwise = newMatrixCell
       where
-        (MatrixCell oldOlig1 oldOlig2 oldRna) = oldMatrix ! (i, j)
+        oldCell@(MatrixCell oldOlig1 oldOlig2 oldRna) = oldMatrix ! (i, j)
         olig1 = allOligs !! (i - 1)
         olig2 = allOligs !! (j - 1)
-        newMatrixCell = if oldOlig1 `elem` allOligs && oldOlig2 `elem` allOligs
-            then MatrixCell oldOlig1 oldOlig2 oldRna
+        newMatrixCell = if oldOlig1 == olig1 && oldOlig2 == olig2
+            then oldCell
             else MatrixCell olig1 olig2 (fst $ cofold standardTemperature (sequ olig1, sequ olig2))
 
 rnaMatrixScore :: Matrix MatrixCell -> Float
