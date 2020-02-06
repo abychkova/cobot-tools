@@ -26,7 +26,7 @@ import Debug.Trace (trace)
 import Bio.Tools.Sequence.CodonOptimization.Types (gcContentDesired)
 
 commonScore :: OligsDesignerConfig -> OligSet -> Double
-commonScore (OligsDesignerConfig codonConf _ rnaF oligsGCF gcF _) oligs = scoreValue
+commonScore (OligsDesignerConfig codonConf _ rnaF oligsGCF gcF _ _) oligs = scoreValue
   where
     rnaScoreValue = realToFrac $ rnaScore oligs
     oligsGCValue = gcContentDifference oligs

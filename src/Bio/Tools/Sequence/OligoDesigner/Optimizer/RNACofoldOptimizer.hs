@@ -26,14 +26,15 @@ import           Data.Matrix                                (Matrix, ncols,
 import           System.Random                              (StdGen)
 import Debug.Trace (trace)
 import Bio.Tools.Sequence.ViennaRNA.Internal.Cofold (cofold)
+import Text.Regex.TDFA (Regex)
 
-rnaOptimize :: OligsDesignerConfig -> OligSet -> State StdGen OligSet
-rnaOptimize conf oligs@(OligSet _ _ splitting) = do
+rnaOptimize :: OligsDesignerConfig -> [Regex] -> OligSet -> State StdGen OligSet
+rnaOptimize conf regexes oligs@(OligSet _ _ splitting) = do
     let organismType = organism $ codonOptimizationConfig conf
     let mtx = rnaMatrix oligs
     let indexesToMutate = mutationIndexes mtx
     let dna = assemble oligs
-    sequenceVariants <- concat <$> mapM (mutate organismType dna) indexesToMutate
+    sequenceVariants <- concat <$> mapM (mutate organismType regexes dna) indexesToMutate
     let oligsVariants = map (buildOligSet splitting) sequenceVariants
     let oligs2score = map (scoreOligs mtx) oligsVariants
     return $ fst $ maximumBy compareBySecond oligs2score

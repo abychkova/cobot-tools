@@ -10,6 +10,7 @@ module Bio.Tools.Sequence.OligoDesigner.Utils
  ,mutateSlice
  ,getAANumber
  ,mixOligs
+ ,notMatch
  ) where
 
 import           Bio.NucleicAcid.Nucleotide.Type                (DNA (..), cNA)
@@ -32,6 +33,8 @@ import           System.Random                                  (StdGen,
                                                                  randomR)
 import Debug.Trace (trace)
 import Bio.Tools.Sequence.CodonOptimization (CodonOptimizationConfig(..))
+import Text.Regex.TDFA (Regex, makeRegex, match)
+import Bio.Tools.Sequence.OligoDesigner.Prettifier (prettyDNA)
         
 mixOligs :: OligSet -> [Olig]
 mixOligs (OligSet forward reversed _) = mix forward reversed
@@ -105,8 +108,9 @@ slice start end xs | start < 0 || end < 0 || start > end = error "incorrect coor
 translate :: [DNA] -> [DNA]
 translate = map cNA
 
-mutate :: Organism -> [DNA] -> (Int, Int) -> State StdGen [[DNA]]
-mutate organism dna interval@(start, end) | validateInterval interval (length dna) = error ("invalid interval for mutation: " ++ show interval)
+--FIXME: что есть вернется пустой список вариантов, потому что во всех есть запрещенки? что сказать пользователю?
+mutate :: Organism -> [Regex] -> [DNA] -> (Int, Int) -> State StdGen [[DNA]]
+mutate organism regexes dna interval@(start, end) | validateInterval interval (length dna) = error ("invalid interval for mutation: " ++ show interval)
                                           | otherwise = do
     let sliceIndex = (start - 1) * 3
     let sliceEndIndex = (end - 1) * 3 + 3
@@ -114,7 +118,12 @@ mutate organism dna interval@(start, end) | validateInterval interval (length dn
     let mutated = slice sliceIndex sliceEndIndex dna
     let final = drop sliceEndIndex dna
     variants <- mutateSlice organism mutated
-    return $ map (\var -> begin ++ var ++ final) variants
+    let resultSequences = map (\var -> begin ++ var ++ final) variants
+    return $ filter (notMatch regexes) resultSequences
+
+--TODO: test me 
+notMatch :: [Regex] -> [DNA] -> Bool
+notMatch regexes dna = True `notElem` [regex `match` prettyDNA dna :: Bool | regex <- regexes]
 
 --TODO: test me  
 validateInterval :: (Int, Int) -> Int -> Bool

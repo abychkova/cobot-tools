@@ -54,10 +54,11 @@ instance Default OligsSplittingConfig where
   def = OligsSplittingConfig 60 1 18
 
 data OligsDesignerConfig = OligsDesignerConfig {
-    codonOptimizationConfig   :: CodonOptimizationConfig,
+    codonOptimizationConfig    :: CodonOptimizationConfig,
     oligSplittingConfig        :: OligsSplittingConfig,
     rnaScoreFactor             :: Double,
     oligsGCContentFactor       :: Double,
     gcContentScoreFactor       :: Double,
-    maxOptimizationIteration   :: Int
+    maxOptimizationIteration   :: Int,
+    maxFixForbiddenIteration   :: Int
 }

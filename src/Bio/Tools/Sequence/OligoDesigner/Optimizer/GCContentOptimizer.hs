@@ -10,9 +10,10 @@ import Bio.Tools.Sequence.CodonOptimization.Types (gcContentDesired, organism)
 import Data.List (maximumBy, minimumBy, findIndex)
 import Bio.Tools.Sequence.CodonOptimization (CodonOptimizationConfig(..))
 import Debug.Trace (trace)
+import Text.Regex.TDFA (Regex)
 
-gcContentOptimize :: OligsDesignerConfig -> OligSet -> State StdGen OligSet
-gcContentOptimize conf oligs@(OligSet fwd rvsd splitting) = do
+gcContentOptimize :: OligsDesignerConfig -> [Regex] -> OligSet -> State StdGen OligSet
+gcContentOptimize conf regexes oligs@(OligSet fwd rvsd splitting) = do
     let targetGC = gcContentDesired $ codonOptimizationConfig conf
     let organismType = organism $ codonOptimizationConfig conf
     let allOligs = fwd ++ rvsd
@@ -23,7 +24,7 @@ gcContentOptimize conf oligs@(OligSet fwd rvsd splitting) = do
 
     let indexes = (getAANumber $ start farthestFromTarget, getAANumber $ end farthestFromTarget - 1)
     let dna = assemble oligs
-    varSequences <- mutate organismType dna indexes
+    varSequences <- mutate organismType regexes dna indexes
     let variants = map (buildOligSet splitting) varSequences
     return $ minimumBy scoreCmp variants
   where

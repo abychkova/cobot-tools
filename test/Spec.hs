@@ -5,6 +5,7 @@ import           OligoDesigner.SpecIterationOptimizer
 import           OligoDesigner.SpecGCContentOptimizer
 import           OligoDesigner.SpecUtils
 import           OligoDesigner.SpecAlgo
+import           OligoDesigner.SpecForbiddenFixer
 import           SpecCodonOptimization
 import           SpecPrimers
 import           SpecViennaRNA
@@ -26,10 +27,11 @@ main = do
 --         codonOptimizationSpec
 
          -- OligoDesigner
---         oligoDesignerSplitterSpec
---         oligoDesignerScoreSpec
---         utilsSpec
---         rnaOptimizerSpec
---         gcContentOptimizerSpec
---         optimizerSpec
---         algoSpec
+         oligoDesignerSplitterSpec
+         oligoDesignerScoreSpec
+         utilsSpec
+         rnaOptimizerSpec
+         gcContentOptimizerSpec
+         optimizerSpec
+         algoSpec
+         fixerSpec

@@ -9,15 +9,16 @@ import System.Random (StdGen)
 import Control.Monad.State (State)
 import Bio.Tools.Sequence.OligoDesigner.Types (OligsDesignerConfig(..), OligSet)
 import Debug.Trace (trace)
+import Text.Regex.TDFA (Regex)
 
 
-optimize :: OligsDesignerConfig -> OligSet -> State StdGen OligSet
-optimize conf oligs = optimizeIteration 0 [(oligs, commonScore conf oligs)]
+optimize :: OligsDesignerConfig -> [Regex] -> OligSet -> State StdGen OligSet
+optimize conf regexes oligs = optimizeIteration 0 [(oligs, commonScore conf oligs)]
   where
     optimizationStep :: OligSet -> State StdGen [(OligSet, Double)]
     optimizationStep oligs =  do
-       result1 <- rnaOptimize conf oligs
-       result2 <- gcContentOptimize conf result1
+       result1 <- rnaOptimize conf regexes oligs
+       result2 <- gcContentOptimize conf regexes result1
        return [(result2, commonScore conf result2)]
 
     optimizeIteration :: Int -> [(OligSet, Double)] -> State StdGen OligSet

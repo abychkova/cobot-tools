@@ -207,13 +207,13 @@ commonScoreSpec =
                         [Olig "TATAAGGAAG" 5 15, Olig "TTGTTTTCT" 15 24]  -- 30% & 22%
                         (OligSplitting [(0, 10), (10, 20)] [(5, 15), (15, 24)])
         let codonConf = CodonOptimizationConfig CHO 3 1 1 0.5 1.4 40 0.001 2.6 100 1 43 defaultForbiddenRegexp
-        commonScore (OligsDesignerConfig codonConf def 1 0 0 0) oligs `shouldBe` -4.900000095367432
-        commonScore (OligsDesignerConfig codonConf def 0 1 0 0) oligs `shouldBe` 30
-        commonScore (OligsDesignerConfig codonConf def 0 0 1 0) oligs `shouldBe` 0.5813953488372092
-        commonScore (OligsDesignerConfig codonConf def 1 1 0 0) oligs `shouldBe` 25.09999990463257
-        commonScore (OligsDesignerConfig codonConf def 1 1 1 0) oligs `shouldBe` 25.681395253469777
-        commonScore (OligsDesignerConfig codonConf def 0 1 1 0) oligs `shouldBe` 30.5813953488372092
-        commonScore (OligsDesignerConfig codonConf def 0 0 0 0) oligs `shouldBe` 0
+        commonScore (OligsDesignerConfig codonConf def 1 0 0 0 1) oligs `shouldBe` -4.900000095367432
+        commonScore (OligsDesignerConfig codonConf def 0 1 0 0 1) oligs `shouldBe` 30
+        commonScore (OligsDesignerConfig codonConf def 0 0 1 0 1) oligs `shouldBe` 0.5813953488372092
+        commonScore (OligsDesignerConfig codonConf def 1 1 0 0 1) oligs `shouldBe` 25.09999990463257
+        commonScore (OligsDesignerConfig codonConf def 1 1 1 0 1) oligs `shouldBe` 25.681395253469777
+        commonScore (OligsDesignerConfig codonConf def 0 1 1 0 1) oligs `shouldBe` 30.5813953488372092
+        commonScore (OligsDesignerConfig codonConf def 0 0 0 0 1) oligs `shouldBe` 0
 
 generatorRealMatrix :: (Int, Int) -> MatrixCell
 generatorRealMatrix (1, 1) = MatrixCell (OligLight (dnaToStr "GCTAGCACCAAGGGCCCCAGCGTGTTTCCTCTGGCCCCTAGCAGCAAGAGCACCAGCGGC") (Olig "GCTAGCACCAAGGGCCCCAGCGTGTTTCCTCTGGCCCCTAGCAGCAAGAGCACCAGCGGC" 0 60))

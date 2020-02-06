@@ -8,7 +8,6 @@ module Bio.Tools.Sequence.OligoDesigner.Prettifier(
 import Bio.NucleicAcid.Nucleotide (DNA(..))
 import Bio.Tools.Sequence.OligoDesigner.Types (OligSplitting(..), Olig(..), OligSet(..))
 import Data.List (foldl')
-import Bio.Tools.Sequence.OligoDesigner.Utils (mixOligs)
 
 
 prettyDNA :: [DNA] -> String
@@ -33,3 +32,11 @@ prettyOlig (Olig dna start end) = prettyDNA dna ++ " [" ++ show start ++ ", " ++
 
 prettyOligSet :: OligSet -> String
 prettyOligSet oligs = concatMap prettyOlig (mixOligs oligs)
+
+mixOligs :: OligSet -> [Olig]
+mixOligs (OligSet forward reversed _) = mix forward reversed
+  where
+    mix :: [a] -> [a] -> [a]
+    mix (x:xs) (y:ys) = x : y : mix xs ys
+    mix x []          = x
+    mix [] y          = y

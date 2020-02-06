@@ -14,6 +14,7 @@ import Data.Default (def)
 import Control.Exception (evaluate)
 import Bio.Tools.Sequence.OligoDesigner.Utils (assemble, translate)
 
+--TODO: test me with forbidden regexp
 rnaOptimizerSpec :: Spec
 rnaOptimizerSpec =
     describe "rnaOptimizerSpec" $ do
@@ -152,9 +153,9 @@ rnaOptimizeSpec =
                     , Olig "GCTAGGCTTGTGGTTCACGTTGCAGATGTAGGTCTGGGTGCCCAGGCTGCTGCTAGGCAC" 210 270
                     ]
                     coords
-        let conf = OligsDesignerConfig def (OligsSplittingConfig 60 1 10) 0 0 0 0
+        let conf = OligsDesignerConfig def (OligsSplittingConfig 60 1 10) 0 0 0 0 1
         let gen = mkStdGen 499
-        let res = evalState (rnaOptimize conf oligs) gen
+        let res = evalState (rnaOptimize conf [] oligs) gen
 
         assemble res `shouldBe` "GCTAGCACCAAGGGCCCCAGCGTGTTTCCTCTGGCCCCTAGCTCTAAGAGCACCAGCGGCGGCACCGCCGCCCTGGGCTGCCTGGTGAAGGACTACTTCCCTGAGCCTGTGACCGTGAGCTGGAACAGCGGCGCCCTGACCAGCGGCGTGCACACCTTCCCTGCCGTGCTGCAGAGCAGCGGCCTGTACAGCCTGAGCAGCGTGGTGACCGTGCCTAGCAGCAGCCTGGGCACCCAGACCTACATCTGCAACGTGAACCACAAGCCTAGC"
         res `shouldBe` OligSet
