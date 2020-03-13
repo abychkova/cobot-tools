@@ -94,7 +94,7 @@ getCodons ak = fromMaybe [] (Map.lookup ak ak2Codon)
 
 -- | 'score' function calculates the average score for full sequence
 score :: CodonOptimizationConfig -> [DNA] -> Double
-score cnf@(CodonOptimizationConfig _ initLen winLen _ _ _ _ _ _ _ _ _ forbiddenRegexp) nkSequ = 
+score cnf@(CodonOptimizationConfig _ initLen winLen _ _ _ _ _ _ _ _ _ forbiddenRegexp) nkSequ =
     sum res / realToFrac (length res)
   where
     regex = map makeRegex forbiddenRegexp :: [Regex]

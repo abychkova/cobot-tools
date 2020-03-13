@@ -36,5 +36,5 @@ designOligsAA gen conf@(OligsDesignerConfig codonConf _ _ _ _ _ _) aa = do
     let forbiddenRegexp = forbiddenSequence codonConf
     let regexes = map makeRegex forbiddenRegexp :: [Regex]
     dnaFixed <- fixForbidden gen conf regexes dna
-    oligs <- designOligsDNA conf dnaFixed
+    oligs    <- designOligsDNA conf dnaFixed
     return $ evalState (optimize conf regexes oligs) gen

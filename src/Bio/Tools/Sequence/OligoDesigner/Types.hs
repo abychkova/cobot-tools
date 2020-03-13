@@ -32,9 +32,12 @@ type OligSize = Int
 type OligBounds = (Int, Int)
 type Codon = [DNA]
 
+
+--data MatrixCell = MatrixCell {olig1 :: Olig, olig2 :: Olig, rna :: Float} deriving (Show, Eq, Generic)
 data MatrixCell = MatrixCell {olig1 :: OligLight, olig2 :: OligLight, rna :: Float} deriving (Show, Eq, Generic)
 data OligSplitting = OligSplitting {strand5 :: [OligBounds], strand3 :: [OligBounds]} deriving (Show, Eq, NFData, Generic)
 data Olig = Olig {sequDNA :: [DNA], start :: Int, end :: Int} deriving (Show, Eq, NFData, Generic)
+--data OligLight = OligLight {sequStr :: Text, olig :: Olig} deriving (Show, Eq, NFData, Generic)
 data OligLight = OligLight {sequStr :: String, olig :: Olig} deriving (Show, Eq, NFData, Generic)
 data OligSet = OligSet {forward :: [Olig], reversed :: [Olig], coordinates :: OligSplitting} deriving (Show, Eq, NFData, Generic)
 
@@ -42,6 +45,7 @@ standardTemperature :: Double
 standardTemperature = 37
 
 emptyMatrixCell :: MatrixCell
+--emptyMatrixCell = MatrixCell (Olig ""0 0) (Olig "" 0 0) 0
 emptyMatrixCell = MatrixCell (OligLight "" (Olig ""0 0)) (OligLight "" (Olig "" 0 0)) 0
 
 data OligsSplittingConfig = OligsSplittingConfig {

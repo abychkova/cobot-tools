@@ -24,6 +24,7 @@ import           Data.Matrix                                  (Matrix (..),
 import Bio.NucleicAcid.Nucleotide (DNA(..))
 import Debug.Trace (trace)
 import Bio.Tools.Sequence.CodonOptimization.Types (gcContentDesired)
+import Data.Text (pack)
 
 commonScore :: OligsDesignerConfig -> OligSet -> Double
 commonScore (OligsDesignerConfig codonConf _ rnaF oligsGCF gcF _ _) oligs = scoreValue
@@ -58,15 +59,19 @@ rebuildMatrix oldMatrix oligs = newMatrix
     generator (i, j) | i > j     = emptyMatrixCell
                      | otherwise = newMatrixCell
       where
-        oldCell@(MatrixCell (OligLight oldDna1 _) (OligLight oldDna2 _) _) = oldMatrix ! (i, j)
+        oldCell@(MatrixCell (OligLight _ (Olig oldDna1 _ _)) (OligLight _ (Olig oldDna2 _ _)) _) = oldMatrix ! (i, j)
+--        oldCell@(MatrixCell (Olig oldDna1 _ _) (Olig oldDna2 _ _) _) = oldMatrix ! (i, j)
         olig1@(Olig dna1 start1 end1) = allOligs !! (i - 1)
         olig2@(Olig dna2 start2 end2) = allOligs !! (j - 1)
+        
+        olig1L = OligLight (show dna1) olig1
+        olig2L = OligLight (show dna2) olig2
 
-        olig1str = show dna1
-        olig2str = show dna2
-        newMatrixCell = if oldDna1 == olig1str && oldDna2 == olig2str
+        --FIXME: слишком страшно с переводом в строку. это реально нужно для скорости?        
+        newMatrixCell = if oldDna1 == dna1 && oldDna2 == dna2
             then oldCell
-            else MatrixCell (OligLight olig1str olig1) (OligLight olig2str olig2) (fst $ cofold standardTemperature (dna1, dna2))
+--            else MatrixCell olig1 olig2 (fst $ cofold standardTemperature (dna1, dna2))
+            else MatrixCell olig1L olig2L (fst $ cofold standardTemperature (dna1, dna2))
 
 rnaMatrixScore :: Matrix MatrixCell -> Float
 rnaMatrixScore oligsMatrix = aboveDiagonalScore - otherScore

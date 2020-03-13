@@ -11,6 +11,7 @@ module Bio.Tools.Sequence.OligoDesigner.Utils
  ,getAANumber
  ,mixOligs
  ,notMatch
+ ,compareBySecond
  ) where
 
 import           Bio.NucleicAcid.Nucleotide.Type                (DNA (..), cNA)
@@ -108,7 +109,7 @@ slice start end xs | start < 0 || end < 0 || start > end = error "incorrect coor
 translate :: [DNA] -> [DNA]
 translate = map cNA
 
---FIXME: что есть вернется пустой список вариантов, потому что во всех есть запрещенки? что сказать пользователю?
+--FIXME: что если вернется пустой список вариантов, потому что во всех есть запрещенки? что сказать пользователю?
 mutate :: Organism -> [Regex] -> [DNA] -> (Int, Int) -> State StdGen [[DNA]]
 mutate organism regexes dna interval@(start, end) | validateInterval interval (length dna) = error ("invalid interval for mutation: " ++ show interval)
                                           | otherwise = do
@@ -121,7 +122,7 @@ mutate organism regexes dna interval@(start, end) | validateInterval interval (l
     let resultSequences = map (\var -> begin ++ var ++ final) variants
     return $ filter (notMatch regexes) resultSequences
 
---TODO: test me 
+--TODO: test me
 notMatch :: [Regex] -> [DNA] -> Bool
 notMatch regexes dna = True `notElem` [regex `match` prettyDNA dna :: Bool | regex <- regexes]
 
@@ -146,3 +147,6 @@ mutateSlice organism mutated = mutateEachCodon 0 [mutated]
 --TODO: test me      
 getAANumber :: Int -> Int
 getAANumber coordinate = ceiling (realToFrac (coordinate + 1) / 3)
+
+compareBySecond :: Ord b => (a, b) -> (a, b) -> Ordering
+compareBySecond p1 p2 = compare (snd p1) (snd p2)

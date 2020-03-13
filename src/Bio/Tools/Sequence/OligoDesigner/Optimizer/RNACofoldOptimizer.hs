@@ -16,7 +16,7 @@ import           Bio.Tools.Sequence.OligoDesigner.Types     (MatrixCell (..),
                                                              OligsDesignerConfig (..), standardTemperature, OligLight(..))
 import           Bio.Tools.Sequence.OligoDesigner.Utils     (assemble,
                                                              buildOligSet,
-                                                             oneMutation, slice, mutateSlice, getAANumber, mutate)
+                                                             oneMutation, slice, mutateSlice, getAANumber, mutate, compareBySecond)
 import           Control.Monad.State                        (State)
 import           Data.Foldable                              (minimumBy)
 import           Data.List                                  (intersect,
@@ -39,9 +39,6 @@ rnaOptimize conf regexes oligs@(OligSet _ _ splitting) = do
     let oligs2score = map (scoreOligs mtx) oligsVariants
     return $ fst $ maximumBy compareBySecond oligs2score
   where
-    compareBySecond :: (a, Float) -> (a, Float) -> Ordering
-    compareBySecond p1 p2 = compare (snd p1) (snd p2)
-
     scoreOligs :: Matrix MatrixCell -> OligSet -> (OligSet, Float)
     scoreOligs mtx oligs = (oligs, rnaMatrixScore $ rebuildMatrix mtx oligs)
 
@@ -58,6 +55,7 @@ mutationIndexes oligsMatrix = nub (minPairMutationIndexes minPair ++ maxPairMuta
 
 minPairMutationIndexes :: MatrixCell -> [(Int, Int)]
 minPairMutationIndexes (MatrixCell (OligLight _ (Olig _ start1 end1)) (OligLight _ (Olig _ start2 end2)) _) = indexes
+--minPairMutationIndexes (MatrixCell (Olig _ start1 end1) (Olig _ start2 end2) _) = indexes
   where
     intersection = [start1 .. end1 - 1] `intersect` [start2 .. end2 - 1]
     indexes =
@@ -67,4 +65,5 @@ minPairMutationIndexes (MatrixCell (OligLight _ (Olig _ start1 end1)) (OligLight
 
 maxPairMutationIndexes :: MatrixCell -> [(Int, Int)]
 maxPairMutationIndexes (MatrixCell (OligLight _ (Olig _ start1 end1)) (OligLight _ (Olig _ start2 end2)) _) =
+--maxPairMutationIndexes (MatrixCell (Olig _ start1 end1) (Olig _ start2 end2) _) =
     [(getAANumber start1, getAANumber $ end1 - 1), (getAANumber start2, getAANumber $ end2 - 1)]
