@@ -8,7 +8,7 @@ module Bio.Tools.Sequence.OligoDesigner.Optimizer.RNACofoldOptimizer
 import           Bio.NucleicAcid.Nucleotide.Type            (DNA)
 import           Bio.Tools.Sequence.CodonOptimization       (CodonOptimizationConfig (..))
 import           Bio.Tools.Sequence.CodonOptimization.Types (Organism)
-import           Bio.Tools.Sequence.OligoDesigner.Scorer    (rnaMatrix, rnaScore, rnaMatrixScore, rebuildMatrix)
+import           Bio.Tools.Sequence.OligoDesigner.Scorer    (rnaScore, rnaMatrixScore)
 import           Bio.Tools.Sequence.OligoDesigner.Types     (MatrixCell (..),
                                                              Olig (..),
                                                              OligSet (..),
@@ -24,13 +24,14 @@ import           Data.List                                  (intersect,
 import           Data.Matrix                                (Matrix, ncols,
                                                              nrows, (!), prettyMatrix, matrix)
 import           System.Random                              (StdGen)
-import Debug.Trace (trace)
 import Bio.Tools.Sequence.ViennaRNA.Internal.Cofold (cofold)
 import Text.Regex.TDFA (Regex)
+import Debug.Trace
+import Bio.Tools.Sequence.OligoDesigner.RNAMatrixBuilder (rnaMatrix, rebuildMatrix)
 
 rnaOptimize :: OligsDesignerConfig -> [Regex] -> OligSet -> State StdGen OligSet
 rnaOptimize conf regexes oligs@(OligSet _ _ splitting) = do
-    let organismType = organism $ codonOptimizationConfig conf
+    let organismType = traceMarker "rnaOptimize: line 33" $ organism $ codonOptimizationConfig conf
     let mtx = rnaMatrix oligs
     let indexesToMutate = mutationIndexes mtx
     let dna = assemble oligs
@@ -40,7 +41,7 @@ rnaOptimize conf regexes oligs@(OligSet _ _ splitting) = do
     return $ fst $ maximumBy compareBySecond oligs2score
   where
     scoreOligs :: Matrix MatrixCell -> OligSet -> (OligSet, Float)
-    scoreOligs mtx oligs = (oligs, rnaMatrixScore $ rebuildMatrix mtx oligs)
+    scoreOligs mtx oligs = traceMarker "scoreOligs: line 43" $ (oligs, rnaMatrixScore $ rebuildMatrix mtx oligs)
 
 mutationIndexes :: Matrix MatrixCell -> [(Int, Int)]
 mutationIndexes oligsMatrix = nub (minPairMutationIndexes minPair ++ maxPairMutationIndexes maxPair)

@@ -14,7 +14,7 @@ main = do
     seed <- getRandomSeed
     let conf = OligsDesignerConfig def def 0.7 0.3 0 1 1
     let dna = "ASTKGPSVFPLAPSSKSTSGGTAALGCLVKDYFPEPVTVSWNSGALTSGVHTFPAVLQSSGLYSLSSVVTVPSSSLGTQTYICNVNHKPSNTKVDKKVEPKSCDRTHTCPPCPAPELLGGPSVFLFPPKPKDTLYITREPEVTCVVVDVSHEDPEVKFNWYVDGVEVHNAKTKPREEQYNSTYRVVSVLTVLHQDWLNGKEYKCKVSNKALPAPIEKTISKAKGQPREPQVYTLPPSRDELTKNQVSLTCLVKGFYPSDIAVEWESNGQPENNYKTTPPVLDSDGSFFLYSKLTVDKSRWQQGNVFSCSVMHEALHNHYTQKSLSLSPGK"
-    case runExcept $ designOligsAA seed conf dna of
-        Left err    -> trace ("error:" ++ err) $ return ()
-        Right value -> trace ("value:" ++ prettyOligSet value) $ return ()
-    return ()
+    let result = runExcept $ designOligsAA seed conf dna
+    case result of
+        Left err    -> print ("error:" ++ err)
+        Right value -> print ("value:" ++ prettyOligSet value)

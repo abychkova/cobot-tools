@@ -9,7 +9,7 @@ import System.Random (StdGen)
 import Bio.Tools.Sequence.CodonOptimization.Types (gcContentDesired, organism)
 import Data.List (maximumBy, minimumBy, findIndex)
 import Bio.Tools.Sequence.CodonOptimization (CodonOptimizationConfig(..))
-import Debug.Trace (trace)
+import Debug.Trace 
 import Text.Regex.TDFA (Regex)
 
 gcContentOptimize :: OligsDesignerConfig -> [Regex] -> OligSet -> State StdGen OligSet
@@ -26,7 +26,7 @@ gcContentOptimize conf regexes oligs@(OligSet fwd rvsd splitting) = do
     let dna = assemble oligs
     varSequences <- mutate organismType regexes dna indexes
     let variants = map (buildOligSet splitting) varSequences
-    return $ minimumBy scoreCmp variants
+    traceMarker "gcContentOptimize: line 29" $ return $ minimumBy scoreCmp variants
   where
     distanceToTarget :: Double -> Olig -> Double
     distanceToTarget targetGC (Olig sequ _ _) = abs (gcContent sequ - targetGC)

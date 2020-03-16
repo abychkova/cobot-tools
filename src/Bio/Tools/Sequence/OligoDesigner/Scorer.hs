@@ -2,12 +2,10 @@ module Bio.Tools.Sequence.OligoDesigner.Scorer
  (rnaScore
  ,commonScore
  ,rnaMatrixScore
- ,rnaMatrix
  ,gcContentDifference
  ,gcContent
  ,oligsGCContentScore
  ,dnaGCContentScore
- ,rebuildMatrix
  ) where
 
 import qualified Bio.Tools.Sequence.CodonOptimization         as CodonOptimization (score, CodonOptimizationConfig(..))
@@ -18,13 +16,13 @@ import           Bio.Tools.Sequence.OligoDesigner.Types       (MatrixCell (..),
                                                                OligsDesignerConfig (..),
                                                                standardTemperature, emptyMatrixCell)
 import           Bio.Tools.Sequence.OligoDesigner.Utils       (assemble, mixOligs)
+import           Bio.Tools.Sequence.OligoDesigner.RNAMatrixBuilder       (rnaMatrix)
 import           Bio.Tools.Sequence.ViennaRNA.Internal.Cofold (cofold)
-import           Data.Matrix                                  (Matrix (..),
-                                                               matrix, (!))
 import Bio.NucleicAcid.Nucleotide (DNA(..))
-import Debug.Trace (trace)
+import Debug.Trace 
 import Bio.Tools.Sequence.CodonOptimization.Types (gcContentDesired)
 import Data.Text (pack)
+import Data.Matrix (Matrix, nrows, ncols, (!))
 
 commonScore :: OligsDesignerConfig -> OligSet -> Double
 commonScore (OligsDesignerConfig codonConf _ rnaF oligsGCF gcF _ _) oligs = scoreValue
@@ -33,45 +31,6 @@ commonScore (OligsDesignerConfig codonConf _ rnaF oligsGCF gcF _ _) oligs = scor
     oligsGCValue = gcContentDifference oligs
     gcScoreValue = oligsGCContentScore oligs (gcContentDesired codonConf)
     scoreValue = rnaF * rnaScoreValue + oligsGCF * oligsGCValue + gcF * gcScoreValue
-
-rnaMatrix :: OligSet -> Matrix MatrixCell
-rnaMatrix oligs = matrix rowCount rowCount generator
-  where
-    allOligs = mixOligs oligs
-    rowCount = length allOligs
-
-    generator :: (Int, Int) -> MatrixCell
-    generator (i, j) | i > j     = emptyMatrixCell --ignore all above diagonal
-                     | otherwise = MatrixCell (OligLight (show dna1) olig1) (OligLight (show dna2) olig2) score
-      where
-        olig1@(Olig dna1 _ _) = allOligs !! (i - 1)
-        olig2@(Olig dna2 _ _) = allOligs !! (j - 1)
-        score = fst $ cofold standardTemperature (dna1, dna2)
-
-rebuildMatrix :: Matrix MatrixCell -> OligSet -> Matrix MatrixCell
-rebuildMatrix oldMatrix oligs = newMatrix
-  where
-    newMatrix = matrix rowCount rowCount generator
-    allOligs = mixOligs oligs
-    rowCount = length allOligs
-
-    generator :: (Int, Int) -> MatrixCell
-    generator (i, j) | i > j     = emptyMatrixCell
-                     | otherwise = newMatrixCell
-      where
-        oldCell@(MatrixCell (OligLight _ (Olig oldDna1 _ _)) (OligLight _ (Olig oldDna2 _ _)) _) = oldMatrix ! (i, j)
---        oldCell@(MatrixCell (Olig oldDna1 _ _) (Olig oldDna2 _ _) _) = oldMatrix ! (i, j)
-        olig1@(Olig dna1 start1 end1) = allOligs !! (i - 1)
-        olig2@(Olig dna2 start2 end2) = allOligs !! (j - 1)
-        
-        olig1L = OligLight (show dna1) olig1
-        olig2L = OligLight (show dna2) olig2
-
-        --FIXME: слишком страшно с переводом в строку. это реально нужно для скорости?        
-        newMatrixCell = if oldDna1 == dna1 && oldDna2 == dna2
-            then oldCell
---            else MatrixCell olig1 olig2 (fst $ cofold standardTemperature (dna1, dna2))
-            else MatrixCell olig1L olig2L (fst $ cofold standardTemperature (dna1, dna2))
 
 rnaMatrixScore :: Matrix MatrixCell -> Float
 rnaMatrixScore oligsMatrix = aboveDiagonalScore - otherScore

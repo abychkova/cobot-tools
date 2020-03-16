@@ -32,7 +32,7 @@ import           Data.Map                                       as Map (lookup)
 import           Data.Maybe                                     (fromMaybe)
 import           System.Random                                  (StdGen,
                                                                  randomR)
-import Debug.Trace (trace)
+import Debug.Trace 
 import Bio.Tools.Sequence.CodonOptimization (CodonOptimizationConfig(..))
 import Text.Regex.TDFA (Regex, makeRegex, match)
 import Bio.Tools.Sequence.OligoDesigner.Prettifier (prettyDNA)
@@ -112,7 +112,7 @@ translate = map cNA
 --FIXME: что если вернется пустой список вариантов, потому что во всех есть запрещенки? что сказать пользователю?
 mutate :: Organism -> [Regex] -> [DNA] -> (Int, Int) -> State StdGen [[DNA]]
 mutate organism regexes dna interval@(start, end) | validateInterval interval (length dna) = error ("invalid interval for mutation: " ++ show interval)
-                                          | otherwise = do
+                                                  | otherwise = do
     let sliceIndex = (start - 1) * 3
     let sliceEndIndex = (end - 1) * 3 + 3
     let begin = take sliceIndex dna
@@ -120,7 +120,7 @@ mutate organism regexes dna interval@(start, end) | validateInterval interval (l
     let final = drop sliceEndIndex dna
     variants <- mutateSlice organism mutated
     let resultSequences = map (\var -> begin ++ var ++ final) variants
-    return $ filter (notMatch regexes) resultSequences
+    traceMarker "mutate: line 123" $ return $ filter (notMatch regexes) resultSequences --FIXME: пусть проверка запрещенок будет не здесь!! 
 
 --TODO: test me
 notMatch :: [Regex] -> [DNA] -> Bool

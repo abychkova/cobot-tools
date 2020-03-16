@@ -6,13 +6,14 @@ import Bio.Tools.Sequence.CodonOptimization.Types (Organism(..), CodonOptimizati
 import Bio.Tools.Sequence.OligoDesigner.Types (OligsDesignerConfig(..), OligSet(..), OligSplitting(..), MatrixCell(..), Olig(..))
 import Data.Default (def)
 import Debug.Trace (trace)
-import Bio.Tools.Sequence.OligoDesigner.Scorer (rnaMatrix, commonScore, rebuildMatrix)
+import Bio.Tools.Sequence.OligoDesigner.Scorer (commonScore)
 import Control.Monad.Except (runExcept)
 import Control.DeepSeq (force)
 import Bio.Tools.Sequence.CodonOptimization (optimizeCodonForAA)
 import Bio.Tools.Sequence.OligoDesigner.Optimizer.IterativeOptimizer (optimize)
 import Control.Monad.State (evalState)
 import Bio.Tools.Sequence.OligoDesigner.Optimizer.RNACofoldOptimizer (rnaOptimize)
+import Bio.Tools.Sequence.OligoDesigner.RNAMatrixBuilder (rnaMatrix, rebuildMatrix)
 import Bio.Tools.Sequence.OligoDesigner.Optimizer.GCContentOptimizer (gcContentOptimize)
 import Bio.Tools.Sequence.OligoDesigner.Prettifier (prettyOligSet, prettyDNA)
 import Data.Matrix (matrix)
@@ -22,14 +23,14 @@ algoSpec :: Spec
 algoSpec =
     describe "algoSpec" $ do
         designOligsAASpec
---        optCodonSpec
---        designOligsDNASpec
---        splitToOligsAndOptimizeSpec
---        splitToOligsAndRnaOptimizeSpec
---        splitToOligsAndGCContentOptimizer
---        splitToOligsAndRnaMatrix
---        rebuildMatrixSpec
---        mutateSpec
+        optCodonSpec
+        designOligsDNASpec
+        splitToOligsAndOptimizeSpec
+        splitToOligsAndRnaOptimizeSpec
+        splitToOligsAndGCContentOptimizer
+        splitToOligsAndRnaMatrix
+        rebuildMatrixSpec
+        mutateSpec
 
 --56.9986 seconds = 26 codon optimization +  37 rnaOptimization
 designOligsAASpec :: Spec

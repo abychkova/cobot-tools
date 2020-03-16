@@ -26,8 +26,8 @@ fixForbidden gen conf regexes dna = do
 fixIterative :: Organism -> [Regex] -> Int -> [DNA] -> State StdGen [DNA]
 fixIterative organismType regexes 0 dna = trace "zero iteration" $ return []
 fixIterative organismType regexes iteration dna =
-    case getPositions regexes (prettyDNA dna) of
-        []        -> trace "empty positions" $ return dna
+    case getPositions (prettyDNA dna) of
+        []        -> return dna
         positions -> fixPositions positions
   where
     fixPositions :: [(Int, Int)] -> State StdGen [DNA]
@@ -37,9 +37,9 @@ fixIterative organismType regexes iteration dna =
             then fixIterative organismType regexes (iteration - 1) dna --рассчитываем, что в следующей мутации будут другие варианты
             else return $ head variants
 
-getPositions :: [Regex] -> String -> [(Int, Int)]
-getPositions regexes dna = res
-  where
-    matches = [regex `match` dna :: (String, String, String) | regex <- regexes]
-    founded = filter (\(begin, found, final) -> not (null found)) matches
-    res = [(getAANumber $ length begin, getAANumber (length begin + length final)) | (begin, found, final) <- founded]
+    getPositions :: String -> [(Int, Int)]
+    getPositions dna = res
+      where
+        matches = [regex `match` dna :: (String, String, String) | regex <- regexes]
+        founded = filter (\(begin, found, final) -> not (null found)) matches
+        res = [(getAANumber $ length begin, getAANumber (length begin + length final)) | (begin, found, final) <- founded]

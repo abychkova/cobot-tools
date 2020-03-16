@@ -2,13 +2,13 @@ module Bio.Tools.Sequence.OligoDesigner.Optimizer.IterativeOptimizer(
     optimize
 ) where
 
-import Bio.Tools.Sequence.OligoDesigner.Scorer (commonScore, rnaMatrix)
+import Bio.Tools.Sequence.OligoDesigner.Scorer (commonScore)
 import Bio.Tools.Sequence.OligoDesigner.Optimizer.GCContentOptimizer (gcContentOptimize)
 import Bio.Tools.Sequence.OligoDesigner.Optimizer.RNACofoldOptimizer (rnaOptimize)
 import System.Random (StdGen)
 import Control.Monad.State (State)
 import Bio.Tools.Sequence.OligoDesigner.Types (OligsDesignerConfig(..), OligSet)
-import Debug.Trace (trace)
+import Debug.Trace 
 import Text.Regex.TDFA (Regex)
 
 
@@ -19,7 +19,7 @@ optimize conf regexes oligs = optimizeIteration 0 [(oligs, commonScore conf olig
     optimizationStep oligs =  do
        result1 <- rnaOptimize conf regexes oligs
        result2 <- gcContentOptimize conf regexes result1
-       return [(result2, commonScore conf result2)]
+       traceMarker "optimizationStep: line 22" $ return [(result2, commonScore conf result2)]
 
     optimizeIteration :: Int -> [(OligSet, Double)] -> State StdGen OligSet
     optimizeIteration iteration results | iteration >= maxOptimizationIteration conf =
