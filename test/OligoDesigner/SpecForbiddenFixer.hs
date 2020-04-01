@@ -19,6 +19,8 @@ fixerSpec =
     describe "fixerSpec" $ do
         forbiddenFixerSpec
         forbiddenConstantFixerSpec
+        fixTowForbiddenSpec
+        fixTowForbiddenRealDataSpec
 
 forbiddenFixerSpec :: Spec
 forbiddenFixerSpec =
@@ -46,3 +48,31 @@ forbiddenConstantFixerSpec =
         
         let (Left msg) = runExcept $ fixForbidden gen conf [regexp] dna
         msg `shouldBe` "cannot fix this shit"
+        
+fixTowForbiddenSpec :: Spec
+fixTowForbiddenSpec =
+    describe "fixTowForbiddenSpec" $
+    it "" $ do
+        let gen = mkStdGen 3359
+        let regexpStr = ["CAGG", "AATAAA", "GCCGCCATGG"] :: [String]
+        let regexps = map makeRegex regexpStr :: [Regex]
+        let conf = OligsDesignerConfig def def 0 0 0 0 5
+        let dna = "CAGGCCGCCATGGGCAATAAACAGGTG" --CAGG  AATAAA  GCCGCCATGG
+
+        let (Right res) = runExcept $ fixForbidden gen conf regexps dna
+        let matches = [regexp `match` prettyDNA res :: Bool | regexp <- regexps]
+        trace (prettyDNA res) $ filter (== True) matches `shouldBe` []
+        
+fixTowForbiddenRealDataSpec :: Spec
+fixTowForbiddenRealDataSpec =
+    describe "fixTowForbiddenRealDataSpec" $
+    it "" $ do
+        let gen = mkStdGen 3358
+        let regexpStr = ["CAGG", "AATAAA", "GCCGCCATGG"] :: [String]
+        let regexps = map makeRegex regexpStr :: [Regex]
+        let conf = OligsDesignerConfig def def 0 0 0 0 5
+        let dna = "CAGGTGCAGCTGCAGGAGAGCGGCGGCGGCCTGGTGCAGCCTGGCGGCTCTCTGAGACTGTCTTGTGCCGCCTCTGGCATCCAGTTCAAGTTCCACAACATGGGCTGGGGCAGACAAGCCCCTGGCAAGCAGAGAGAGCACGTGGCCGCCATGGATCACGGCAGAAGAACCATCTACGCCGACCACGTGAAGGGCAGATTCACCATCTCTAGAGACAACACCAGGAACACCGTGTACCTGCAGATGAACTCTCTGAAGGCCGAGGACACCGCCATCTACTACTGCAAGGCCTCTGCCGGCAGAAGAGTGTACTGGGGCCAAGGCACCATGGTGACCGTGTCTTCT" --CAGG  AATAAA  GCCGCCATGG
+
+        let (Right res) = runExcept $ fixForbidden gen conf regexps dna
+        let matches = [regexp `match` prettyDNA res :: Bool | regexp <- regexps]
+        trace (prettyDNA res) $ filter (== True) matches `shouldBe` []
