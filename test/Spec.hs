@@ -5,7 +5,6 @@ import           OligoDesigner.SpecRNAMatrixBuilder
 import           OligoDesigner.SpecIterationOptimizer
 import           OligoDesigner.SpecGCContentOptimizer
 import           OligoDesigner.SpecUtils
-import           OligoDesigner.SpecAlgo
 import           OligoDesigner.SpecForbiddenFixer
 import           SpecCodonOptimization
 import           SpecPrimers
@@ -34,6 +33,5 @@ main = do
          rnaOptimizerSpec
          gcContentOptimizerSpec
          optimizerSpec
---         algoSpec
          fixerSpec
          matrixBuilderSpec

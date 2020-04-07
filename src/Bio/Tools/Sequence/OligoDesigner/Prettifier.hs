@@ -3,11 +3,17 @@ module Bio.Tools.Sequence.OligoDesigner.Prettifier(
    ,prettySplitting
    ,prettyOlig
    ,prettyOligSet
+   ,prettyMatrixCell
 ) where
 
 import Bio.NucleicAcid.Nucleotide (DNA(..))
-import Bio.Tools.Sequence.OligoDesigner.Types (OligSplitting(..), Olig(..), OligSet(..))
+import Bio.Tools.Sequence.OligoDesigner.Types (OligSplitting(..), Olig(..), OligSet(..),
+            standardTemperature, OligsDesignerConfig(..), MatrixCell(..), OligLight(..))
 import Data.List (foldl')
+import Bio.Tools.Sequence.ViennaRNA.Fold (fold)
+import Text.Regex.TDFA (Regex)
+import Bio.Tools.Sequence.CodonOptimization (gcContentDesired)
+import Data.Matrix (Matrix, nrows, ncols, toList, toLists)
 
 
 prettyDNA :: [DNA] -> String
@@ -33,6 +39,19 @@ prettyOlig (Olig dna start end) = prettyDNA dna ++ " [" ++ show start ++ ", " ++
 prettyOligSet :: OligSet -> String
 prettyOligSet oligs = concatMap prettyOlig (mixOligs oligs)
 
+prettyMatrixCell :: Matrix MatrixCell -> String
+prettyMatrixCell mtx = str
+  where
+    str = concatMap rowToStr (toLists mtx)
+
+    rowToStr :: [MatrixCell] -> String
+    rowToStr cells = concatMap cellToStr cells  ++ "\n"
+    
+    cellToStr :: MatrixCell -> String
+    cellToStr (MatrixCell _ _ rna) = show rna ++ "\t"
+    
+    
+-- TODO: transfer this into Utils
 mixOligs :: OligSet -> [Olig]
 mixOligs (OligSet forward reversed _) = mix forward reversed
   where

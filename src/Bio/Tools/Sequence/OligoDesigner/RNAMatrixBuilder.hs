@@ -5,10 +5,11 @@ module Bio.Tools.Sequence.OligoDesigner.RNAMatrixBuilder(
 
 
 import Data.Matrix (Matrix, matrix, Matrix(..), (!))
-import Bio.Tools.Sequence.OligoDesigner.Types (OligSet, Olig(..), MatrixCell(..), OligLight(..), emptyMatrixCell, standardTemperature)
+import Bio.Tools.Sequence.OligoDesigner.Types (OligSet, Olig(..), MatrixCell(..), OligLight(..), emptyMatrixCell, standardTemperature, forward, reversed)
 import Bio.Tools.Sequence.OligoDesigner.Utils (mixOligs)
 import Bio.Tools.Sequence.OligoDesigner.Prettifier (prettyDNA)
 import Bio.Tools.Sequence.ViennaRNA.Cofold (cofold)
+import Debug.Trace (trace)
 
 rnaMatrix :: OligSet -> Matrix MatrixCell
 rnaMatrix oligs = matrix rowCount rowCount generator
@@ -36,15 +37,12 @@ rebuildMatrix oldMatrix oligs = newMatrix
                      | otherwise = newMatrixCell
       where
         oldCell@(MatrixCell (OligLight _ (Olig oldDna1 _ _)) (OligLight _ (Olig oldDna2 _ _)) _) = oldMatrix ! (i, j)
---        oldCell@(MatrixCell (Olig oldDna1 _ _) (Olig oldDna2 _ _) _) = oldMatrix ! (i, j)
         olig1@(Olig dna1 start1 end1) = allOligs !! (i - 1)
         olig2@(Olig dna2 start2 end2) = allOligs !! (j - 1)
 
         olig1L = OligLight (prettyDNA dna1) olig1
         olig2L = OligLight (prettyDNA dna2) olig2
 
-        --FIXME: слишком страшно с переводом в строку. это реально нужно для скорости?
         newMatrixCell = if oldDna1 == dna1 && oldDna2 == dna2
             then oldCell
---            else MatrixCell olig1 olig2 (fst $ cofold standardTemperature (dna1, dna2))
             else MatrixCell olig1L olig2L (fst $ cofold standardTemperature (dna1, dna2))

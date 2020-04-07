@@ -2,37 +2,34 @@ module Bio.Tools.Sequence.OligoDesigner.Optimizer.GCContentOptimizer where
 
 import Bio.NucleicAcid.Nucleotide (DNA(..))
 import Bio.Tools.Sequence.OligoDesigner.Types (Olig(..), OligsDesignerConfig(..), OligSet(..))
-import Bio.Tools.Sequence.OligoDesigner.Utils (mutateSlice, assemble, getAANumber, mutate, buildOligSet)
-import Bio.Tools.Sequence.OligoDesigner.Scorer (gcContent, gcContentDifference)
+import Bio.Tools.Sequence.OligoDesigner.Utils (mutateSlice, assemble, getAAIndex, mutate, buildOligSet, compareBySecond)
+import Bio.Tools.Sequence.OligoDesigner.Scorer (gcContent, oligsGCContentDifference)
 import Control.Monad.State (State)
 import System.Random (StdGen)
 import Bio.Tools.Sequence.CodonOptimization.Types (gcContentDesired, organism)
 import Data.List (maximumBy, minimumBy, findIndex)
 import Bio.Tools.Sequence.CodonOptimization (CodonOptimizationConfig(..))
-import Debug.Trace 
+import Debug.Trace
 import Text.Regex.TDFA (Regex)
+import Bio.Tools.Sequence.OligoDesigner.Prettifier (prettyOlig, prettyDNA)
 
 gcContentOptimize :: OligsDesignerConfig -> [Regex] -> OligSet -> State StdGen OligSet
 gcContentOptimize conf regexes oligs@(OligSet fwd rvsd splitting) = do
     let targetGC = gcContentDesired $ codonOptimizationConfig conf
     let organismType = organism $ codonOptimizationConfig conf
     let allOligs = fwd ++ rvsd
-    let maximumOlig = maximumBy gcContentComarator allOligs
-    let minimumOlig = minimumBy gcContentComarator allOligs
+    let oligsToGc = map (\o -> (o, gcContent $ sequDNA o)) allOligs
+    let maximumOlig = fst $ maximumBy compareBySecond oligsToGc
+    let minimumOlig = fst $ minimumBy compareBySecond oligsToGc
     let farthestFromTarget =
             if distanceToTarget targetGC minimumOlig > distanceToTarget targetGC maximumOlig then minimumOlig else maximumOlig
 
-    let indexes = (getAANumber $ start farthestFromTarget, getAANumber $ end farthestFromTarget - 1)
+    let indexesToMutate = (getAAIndex $ start farthestFromTarget, getAAIndex $ end farthestFromTarget - 1)
     let dna = assemble oligs
-    varSequences <- mutate organismType regexes dna indexes
+    varSequences <- mutate organismType regexes dna indexesToMutate
     let variants = map (buildOligSet splitting) varSequences
-    traceMarker "gcContentOptimize: line 29" $ return $ minimumBy scoreCmp variants
+    let varsToScore = map (\vars -> (vars, oligsGCContentDifference vars)) variants
+    return $ fst $ minimumBy compareBySecond varsToScore
   where
     distanceToTarget :: Double -> Olig -> Double
     distanceToTarget targetGC (Olig sequ _ _) = abs (gcContent sequ - targetGC)
-
-    scoreCmp :: OligSet -> OligSet -> Ordering
-    scoreCmp oligs1 oligs2 = compare (gcContentDifference oligs1) (gcContentDifference oligs2)
-
-gcContentComarator :: Olig -> Olig -> Ordering
-gcContentComarator o1 o2 = compare (gcContent $ sequDNA o1) (gcContent $ sequDNA o2)

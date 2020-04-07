@@ -44,6 +44,7 @@ utilsSpec =
         sliceOutOfBoundIndexSpec
         sliceWrongIndexesSpec
 
+        buildOligSetSpec
         buildEmptyOligSetSpec
         buildOligSetForEmptySplittingSpec
         buildOligSetSplittingSpec
@@ -233,6 +234,28 @@ buildOligSetSplittingSpec =
                                 splitting
         assemble res `shouldBe` dna
 
+buildOligSetSpec :: Spec
+buildOligSetSpec =
+    describe "buildOligSetSpec" $
+    it "should correct build oligs from splitting and sequence" $ do
+        let splitting = OligSplitting [(0, 56), (56, 112), (112, 168), (168, 224), (224, 280)]
+                                                               [(28, 84), (84, 140), (140, 196), (196, 252), (252, 306)]
+        let dna = "GACATACAAATGACTCAAAGTCCATCTACTCTATCCGCGAGTGTCGGCGACCGCGTAACTATTACGTGCAGGGCTTCACAAAGCATCGGTTCGGCTTTAGCATGGTATCAGCAGAAGCCTGGGAAAGCTCCTAAGTTACTGATCTATAAGGCAAGTGCCCTGGAGAACGGTGTTCCGTCTAGGTTTTCGGGCTCTGGTAGTGGGACCGAGTTCACACTGACAATAAGCAGTCTCCAACCCGATGATTTCGCCACCTACTACTGCCAGCACCTGACCTTCGGACAAGGGACGAGGTTGGAAATCAAA"
+        let res = buildOligSet splitting dna
+        res `shouldBe` OligSet
+                          [Olig "GACATACAAATGACTCAAAGTCCATCTACTCTATCCGCGAGTGTCGGCGACCGCGT" 0 56,
+                           Olig "AACTATTACGTGCAGGGCTTCACAAAGCATCGGTTCGGCTTTAGCATGGTATCAGC" 56 112,
+                           Olig "AGAAGCCTGGGAAAGCTCCTAAGTTACTGATCTATAAGGCAAGTGCCCTGGAGAAC" 112 168,
+                           Olig "GGTGTTCCGTCTAGGTTTTCGGGCTCTGGTAGTGGGACCGAGTTCACACTGACAAT" 168 224,
+                           Olig "AAGCAGTCTCCAACCCGATGATTTCGCCACCTACTACTGCCAGCACCTGACCTTCG" 224 280]
+                          [Olig "GCTTTGTGAAGCCCTGCACGTAATAGTTACGCGGTCGCCGACACTCGCGGATAGAG" 28 84,
+                           Olig "AGTAACTTAGGAGCTTTCCCAGGCTTCTGCTGATACCATGCTAAAGCCGAACCGAT" 84 140,
+                           Olig "CAGAGCCCGAAAACCTAGACGGAACACCGTTCTCCAGGGCACTTGCCTTATAGATC" 140 196,
+                           Olig "GGCGAAATCATCGGGTTGGAGACTGCTTATTGTCAGTGTGAACTCGGTCCCACTAC" 196 252,
+                           Olig "TTTGATTTCCAACCTCGTCCCTTGTCCGAAGGTCAGGTGCTGGCAGTAGTAGGT" 252 306]
+                         splitting
+        assemble res `shouldBe` dna
+
 buildOligSetWithGapSplittingSpec :: Spec
 buildOligSetWithGapSplittingSpec =
     describe "buildOligSetWithGapSplittingSpec" $
@@ -387,8 +410,13 @@ mutateSliceRealRandomSpec =
     it "" $ do
         let gen = mkStdGen 9
         let res = evalState (mutateSlice CHO "TCTTTGCCGAACGAGGGCATG") gen
-        res `shouldBe` ["TCTTTGCCGAACGAGGGCATG", "AGCTTGCCGAACGAGGGCATG", "TCTCTCCCGAACGAGGGCATG", "TCTTTGCCAAACGAGGGCATG",
-            "TCTTTGCCGAATGAGGGCATG", "TCTTTGCCGAACGAAGGCATG", "TCTTTGCCGAACGAGGGAATG"]
+        elem "TCTTTGCCGAACGAGGGCATG" res `shouldBe` True
+        elem "AGCTTGCCGAACGAGGGCATG" res `shouldBe` True
+        elem "TCTCTCCCGAACGAGGGCATG" res `shouldBe` True
+        elem "TCTTTGCCAAACGAGGGCATG" res `shouldBe` True
+        elem "TCTTTGCCGAATGAGGGCATG" res `shouldBe` True
+        elem "TCTTTGCCGAACGAAGGCATG" res `shouldBe` True
+        elem "TCTTTGCCGAACGAGGGAATG" res `shouldBe` True
 
 --TODO: test me with forbidden regexp
 mutateSpec :: Spec

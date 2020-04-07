@@ -59,7 +59,8 @@ split (OligsSplittingConfig maxOligSize quality minOverlap) sequLen = do
 
 
 strand5Coords :: OligSize -> GapSize -> [Int] -> [(Int, Int)]
-strand5Coords size gap = map toCoords where
+strand5Coords size gap = map toCoords 
+  where
     toCoords :: Int -> (Int, Int)
     toCoords num = (x, y) where
         x = num * (size + gap)

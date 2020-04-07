@@ -9,7 +9,7 @@ import Control.Monad.State (evalState)
 import System.Random (mkStdGen)
 import Bio.Tools.Sequence.CodonOptimization (CodonOptimizationConfig(..))
 import Bio.Tools.Sequence.CodonOptimization.Types (Organism(..), defaultForbiddenRegexp)
-import Bio.Tools.Sequence.OligoDesigner.Scorer (gcContentDifference)
+import Bio.Tools.Sequence.OligoDesigner.Scorer (oligsGCContentDifference)
 import Debug.Trace (trace)
 
 --TODO: test me with forbidden regexp
@@ -33,7 +33,7 @@ optimizeGCContentSpec =
         let codonConf = CodonOptimizationConfig CHO 3 1 1 0.5 1.4 40 0.001 2.6 100 1 43 defaultForbiddenRegexp
         let conf = OligsDesignerConfig codonConf def 0 0 0 0 0
         let res = evalState (gcContentOptimize conf [] oligs) gen
-        gcContentDifference res `shouldSatisfy` (<= gcContentDifference oligs)
+        oligsGCContentDifference res `shouldSatisfy` (<= oligsGCContentDifference oligs)
         res `shouldBe` OligSet
                         [Olig "TTGATCTTCC" 0 10, Olig "TTATACGGAA" 10 20] -- 40% & 30%
                         [Olig "TATAAGGAAG" 5 15, Olig "TTGTTTCCG" 15 24]  -- 30% & 40%
@@ -52,7 +52,7 @@ optimizeGCContentForDifferentTargetSpec =
         let codonConf = CodonOptimizationConfig CHO 3 1 1 0.5 1.4 40 0.001 2.6 100 1 20 defaultForbiddenRegexp
         let conf = OligsDesignerConfig codonConf def 0 0 0 0 0
         let res = evalState (gcContentOptimize conf [] oligs) gen
-        gcContentDifference res `shouldSatisfy` (<= gcContentDifference oligs)
+        oligsGCContentDifference res `shouldSatisfy` (<= oligsGCContentDifference oligs)
         res `shouldBe` OligSet
                         [Olig "TTGATCTTCT" 0 10, Olig "TGATAAGAAA" 10 20] -- 30% & 20%
                         [Olig "TATCAAGAAG" 5 15, Olig "TTGTTTTCT" 15 24]  -- 30% & 22%
@@ -79,7 +79,7 @@ optimizeGCContentRealDataSpec =
         let gen = mkStdGen 6637
         let conf = OligsDesignerConfig def def 0 0 0 0 0
         let res = evalState (gcContentOptimize conf [] oligs) gen
-        gcContentDifference res `shouldSatisfy` (<= gcContentDifference oligs)
+        oligsGCContentDifference res `shouldSatisfy` (<= oligsGCContentDifference oligs)
         res `shouldBe` OligSet
                     [ Olig "GCTAGCACCAAGGGCCCCAGCGTGTTTCCTCTGGCCCCTAGCAGCAAGAGCACCAGCGGC" 0 60      -- 66%
                     , Olig "GGCACCGCCGCCTTAGGCTGCCTGGTGAAGGACTACTTCCCTGAGCCTGTGACCGTGAGC" 60 120    -- 65%

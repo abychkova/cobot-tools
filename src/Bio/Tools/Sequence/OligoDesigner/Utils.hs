@@ -8,7 +8,7 @@ module Bio.Tools.Sequence.OligoDesigner.Utils
  ,oneMutation
  ,mutate
  ,mutateSlice
- ,getAANumber
+ ,getAAIndex
  ,mixOligs
  ,notMatch
  ,compareBySecond
@@ -24,7 +24,7 @@ import           Bio.Tools.Sequence.OligoDesigner.Types         (Codon,
                                                                  Olig (..),
                                                                  OligBounds,
                                                                  OligSet (..),
-                                                                 OligSplitting (..))
+                                                                 OligSplitting (..), OligsDesignerConfig)
 import           Control.Monad.State                            (State, get,
                                                                  put)
 import           Data.List                                      (sortOn, nub)
@@ -36,6 +36,8 @@ import Debug.Trace
 import Bio.Tools.Sequence.CodonOptimization (CodonOptimizationConfig(..))
 import Text.Regex.TDFA (Regex, makeRegex, match)
 import Bio.Tools.Sequence.OligoDesigner.Prettifier (prettyDNA)
+import Control.Monad.State.Lazy (gets)
+import System.Random.Shuffle (shuffle')
         
 mixOligs :: OligSet -> [Olig]
 mixOligs (OligSet forward reversed _) = mix forward reversed
@@ -120,7 +122,7 @@ mutate organism regexes dna interval@(start, end) | validateInterval interval (l
     let final = drop sliceEndIndex dna
     variants <- mutateSlice organism mutated
     let resultSequences = map (\var -> begin ++ var ++ final) variants
-    traceMarker "mutate: line 123" $ return $ filter (notMatch regexes) resultSequences --FIXME: пусть проверка запрещенок будет не здесь!! 
+    return $ filter (notMatch regexes) resultSequences --FIXME: пусть проверка запрещенок будет не здесь!! 
 
 --TODO: test me
 notMatch :: [Regex] -> [DNA] -> Bool
@@ -135,7 +137,7 @@ mutateSlice organism mutated = mutateEachCodon 0 [mutated]
   where
     mutateEachCodon :: Int -> [[DNA]] -> State StdGen [[DNA]]
     mutateEachCodon index acc
-        | index * 3 >= length mutated = return $ nub acc
+        | index * 3 >= length mutated = gets (nub . shuffle' acc (length acc))
         | otherwise = do
             let codonIndex = index * 3
             let codonEndIndex = codonIndex + 3
@@ -145,8 +147,8 @@ mutateSlice organism mutated = mutateEachCodon 0 [mutated]
             mutateEachCodon (index + 1) (acc ++ [variant])
             
 --TODO: test me      
-getAANumber :: Int -> Int
-getAANumber coordinate = ceiling (realToFrac (coordinate + 1) / 3)
+getAAIndex :: Int -> Int
+getAAIndex coordinate = ceiling (realToFrac (coordinate + 1) / 3)
 
 compareBySecond :: Ord b => (a, b) -> (a, b) -> Ordering
 compareBySecond p1 p2 = compare (snd p1) (snd p2)

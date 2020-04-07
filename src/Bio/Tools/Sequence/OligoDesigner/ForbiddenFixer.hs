@@ -10,7 +10,7 @@ import Control.Monad.State (State, evalState)
 import Control.Monad.Except (Except, throwError)
 import Text.Regex.TDFA (Regex, makeRegex, match, getAllMatches)
 import Bio.Tools.Sequence.OligoDesigner.Prettifier (prettyDNA)
-import Bio.Tools.Sequence.OligoDesigner.Utils (mutate, getAANumber, notMatch)
+import Bio.Tools.Sequence.OligoDesigner.Utils (mutate, getAAIndex, notMatch)
 import Bio.Tools.Sequence.OligoDesigner.Types (OligsDesignerConfig(..))
 import Bio.Tools.Sequence.CodonOptimization (forbiddenSequence, organism)
 import Bio.Tools.Sequence.CodonOptimization.Types (Organism)
@@ -24,11 +24,11 @@ fixForbidden gen conf regexes dna = do
     if null res then throwError "cannot fix this shit" else return res
 
 fixIterative :: Organism -> [Regex] -> Int -> [DNA] -> State StdGen [DNA]
-fixIterative organismType regexes 0 dna = return []
+fixIterative organismType regexes 0 dna         = return []
 fixIterative organismType regexes iteration dna =
     case getPositions (prettyDNA dna) of
         []        -> return dna
-        positions -> trace ("dna:" ++ prettyDNA dna) $ trace ("positions:" ++ show positions) $ fixPositions positions [dna]
+        positions -> trace ("dna:" ++ prettyDNA dna) $ trace ("fix positions:" ++ show positions) $ fixPositions positions [dna]
   where
     fixPositions :: [(Int, Int)] -> [[DNA]] -> State StdGen [DNA]
     fixPositions [] results               = do
@@ -42,4 +42,4 @@ fixIterative organismType regexes iteration dna =
     getPositions dna = res
       where
         matches = concat [getAllMatches (regex `match` dna) :: [(Int, Int)] | regex <- regexes]
-        res = [(getAANumber begin, getAANumber (begin + len)) | (begin, len) <- matches]
+        res = [(getAAIndex begin, getAAIndex (begin + len)) | (begin, len) <- matches]

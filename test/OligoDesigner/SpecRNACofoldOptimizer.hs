@@ -1,7 +1,8 @@
 module OligoDesigner.SpecRNACofoldOptimizer where
 
 import Test.Hspec (Spec, shouldBe, it, describe, shouldThrow, errorCall, shouldSatisfy)
-import Bio.Tools.Sequence.OligoDesigner.Scorer (commonScore)
+import Bio.Tools.Sequence.OligoDesigner.Scorer (commonScore, rnaScore)
+import Bio.Tools.Sequence.OligoDesigner.Prettifier (prettyMatrixCell)
 import Bio.Tools.Sequence.OligoDesigner.Optimizer.RNACofoldOptimizer (maxPairMutationIndexes, minPairMutationIndexes,
     mutationIndexes, rnaOptimize)
 import Bio.Tools.Sequence.OligoDesigner.Types     (MatrixCell(..), OligBounds, OligSplitting(..), OligSet(..),
@@ -13,6 +14,7 @@ import Bio.Tools.Sequence.CodonOptimization.Types (Organism(..))
 import Data.Default (def)
 import Control.Exception (evaluate)
 import Bio.Tools.Sequence.OligoDesigner.Utils (assemble, translate)
+import Debug.Trace (trace)
 
 --TODO: test me with forbidden regexp
 rnaOptimizerSpec :: Spec
@@ -116,10 +118,10 @@ mutationIndexesSpec =
         res `shouldBe` [(7, 9), (10, 17), (18, 30)]
   where
     generator :: (Int, Int) -> MatrixCell
-    generator (1, 2) = MatrixCell (OligLight "" (Olig "" 0 25)) (OligLight "" (Olig "" 20 36)) (fromIntegral (-100500))
-    generator (2, 5) = MatrixCell (OligLight "" (Olig "" 29 51)) (OligLight "" (Olig "" 53 88)) 100500
-    generator (x, y) | abs (x - y) == 1 = MatrixCell (OligLight "" (Olig "" x y)) (OligLight "" (Olig "" x y)) (fromIntegral $ (-1) * x)
-                     | otherwise        = MatrixCell (OligLight "" (Olig "" x y)) (OligLight "" (Olig "" x y)) (fromIntegral x)
+    generator (1, 2) = MatrixCell (OligLight "" (Olig "" 0 25)) (OligLight "" (Olig "" 20 36)) (-10)
+    generator (2, 5) = MatrixCell (OligLight "" (Olig "" 29 51)) (OligLight "" (Olig "" 53 88)) (-15)
+    generator (x, y) | x > y     = MatrixCell def def 0
+                     | otherwise = MatrixCell (OligLight "" (Olig "" x y)) (OligLight "" (Olig "" x y)) (-12)
 
 mutationIndexesWithoutMinSpec :: Spec
 mutationIndexesWithoutMinSpec =
@@ -129,11 +131,11 @@ mutationIndexesWithoutMinSpec =
         let res = mutationIndexes mtx
         res `shouldBe` [(10, 17), (18, 30)]
   where
-    generator :: (Int, Int) -> MatrixCell
-    generator (1, 2) = MatrixCell (OligLight "" (Olig "" 0 25)) (OligLight "" (Olig "" 35 51)) (fromIntegral (-100500))
-    generator (2, 5) = MatrixCell (OligLight "" (Olig "" 29 51)) (OligLight "" (Olig "" 53 88)) 100500
-    generator (x, y) | abs (x - y) == 1 = MatrixCell (OligLight "" (Olig "" x y)) (OligLight "" (Olig "" x y)) (fromIntegral $ (-1) * x)
-                     | otherwise        = MatrixCell (OligLight "" (Olig "" x y)) (OligLight "" (Olig "" x y)) (fromIntegral x)
+      generator :: (Int, Int) -> MatrixCell
+      generator (1, 2) = MatrixCell (OligLight "" (Olig "" 0 25)) (OligLight "" (Olig "" 35 51)) (-10)
+      generator (2, 5) = MatrixCell (OligLight "" (Olig "" 29 51)) (OligLight "" (Olig "" 53 88)) (-15)
+      generator (x, y) | x > y     = MatrixCell def def 0
+                       | otherwise = MatrixCell (OligLight "" (Olig "" x y)) (OligLight "" (Olig "" x y)) (-12)
 
 rnaOptimizeSpec :: Spec
 rnaOptimizeSpec =
@@ -144,10 +146,10 @@ rnaOptimizeSpec =
                 OligSet
                     [ Olig "GCTAGCACCAAGGGCCCCAGCGTGTTTCCTCTGGCCCCTAGCAGCAAGAGCACCAGCGGC" 0 60
                     , Olig "GGCACCGCCGCCCTGGGCTGCCTGGTGAAGGACTACTTCCCTGAGCCTGTGACCGTGAGC" 60 120
-                    , Olig "TGGAACAGCGGCGCCCTGACCAGCGGCGTGCACACCTTCCCTGCCGTGCTGCAGAGCAGC" 120 180
+                    , Olig "TGGAACAGCGGCGCCCTGACCAGCGGCGTGCACACCTTCCCTGCCGTGCTGCAGAGCAGC" 120 180 
                     , Olig "GGCCTGTACAGCCTGAGCAGCGTGGTGACCGTGCCTAGCAGCAGCCTGGGCACCCAGACC" 180 240
                     ]
-                    [ Olig "CTTCACCAGGCAGCCCAGGGCGGCGGTGCCGCCGCTGGTGCTCTTGCTGCTAGGGGCCAG" 30 90
+                    [ Olig "CTTCACCAGGCAGCCCAGGGCGGCGGTGCCGCCGCTGGTGCTCTTGCTGCTAGGGGCCAG" 30 90 
                     , Olig "CACGCCGCTGGTCAGGGCGCCGCTGTTCCAGCTCACGGTCACAGGCTCAGGGAAGTAGTC" 90 150
                     , Olig "GGTCACCACGCTGCTCAGGCTGTACAGGCCGCTGCTCTGCAGCACGGCAGGGAAGGTGTG" 150 210
                     , Olig "GCTAGGCTTGTGGTTCACGTTGCAGATGTAGGTCTGGGTGCCCAGGCTGCTGCTAGGCAC" 210 270
@@ -157,17 +159,17 @@ rnaOptimizeSpec =
         let gen = mkStdGen 499
         let res = evalState (rnaOptimize conf [] oligs) gen
 
-        assemble res `shouldBe` "GCTAGCACCAAGGGCCCCAGCGTGTTTCCTCTGGCCCCTAGCTCTAAGAGCACCAGCGGCGGCACCGCCGCCCTGGGCTGCCTGGTGAAGGACTACTTCCCTGAGCCTGTGACCGTGAGCTGGAACAGCGGCGCCCTGACCAGCGGCGTGCACACCTTCCCTGCCGTGCTGCAGAGCAGCGGCCTGTACAGCCTGAGCAGCGTGGTGACCGTGCCTAGCAGCAGCCTGGGCACCCAGACCTACATCTGCAACGTGAACCACAAGCCTAGC"
+        assemble res `shouldBe` "GCTAGCACCAAGGGCCCCAGCGTGTTTCCTCTGGCCCCTAGCAGCAAGAGCACCAGCGGGGGCACCGCCGCCCTGGGCTGCCTGGTGAAGGACTACTTCCCTGAGCCTGTGACCGTGAGCTGGAACAGCGGCGCCCTGACCAGCGGCGTGCACACCTTCCCTGCCGTGCTGCAGAGCAGCGGCCTGTACAGCCTGAGCAGCGTGGTGACCGTGCCTAGCAGCAGCCTGGGCACCCAGACCTACATCTGCAACGTGAACCACAAGCCTAGC"
         res `shouldBe` OligSet
-                           [ Olig "GCTAGCACCAAGGGCCCCAGCGTGTTTCCTCTGGCCCCTAGCTCTAAGAGCACCAGCGGC" 0 60
+                           [ Olig "GCTAGCACCAAGGGCCCCAGCGTGTTTCCTCTGGCCCCTAGCAGCAAGAGCACCAGCGGG" 0 60
                            , Olig "GGCACCGCCGCCCTGGGCTGCCTGGTGAAGGACTACTTCCCTGAGCCTGTGACCGTGAGC" 60 120
                            , Olig "TGGAACAGCGGCGCCCTGACCAGCGGCGTGCACACCTTCCCTGCCGTGCTGCAGAGCAGC" 120 180
                            , Olig "GGCCTGTACAGCCTGAGCAGCGTGGTGACCGTGCCTAGCAGCAGCCTGGGCACCCAGACC" 180 240
                            ]
-                           [ Olig "CTTCACCAGGCAGCCCAGGGCGGCGGTGCCGCCGCTGGTGCTCTTAGAGCTAGGGGCCAG" 30 90
+                           [ Olig "CTTCACCAGGCAGCCCAGGGCGGCGGTGCCCCCGCTGGTGCTCTTGCTGCTAGGGGCCAG" 30 90
                            , Olig "CACGCCGCTGGTCAGGGCGCCGCTGTTCCAGCTCACGGTCACAGGCTCAGGGAAGTAGTC" 90 150
                            , Olig "GGTCACCACGCTGCTCAGGCTGTACAGGCCGCTGCTCTGCAGCACGGCAGGGAAGGTGTG" 150 210
                            , Olig "GCTAGGCTTGTGGTTCACGTTGCAGATGTAGGTCTGGGTGCCCAGGCTGCTGCTAGGCAC" 210 270
                            ]
                            coords
-        commonScore conf res `shouldSatisfy` (>= commonScore conf oligs)
+        rnaScore res `shouldSatisfy` (>= rnaScore oligs)

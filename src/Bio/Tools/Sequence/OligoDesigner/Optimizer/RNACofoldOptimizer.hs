@@ -16,22 +16,23 @@ import           Bio.Tools.Sequence.OligoDesigner.Types     (MatrixCell (..),
                                                              OligsDesignerConfig (..), standardTemperature, OligLight(..))
 import           Bio.Tools.Sequence.OligoDesigner.Utils     (assemble,
                                                              buildOligSet,
-                                                             oneMutation, slice, mutateSlice, getAANumber, mutate, compareBySecond)
+                                                             oneMutation, slice, mutateSlice, getAAIndex, mutate, compareBySecond)
 import           Control.Monad.State                        (State)
 import           Data.Foldable                              (minimumBy)
 import           Data.List                                  (intersect,
                                                              maximumBy, nub, findIndex)
 import           Data.Matrix                                (Matrix, ncols,
-                                                             nrows, (!), prettyMatrix, matrix)
+                                                             nrows, (!), matrix)
 import           System.Random                              (StdGen)
 import Bio.Tools.Sequence.ViennaRNA.Internal.Cofold (cofold)
 import Text.Regex.TDFA (Regex)
 import Debug.Trace
 import Bio.Tools.Sequence.OligoDesigner.RNAMatrixBuilder (rnaMatrix, rebuildMatrix)
+import Bio.Tools.Sequence.OligoDesigner.Prettifier (prettyDNA, prettyMatrixCell, prettyOligSet)
 
 rnaOptimize :: OligsDesignerConfig -> [Regex] -> OligSet -> State StdGen OligSet
 rnaOptimize conf regexes oligs@(OligSet _ _ splitting) = do
-    let organismType = traceMarker "rnaOptimize: line 33" $ organism $ codonOptimizationConfig conf
+    let organismType = organism $ codonOptimizationConfig conf
     let mtx = rnaMatrix oligs
     let indexesToMutate = mutationIndexes mtx
     let dna = assemble oligs
@@ -41,30 +42,31 @@ rnaOptimize conf regexes oligs@(OligSet _ _ splitting) = do
     return $ fst $ maximumBy compareBySecond oligs2score
   where
     scoreOligs :: Matrix MatrixCell -> OligSet -> (OligSet, Float)
-    scoreOligs mtx oligs = traceMarker "scoreOligs: line 43" $ (oligs, rnaMatrixScore $ rebuildMatrix mtx oligs)
+    scoreOligs mtx oligs = (oligs, score)
+      where
+        score = rnaMatrixScore $ rebuildMatrix mtx oligs
 
 mutationIndexes :: Matrix MatrixCell -> [(Int, Int)]
 mutationIndexes oligsMatrix = nub (minPairMutationIndexes minPair ++ maxPairMutationIndexes maxPair)
   where
     rowsCnt = nrows oligsMatrix
     colsCnt = ncols oligsMatrix
-    minPair = minimumBy compareByRna [oligsMatrix ! (x, y) | x <- [1 .. rowsCnt], y <- [1 .. colsCnt], abs (x - y) == 1]
+
+    minPair = minimumBy compareByRna [oligsMatrix ! (x , x + 1) | x <- [1 .. rowsCnt - 1]]
     maxPair = maximumBy compareByRna [oligsMatrix ! (x, y) | x <- [1 .. rowsCnt], y <- [1 .. colsCnt], x <= y && abs (x - y) /= 1]
 
     compareByRna :: MatrixCell -> MatrixCell -> Ordering
-    compareByRna (MatrixCell _ _ rna1) (MatrixCell _ _ rna2) = compare rna1 rna2
+    compareByRna (MatrixCell _ _ rna1) (MatrixCell _ _ rna2) = compare (abs rna1) (abs rna2)
 
 minPairMutationIndexes :: MatrixCell -> [(Int, Int)]
 minPairMutationIndexes (MatrixCell (OligLight _ (Olig _ start1 end1)) (OligLight _ (Olig _ start2 end2)) _) = indexes
---minPairMutationIndexes (MatrixCell (Olig _ start1 end1) (Olig _ start2 end2) _) = indexes
   where
     intersection = [start1 .. end1 - 1] `intersect` [start2 .. end2 - 1]
     indexes =
         if null intersection
             then []
-            else [(getAANumber (head intersection), getAANumber (last intersection))]
+            else [(getAAIndex (head intersection), getAAIndex (last intersection))]
 
 maxPairMutationIndexes :: MatrixCell -> [(Int, Int)]
 maxPairMutationIndexes (MatrixCell (OligLight _ (Olig _ start1 end1)) (OligLight _ (Olig _ start2 end2)) _) =
---maxPairMutationIndexes (MatrixCell (Olig _ start1 end1) (Olig _ start2 end2) _) =
-    [(getAANumber start1, getAANumber $ end1 - 1), (getAANumber start2, getAANumber $ end2 - 1)]
+    [(getAAIndex start1, getAAIndex $ end1 - 1), (getAAIndex start2, getAAIndex $ end2 - 1)]
