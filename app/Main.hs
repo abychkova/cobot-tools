@@ -4,7 +4,7 @@ module Main where
 import Bio.Tools.Sequence.OligoDesigner.Algo (designOligsAA, getRandomSeed)
 import Control.Monad.Except (runExcept)
 import Bio.Tools.Sequence.OligoDesigner.Types (OligsDesignerConfig(..), OligSet(..), Olig(..), OligSplitting(..))
-import Bio.Tools.Sequence.OligoDesigner.Prettifier (prettyOligSet, prettyDNA)
+import Bio.Tools.Sequence.OligoDesigner.Utils.Prettifier (prettyOligSet, prettyDNA)
 import Data.Default (def)
 import Debug.Trace (trace)
 import           Control.Monad.IO.Class      (MonadIO)
@@ -12,7 +12,7 @@ import Bio.Tools.Sequence.OligoDesigner.Scorer (rnaScore, oligsGCContentDifferen
 import Data.Text (Text)
 import System.Environment
 import Data.String (fromString)
-import           Bio.Tools.Sequence.OligoDesigner.Utils       (assemble)
+import           Bio.Tools.Sequence.OligoDesigner.Utils.CommonUtils       (assemble)
 import Bio.NucleicAcid.Nucleotide.Type (DNA (..))
 import Control.Monad.State (State, get, put, evalState)
 import System.Random (StdGen, randomR)
@@ -22,7 +22,7 @@ import Bio.Tools.Sequence.CodonOptimization.Types (Organism(..), defaultForbidde
 import Data.Char (toUpper)
 import Text.Regex.TDFA (Regex, makeRegex)
 import Bio.Tools.Sequence.CodonOptimization.Algo (scoreByWindow)
-import Bio.Tools.Sequence.OligoDesigner.Printer (printResult)
+import Bio.Tools.Sequence.OligoDesigner.Utils.Printer (printResult)
 
 --for performance testing
 main :: IO ()

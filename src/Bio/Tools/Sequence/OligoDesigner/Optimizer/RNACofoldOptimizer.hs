@@ -14,9 +14,10 @@ import           Bio.Tools.Sequence.OligoDesigner.Types     (MatrixCell (..),
                                                              OligSet (..),
                                                              OligsDesignerConfig (..),
                                                              OligsDesignerInnerConfig (..), standardTemperature, OligLight(..))
-import           Bio.Tools.Sequence.OligoDesigner.Utils     (assemble,
+import           Bio.Tools.Sequence.OligoDesigner.Utils.CommonUtils     (assemble,
                                                              buildOligSet,
-                                                             oneMutation, slice, mutateSlice, getAAIndex, mutate, compareBySecond)
+                                                             slice, getAAIndex, compareBySecond)
+import Bio.Tools.Sequence.OligoDesigner.Utils.MutationUtils (oneMutation, mutateSlice, mutate)
 import           Control.Monad.State                        (State)
 import           Data.Foldable                              (minimumBy)
 import           Data.List                                  (intersect,
@@ -27,8 +28,8 @@ import           System.Random                              (StdGen)
 import Bio.Tools.Sequence.ViennaRNA.Internal.Cofold (cofold)
 import Text.Regex.TDFA (Regex)
 import Debug.Trace
-import Bio.Tools.Sequence.OligoDesigner.RNAMatrixBuilder (rnaMatrix, rebuildMatrix)
-import Bio.Tools.Sequence.OligoDesigner.Prettifier (prettyDNA, prettyMatrixCell, prettyOligSet)
+import Bio.Tools.Sequence.OligoDesigner.Utils.RNAMatrixBuilder (rnaMatrix, rebuildMatrix)
+import Bio.Tools.Sequence.OligoDesigner.Utils.Prettifier (prettyDNA, prettyMatrixCell, prettyOligSet)
 import Bio.Tools.Sequence.OligoDesigner.ForbiddenFixer (filterForbidden)
 
 rnaOptimize :: OligsDesignerInnerConfig -> OligSet -> State StdGen OligSet

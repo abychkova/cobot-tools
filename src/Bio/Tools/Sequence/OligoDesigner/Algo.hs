@@ -12,7 +12,7 @@ import           Bio.Tools.Sequence.OligoDesigner.Optimizer.GCContentOptimizer (
 import           Bio.Tools.Sequence.OligoDesigner.Splitter                      (split)
 import           Bio.Tools.Sequence.OligoDesigner.Types                         (OligSet (..), OligsSplittingConfig (..),
                                                                                     OligsDesignerConfig (..), OligsDesignerInnerConfig(..))
-import           Bio.Tools.Sequence.OligoDesigner.Utils                         (buildOligSet)
+import           Bio.Tools.Sequence.OligoDesigner.Utils.CommonUtils                         (buildOligSet)
 import           Control.Monad.Except                                           (Except, throwError)
 import           Control.Monad.IO.Class                                         (MonadIO, liftIO)
 import           Control.Monad.State                                            (State, evalState)

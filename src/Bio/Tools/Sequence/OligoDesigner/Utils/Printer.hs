@@ -1,4 +1,4 @@
-module Bio.Tools.Sequence.OligoDesigner.Printer (
+module Bio.Tools.Sequence.OligoDesigner.Utils.Printer (
     printResult
     ,buildStr
     ,buildStr'
@@ -8,10 +8,10 @@ import Bio.Tools.Sequence.OligoDesigner.Types (OligsDesignerConfig(..), OligSet(
 import Text.Regex.TDFA (Regex, makeRegex)
 import Bio.Tools.Sequence.CodonOptimization (gcContentDesired)
 import Bio.Tools.Sequence.OligoDesigner.Scorer (commonScore, gcContent, gcContentScoreByOligs, rnaScore, oligsGCContentDifference)
-import Bio.Tools.Sequence.OligoDesigner.Utils (assemble)
+import Bio.Tools.Sequence.OligoDesigner.Utils.CommonUtils (assemble)
 import Bio.NucleicAcid.Nucleotide (DNA(..))
 import Bio.Tools.Sequence.CodonOptimization.Algo (scoreByWindow)
-import Bio.Tools.Sequence.OligoDesigner.Prettifier (prettyDNA)
+import Bio.Tools.Sequence.OligoDesigner.Utils.Prettifier (prettyDNA)
 import Bio.Tools.Sequence.CodonOptimization.Types (defaultForbiddenRegexp)
 import Debug.Trace (trace)
 

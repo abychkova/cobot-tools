@@ -1,4 +1,6 @@
-module OligoDesigner.SpecIterationOptimizer where
+module OligoDesigner.SpecIterationOptimizer (
+    optimizerSpec
+) where
 
 import Test.Hspec (Spec, describe, it, shouldBe, shouldNotBe, shouldSatisfy)
 import Control.Monad.State (evalState)

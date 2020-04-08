@@ -1,11 +1,13 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module OligoDesigner.SpecForbiddenFixer where
+module OligoDesigner.SpecForbiddenFixer (
+    fixerSpec
+) where
 
 import Test.Hspec (Spec, describe, it, shouldBe)
 import Bio.Tools.Sequence.OligoDesigner.ForbiddenFixer (fixForbidden)
 import Text.Regex.TDFA (match, makeRegex, Regex, (=~))
-import Bio.Tools.Sequence.OligoDesigner.Prettifier (prettyDNA)
+import Bio.Tools.Sequence.OligoDesigner.Utils.Prettifier (prettyDNA)
 import System.Random (mkStdGen)
 import Bio.Tools.Sequence.CodonOptimization (CodonOptimizationConfig(..))
 import Bio.Tools.Sequence.CodonOptimization.Types (Organism(..))

@@ -1,10 +1,12 @@
-module OligoDesigner.SpecGCContentOptimizer where
+module OligoDesigner.SpecGCContentOptimizer (
+    gcContentOptimizerSpec
+) where
 
 import Test.Hspec (Spec, describe, it, shouldBe, shouldSatisfy)
-import Bio.Tools.Sequence.OligoDesigner.Types (OligSplitting(..), OligSet(..), Olig(..), OligsDesignerConfig(..), 
+import Bio.Tools.Sequence.OligoDesigner.Types (OligSplitting(..), OligSet(..), Olig(..), OligsDesignerConfig(..),
                                         OligsDesignerInnerConfig(..))
 import Bio.Tools.Sequence.OligoDesigner.Optimizer.GCContentOptimizer (gcContentOptimize)
-import Bio.Tools.Sequence.OligoDesigner.Utils (assemble)
+import Bio.Tools.Sequence.OligoDesigner.Utils.CommonUtils (assemble)
 import Data.Default (def)
 import Control.Monad.State (evalState)
 import System.Random (mkStdGen)

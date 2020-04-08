@@ -15,10 +15,10 @@ import           Bio.Tools.Sequence.OligoDesigner.Types       (MatrixCell (..),
                                                                OligSet (..),
                                                                OligsDesignerInnerConfig (..),
                                                                standardTemperature, emptyMatrixCell)
-import           Bio.Tools.Sequence.OligoDesigner.Utils       (assemble, mixOligs)
-import           Bio.Tools.Sequence.OligoDesigner.RNAMatrixBuilder       (rnaMatrix)
+import           Bio.Tools.Sequence.OligoDesigner.Utils.CommonUtils       (assemble, mixOligs)
+import           Bio.Tools.Sequence.OligoDesigner.Utils.RNAMatrixBuilder       (rnaMatrix)
 import           Bio.Tools.Sequence.ViennaRNA.Internal.Cofold (cofold)
-import Bio.Tools.Sequence.OligoDesigner.Prettifier (prettyDNA, prettyMatrixCell)
+import Bio.Tools.Sequence.OligoDesigner.Utils.Prettifier (prettyDNA, prettyMatrixCell)
 import Bio.NucleicAcid.Nucleotide (DNA(..))
 import Debug.Trace
 import Bio.Tools.Sequence.CodonOptimization.Types (gcContentDesired)

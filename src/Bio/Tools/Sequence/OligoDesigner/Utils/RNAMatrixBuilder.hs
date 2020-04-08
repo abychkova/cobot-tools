@@ -1,4 +1,4 @@
-module Bio.Tools.Sequence.OligoDesigner.RNAMatrixBuilder(
+module Bio.Tools.Sequence.OligoDesigner.Utils.RNAMatrixBuilder(
     rnaMatrix,
     rebuildMatrix
 ) where
@@ -6,8 +6,8 @@ module Bio.Tools.Sequence.OligoDesigner.RNAMatrixBuilder(
 
 import Data.Matrix (Matrix, matrix, Matrix(..), (!))
 import Bio.Tools.Sequence.OligoDesigner.Types (OligSet, Olig(..), MatrixCell(..), OligLight(..), emptyMatrixCell, standardTemperature, forward, reversed)
-import Bio.Tools.Sequence.OligoDesigner.Utils (mixOligs)
-import Bio.Tools.Sequence.OligoDesigner.Prettifier (prettyDNA)
+import Bio.Tools.Sequence.OligoDesigner.Utils.CommonUtils (mixOligs)
+import Bio.Tools.Sequence.OligoDesigner.Utils.Prettifier (prettyDNA)
 import Bio.Tools.Sequence.ViennaRNA.Cofold (cofold)
 import Debug.Trace (trace)
 

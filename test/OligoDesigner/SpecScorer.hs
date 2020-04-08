@@ -1,6 +1,8 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module OligoDesigner.SpecScorer where
+module OligoDesigner.SpecScorer (
+    oligoDesignerScoreSpec
+) where
 
 import           Bio.Tools.Sequence.OligoDesigner.Scorer (rnaScore, rnaMatrixScore, gcContent,
                                                             oligsGCContentDifference, gcContentScoreBySequence, commonScore, gcContentScoreByOligs)
@@ -12,8 +14,8 @@ import           Bio.Tools.Sequence.OligoDesigner.Types  (Olig (..),
 import           Test.Hspec                              (Spec, describe, it,
                                                           shouldBe)
 import Data.Matrix (matrix)
-import Bio.Tools.Sequence.OligoDesigner.Utils (assemble, buildOligSet)
-import Bio.Tools.Sequence.OligoDesigner.Printer (printResult)
+import Bio.Tools.Sequence.OligoDesigner.Utils.CommonUtils (assemble, buildOligSet)
+import Bio.Tools.Sequence.OligoDesigner.Utils.Printer (printResult)
 import Debug.Trace (trace)
 import Data.Text (toUpper)
 import Data.Default (def)
@@ -22,10 +24,10 @@ import Bio.Tools.Sequence.CodonOptimization.Types (Organism(..), defaultForbidde
 import Bio.NucleicAcid.Nucleotide (DNA(..))
 import Bio.Tools.Sequence.ViennaRNA.Cofold (cofold)
 import Bio.Tools.Sequence.ViennaRNA.Fold (fold)
-import Bio.Tools.Sequence.OligoDesigner.Prettifier (prettyDNA, prettyMatrixCell)
+import Bio.Tools.Sequence.OligoDesigner.Utils.Prettifier (prettyDNA, prettyMatrixCell)
 import Text.Regex.TDFA (Regex, makeRegex)
 import Bio.Tools.Sequence.CodonOptimization.Algo (scoreByWindow)
-import Bio.Tools.Sequence.OligoDesigner.RNAMatrixBuilder (rnaMatrix)
+import Bio.Tools.Sequence.OligoDesigner.Utils.RNAMatrixBuilder (rnaMatrix)
 
 oligoDesignerScoreSpec :: Spec
 oligoDesignerScoreSpec = describe "Oligo-Designer score spec" $ do

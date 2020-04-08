@@ -1,12 +1,14 @@
-module OligoDesigner.SpecRNACofoldOptimizer where
+module OligoDesigner.SpecRNACofoldOptimizer (
+    rnaOptimizerSpec
+) where
 
 import Test.Hspec (Spec, shouldBe, it, describe, shouldThrow, errorCall, shouldSatisfy)
 import Bio.Tools.Sequence.OligoDesigner.Scorer (commonScore, rnaScore)
-import Bio.Tools.Sequence.OligoDesigner.Prettifier (prettyMatrixCell)
+import Bio.Tools.Sequence.OligoDesigner.Utils.Prettifier (prettyMatrixCell)
 import Bio.Tools.Sequence.OligoDesigner.Optimizer.RNACofoldOptimizer (maxPairMutationIndexes, minPairMutationIndexes,
     mutationIndexes, rnaOptimize)
 import Bio.Tools.Sequence.OligoDesigner.Types     (MatrixCell(..), OligBounds, OligSplitting(..), OligSet(..),
-                                                    OligsSplittingConfig(..), OligsDesignerConfig(..), Olig(..), OligLight(..), 
+                                                    OligsSplittingConfig(..), OligsDesignerConfig(..), Olig(..), OligLight(..),
                                                     OligsDesignerInnerConfig(..))
 import Data.Matrix (matrix)
 import System.Random (mkStdGen)
@@ -14,7 +16,7 @@ import Control.Monad.State (evalState)
 import Bio.Tools.Sequence.CodonOptimization.Types (Organism(..))
 import Data.Default (def)
 import Control.Exception (evaluate)
-import Bio.Tools.Sequence.OligoDesigner.Utils (assemble, translate)
+import Bio.Tools.Sequence.OligoDesigner.Utils.CommonUtils (assemble, translate)
 import Debug.Trace (trace)
 
 --TODO: test me with forbidden regexp

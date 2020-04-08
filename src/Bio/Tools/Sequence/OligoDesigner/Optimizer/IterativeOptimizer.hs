@@ -3,7 +3,7 @@ module Bio.Tools.Sequence.OligoDesigner.Optimizer.IterativeOptimizer(
 ) where
 
 import Bio.Tools.Sequence.OligoDesigner.Scorer (commonScore)
-import Bio.Tools.Sequence.OligoDesigner.Printer (buildStr')
+import Bio.Tools.Sequence.OligoDesigner.Utils.Printer (buildStr')
 import Bio.Tools.Sequence.OligoDesigner.Optimizer.GCContentOptimizer (gcContentOptimize)
 import Bio.Tools.Sequence.OligoDesigner.Optimizer.RNACofoldOptimizer (rnaOptimize)
 import System.Random (StdGen)

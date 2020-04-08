@@ -10,8 +10,9 @@ import System.Random (StdGen)
 import Control.Monad.State (State, evalState)
 import Control.Monad.Except (Except, throwError)
 import Text.Regex.TDFA (Regex, makeRegex, match, getAllMatches)
-import Bio.Tools.Sequence.OligoDesigner.Prettifier (prettyDNA)
-import Bio.Tools.Sequence.OligoDesigner.Utils (mutate, getAAIndex)
+import Bio.Tools.Sequence.OligoDesigner.Utils.Prettifier (prettyDNA)
+import Bio.Tools.Sequence.OligoDesigner.Utils.MutationUtils (mutate)
+import Bio.Tools.Sequence.OligoDesigner.Utils.CommonUtils (getAAIndex)
 import Bio.Tools.Sequence.OligoDesigner.Types (OligsDesignerInnerConfig(..))
 import Bio.Tools.Sequence.CodonOptimization (forbiddenSequence, organism)
 import Bio.Tools.Sequence.CodonOptimization.Types (Organism)
@@ -42,7 +43,7 @@ fixIterative organism regexes iteration dna =
       where
         matches = concat [getAllMatches (regex `match` dna) :: [(Int, Int)] | regex <- regexes]
         res = [(getAAIndex begin, getAAIndex (begin + len)) | (begin, len) <- matches]
-        
+
 filterForbidden :: [Regex] -> [[DNA]] -> [[DNA]]
 filterForbidden regexes = filter notMatch
   where

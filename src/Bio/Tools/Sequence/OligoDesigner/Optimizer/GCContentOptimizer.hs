@@ -2,7 +2,8 @@ module Bio.Tools.Sequence.OligoDesigner.Optimizer.GCContentOptimizer where
 
 import Bio.NucleicAcid.Nucleotide (DNA(..))
 import Bio.Tools.Sequence.OligoDesigner.Types (Olig(..), OligsDesignerInnerConfig(..), OligSet(..))
-import Bio.Tools.Sequence.OligoDesigner.Utils (mutateSlice, assemble, getAAIndex, mutate, buildOligSet, compareBySecond)
+import Bio.Tools.Sequence.OligoDesigner.Utils.CommonUtils (assemble, getAAIndex, buildOligSet, compareBySecond)
+import Bio.Tools.Sequence.OligoDesigner.Utils.MutationUtils (mutateSlice, mutate)
 import Bio.Tools.Sequence.OligoDesigner.Scorer (gcContent, oligsGCContentDifference)
 import Control.Monad.State (State)
 import System.Random (StdGen)
@@ -12,7 +13,7 @@ import Data.List (maximumBy, minimumBy, findIndex)
 import Bio.Tools.Sequence.CodonOptimization (CodonOptimizationConfig(..))
 import Debug.Trace
 import Text.Regex.TDFA (Regex)
-import Bio.Tools.Sequence.OligoDesigner.Prettifier (prettyOlig, prettyDNA)
+import Bio.Tools.Sequence.OligoDesigner.Utils.Prettifier (prettyOlig, prettyDNA)
 
 gcContentOptimize :: OligsDesignerInnerConfig -> OligSet -> State StdGen OligSet
 gcContentOptimize (OligsDesignerInnerConfig organism targetGC regexes _ _) oligs@(OligSet fwd rvsd splitting) = do

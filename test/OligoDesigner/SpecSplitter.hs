@@ -1,6 +1,8 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module OligoDesigner.SpecSplitter where
+module OligoDesigner.SpecSplitter (
+    oligoDesignerSplitterSpec
+) where
 
 import           Bio.Tools.Sequence.OligoDesigner.Splitter (split)
 import           Bio.Tools.Sequence.OligoDesigner.Types    (OligSplitting (..), OligsSplittingConfig (..),
@@ -12,7 +14,7 @@ import           Test.Hspec                                (Spec, describe, it,
 import           Test.Hspec.QuickCheck                     (modifyMaxSize, prop)
 import           Test.QuickCheck                           (Gen, Property,
                                                             elements, forAll)
-import Bio.Tools.Sequence.OligoDesigner.Prettifier (prettySplitting)
+import Bio.Tools.Sequence.OligoDesigner.Utils.Prettifier (prettySplitting)
 
 emptySplitting :: OligSplitting
 emptySplitting = OligSplitting [] []

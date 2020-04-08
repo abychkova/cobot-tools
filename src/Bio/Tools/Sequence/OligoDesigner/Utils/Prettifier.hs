@@ -1,4 +1,4 @@
-module Bio.Tools.Sequence.OligoDesigner.Prettifier(
+module Bio.Tools.Sequence.OligoDesigner.Utils.Prettifier(
     prettyDNA
    ,prettySplitting
    ,prettyOlig
@@ -14,7 +14,7 @@ import Bio.Tools.Sequence.ViennaRNA.Fold (fold)
 import Text.Regex.TDFA (Regex)
 import Bio.Tools.Sequence.CodonOptimization (gcContentDesired)
 import Data.Matrix (Matrix, nrows, ncols, toList, toLists)
-import Bio.Tools.Sequence.OligoDesigner.Utils (mixOligs)
+import Bio.Tools.Sequence.OligoDesigner.Utils.CommonUtils (mixOligs)
 
 
 prettyDNA :: [DNA] -> String
@@ -47,6 +47,6 @@ prettyMatrixCell mtx = str
 
     rowToStr :: [MatrixCell] -> String
     rowToStr cells = concatMap cellToStr cells  ++ "\n"
-    
+
     cellToStr :: MatrixCell -> String
     cellToStr (MatrixCell _ _ rna) = show rna ++ "\t"
