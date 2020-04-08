@@ -23,7 +23,7 @@ import Text.Regex.TDFA (Regex, makeRegex)
 import Debug.Trace
 
 designOligsDNA :: OligsDesignerConfig -> [DNA] -> Except String OligSet
-designOligsDNA (OligsDesignerConfig _ conf _ _ _ _ _) dna =
+designOligsDNA (OligsDesignerConfig _ conf _ _) dna =
     case split conf (length dna) of
         Just splitting -> return $ buildOligSet splitting dna
         _              -> throwError "Cannot find splitting for parameters"
@@ -32,7 +32,7 @@ getRandomSeed :: MonadIO m => m StdGen
 getRandomSeed = liftIO getStdGen
 
 designOligsAA :: StdGen -> OligsDesignerConfig -> [AA] -> Except String OligSet
-designOligsAA gen conf@(OligsDesignerConfig codonConf _ _ _ _ _ _) aa = do
+designOligsAA gen conf@(OligsDesignerConfig codonConf _ _ _) aa = do
     let dna = optimizeCodonForAA codonConf aa
     let regexes = map makeRegex (forbiddenSequence codonConf) :: [Regex]
     dnaFixed <- fixForbidden gen conf regexes dna

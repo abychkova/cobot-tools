@@ -155,7 +155,7 @@ rnaOptimizeSpec =
                     , Olig "GCTAGGCTTGTGGTTCACGTTGCAGATGTAGGTCTGGGTGCCCAGGCTGCTGCTAGGCAC" 210 270
                     ]
                     coords
-        let conf = OligsDesignerConfig def (OligsSplittingConfig 60 1 10) 0 0 0 0 1
+        let conf = OligsDesignerConfig def (OligsSplittingConfig 60 1 10) 0 1
         let gen = mkStdGen 499
         let res = evalState (rnaOptimize conf [] oligs) gen
 

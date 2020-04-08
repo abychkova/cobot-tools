@@ -61,9 +61,6 @@ instance Default OligsSplittingConfig
 data OligsDesignerConfig = OligsDesignerConfig {
     codonOptimizationConfig    :: CodonOptimizationConfig,
     oligSplittingConfig        :: OligsSplittingConfig,
-    rnaScoreFactor             :: Double,
-    oligsGCContentFactor       :: Double,
-    gcContentScoreFactor       :: Double,
     maxOptimizationIteration   :: Int,
     maxFixForbiddenIteration   :: Int
 }

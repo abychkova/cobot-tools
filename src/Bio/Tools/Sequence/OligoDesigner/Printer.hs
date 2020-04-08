@@ -20,7 +20,7 @@ printResult :: OligsDesignerConfig -> String -> OligSet -> IO ()
 printResult conf app ols = print $ buildStr conf app ols
 
 buildStr :: OligsDesignerConfig -> String -> OligSet -> String
-buildStr (OligsDesignerConfig codonConf _ rnaF oligsGCF gcF _ _) app ols= str
+buildStr (OligsDesignerConfig codonConf _ _ _) app ols= str
   where
     target = gcContentDesired codonConf
     str = "," ++ app ++ "," ++ 
@@ -71,7 +71,7 @@ buildStr (OligsDesignerConfig codonConf _ rnaF oligsGCF gcF _ _) app ols= str
         gc = realToFrac $ length $ filter (\nk -> nk == DC || nk == DG) dna
         
 buildStr' :: OligsDesignerConfig -> String -> OligSet -> String
-buildStr' conf@(OligsDesignerConfig codonConf _ rnaF oligsGCF gcF _ _) app ols= str
+buildStr' conf@(OligsDesignerConfig codonConf _ _ _) app ols= str
   where
     target = gcContentDesired codonConf
     str = "," ++ app ++ "," ++ 

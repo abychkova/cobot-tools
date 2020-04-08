@@ -46,7 +46,7 @@ main = do
     runOneOpt :: ((Double, Double, Double), StdGen) -> [AA] -> IO ()
     runOneOpt ((rnaFactor, oligsGCContentFactor, gcContentFactor), seed) dna = do
         let codonConf = CodonOptimizationConfig CHO 3 1 1 0.5 1.4 40 0.001 2.6 100 1 51 defaultForbiddenRegexp
-        let conf = OligsDesignerConfig codonConf def 0.6 0.1 0.4 150 30
+        let conf = OligsDesignerConfig codonConf def 150 30
         let result = runExcept $ designOligsAA seed conf dna
         case result of
             Left err -> print ("error:" ++ err)

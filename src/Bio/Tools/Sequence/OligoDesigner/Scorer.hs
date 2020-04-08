@@ -26,7 +26,7 @@ import Data.Text (pack)
 import Data.Matrix (Matrix, nrows, ncols, (!), prettyMatrix)
 
 commonScore :: OligsDesignerConfig -> OligSet -> Double
-commonScore (OligsDesignerConfig codonConf _ rnaF oligsGCF gcF _ _) oligs = scoreValue
+commonScore (OligsDesignerConfig codonConf _ _ _) oligs = scoreValue
   where
     rnaScoreValue = realToFrac $ rnaScore oligs
     oligsGCValue = oligsGCContentDifference oligs

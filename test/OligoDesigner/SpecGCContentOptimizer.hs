@@ -31,7 +31,7 @@ optimizeGCContentSpec =
 
         let gen = mkStdGen 6637
         let codonConf = CodonOptimizationConfig CHO 3 1 1 0.5 1.4 40 0.001 2.6 100 1 43 defaultForbiddenRegexp
-        let conf = OligsDesignerConfig codonConf def 0 0 0 0 0
+        let conf = OligsDesignerConfig codonConf def 0 0
         let res = evalState (gcContentOptimize conf [] oligs) gen
         oligsGCContentDifference res `shouldSatisfy` (<= oligsGCContentDifference oligs)
         res `shouldBe` OligSet
@@ -50,7 +50,7 @@ optimizeGCContentForDifferentTargetSpec =
 
         let gen = mkStdGen 6637
         let codonConf = CodonOptimizationConfig CHO 3 1 1 0.5 1.4 40 0.001 2.6 100 1 20 defaultForbiddenRegexp
-        let conf = OligsDesignerConfig codonConf def 0 0 0 0 0
+        let conf = OligsDesignerConfig codonConf def 0 0
         let res = evalState (gcContentOptimize conf [] oligs) gen
         oligsGCContentDifference res `shouldSatisfy` (<= oligsGCContentDifference oligs)
         res `shouldBe` OligSet
@@ -77,7 +77,7 @@ optimizeGCContentRealDataSpec =
                     ]
                     coords
         let gen = mkStdGen 6637
-        let conf = OligsDesignerConfig def def 0 0 0 0 0
+        let conf = OligsDesignerConfig def def 0 0
         let res = evalState (gcContentOptimize conf [] oligs) gen
         oligsGCContentDifference res `shouldSatisfy` (<= oligsGCContentDifference oligs)
         res `shouldBe` OligSet

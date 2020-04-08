@@ -29,7 +29,7 @@ forbiddenFixerSpec =
         let gen = mkStdGen 429
         let regexpStr = "GGGCCCC" :: String
         let regexp = makeRegex regexpStr :: Regex
-        let conf = OligsDesignerConfig def def 0 0 0 0 5
+        let conf = OligsDesignerConfig def def 0 5
         let dna = "GCCAGCACCAAGGGCCCCAGCGTGTTTCCTCTGGCCCCTTCTTCTAAGTCTACCTCTGGCGGCACCGCCGCCCTGGGCTGTCTGGTGAAG"
         
         let (Right res) = runExcept $ fixForbidden gen conf [regexp] dna
@@ -43,7 +43,7 @@ forbiddenConstantFixerSpec =
         let gen = mkStdGen 429
         let regexpStr = "TGG" :: String
         let regexp = makeRegex regexpStr :: Regex
-        let conf = OligsDesignerConfig def def 0 0 0 0 5
+        let conf = OligsDesignerConfig def def 0 5
         let dna = "GCCTGGACCAAGGGCCCCAGCGTGTTTCCTCTGGCCCCTTCTTCTAAGTCTACCTCTGGCGGCACCGCCGCCCTGGGCTGTCTGGTGAAG"
         
         let (Left msg) = runExcept $ fixForbidden gen conf [regexp] dna
@@ -56,7 +56,7 @@ fixTowForbiddenSpec =
         let gen = mkStdGen 3359
         let regexpStr = ["CAGG", "AATAAA", "GCCGCCATGG"] :: [String]
         let regexps = map makeRegex regexpStr :: [Regex]
-        let conf = OligsDesignerConfig def def 0 0 0 0 5
+        let conf = OligsDesignerConfig def def 0 5
         let dna = "CAGGCCGCCATGGGCAATAAACAGGTG" --CAGG  AATAAA  GCCGCCATGG
 
         let (Right res) = runExcept $ fixForbidden gen conf regexps dna
@@ -70,7 +70,7 @@ fixTowForbiddenRealDataSpec =
         let gen = mkStdGen 3358
         let regexpStr = ["CAGG", "AATAAA", "GCCGCCATGG"] :: [String]
         let regexps = map makeRegex regexpStr :: [Regex]
-        let conf = OligsDesignerConfig def def 0 0 0 0 5
+        let conf = OligsDesignerConfig def def 0 5
         let dna = "CAGGTGCAGCTGCAGGAGAGCGGCGGCGGCCTGGTGCAGCCTGGCGGCTCTCTGAGACTGTCTTGTGCCGCCTCTGGCATCCAGTTCAAGTTCCACAACATGGGCTGGGGCAGACAAGCCCCTGGCAAGCAGAGAGAGCACGTGGCCGCCATGGATCACGGCAGAAGAACCATCTACGCCGACCACGTGAAGGGCAGATTCACCATCTCTAGAGACAACACCAGGAACACCGTGTACCTGCAGATGAACTCTCTGAAGGCCGAGGACACCGCCATCTACTACTGCAAGGCCTCTGCCGGCAGAAGAGTGTACTGGGGCCAAGGCACCATGGTGACCGTGTCTTCT" --CAGG  AATAAA  GCCGCCATGG
 
         let (Right res) = runExcept $ fixForbidden gen conf regexps dna

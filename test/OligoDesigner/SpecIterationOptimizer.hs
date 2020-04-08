@@ -21,7 +21,7 @@ optimizeWithZeroIterationsSpec :: Spec
 optimizeWithZeroIterationsSpec =
     describe "optimizeWithZeroIterationsSpec" $
     it "" $ do
-        let conf = OligsDesignerConfig def (OligsSplittingConfig 60 1 10) 1 1 1 0 1
+        let conf = OligsDesignerConfig def (OligsSplittingConfig 60 1 10) 0 1
         let gen = mkStdGen 63
         let res = evalState (optimize conf [] oligs) gen
         res `shouldBe` oligs
@@ -30,7 +30,7 @@ optimizeWithOneIterationsSpec :: Spec
 optimizeWithOneIterationsSpec =
     describe "optimizeWithOneIterationsSpec" $
     it "" $ do
-        let conf = OligsDesignerConfig def (OligsSplittingConfig 60 1 10) 1 1 1 1 1
+        let conf = OligsDesignerConfig def (OligsSplittingConfig 60 1 10) 1 1
         let gen = mkStdGen 63
         let res = evalState (optimize conf [] oligs) gen
         res `shouldNotBe` oligs
@@ -40,7 +40,7 @@ optimizeTillStableScoreSpec :: Spec
 optimizeTillStableScoreSpec =
     describe "optimizeTillStableScoreSpec" $
     it "" $ do
-        let conf = OligsDesignerConfig def (OligsSplittingConfig 60 1 10) 1 1 1 8 1
+        let conf = OligsDesignerConfig def (OligsSplittingConfig 60 1 10) 8 1
         let gen = mkStdGen 63
         let res = evalState (optimize conf [] oligs) gen
         res `shouldNotBe` oligs
