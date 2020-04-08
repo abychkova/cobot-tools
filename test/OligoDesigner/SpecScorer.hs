@@ -180,5 +180,4 @@ commonScoreSpec =
                         [Olig "TTGATCTTCC" 0 10, Olig "TTATAAGAAA" 10 20] -- 40% & 10%
                         [Olig "TATAAGGAAG" 5 15, Olig "TTGTTTTCT" 15 24]  -- 30% & 22%
                         (OligSplitting [(0, 10), (10, 20)] [(5, 15), (15, 24)])
-        let codonConf = CodonOptimizationConfig CHO 3 1 1 0.5 1.4 40 0.001 2.6 100 1 43 defaultForbiddenRegexp
-        commonScore (OligsDesignerConfig codonConf def 0 1) oligs `shouldBe` -0.06007751753163892
+        commonScore 43 oligs `shouldBe` -0.06007751753163892

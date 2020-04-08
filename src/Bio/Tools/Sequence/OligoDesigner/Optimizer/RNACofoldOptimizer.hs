@@ -13,7 +13,7 @@ import           Bio.Tools.Sequence.OligoDesigner.Types     (MatrixCell (..),
                                                              Olig (..),
                                                              OligSet (..),
                                                              OligsDesignerConfig (..),
-                                                             OligsDesignerConfig (..), standardTemperature, OligLight(..))
+                                                             OligsDesignerInnerConfig (..), standardTemperature, OligLight(..))
 import           Bio.Tools.Sequence.OligoDesigner.Utils     (assemble,
                                                              buildOligSet,
                                                              oneMutation, slice, mutateSlice, getAAIndex, mutate, compareBySecond)
@@ -31,13 +31,12 @@ import Bio.Tools.Sequence.OligoDesigner.RNAMatrixBuilder (rnaMatrix, rebuildMatr
 import Bio.Tools.Sequence.OligoDesigner.Prettifier (prettyDNA, prettyMatrixCell, prettyOligSet)
 import Bio.Tools.Sequence.OligoDesigner.ForbiddenFixer (filterForbidden)
 
-rnaOptimize :: OligsDesignerConfig -> [Regex] -> OligSet -> State StdGen OligSet
-rnaOptimize conf regexes oligs@(OligSet _ _ splitting) = do
-    let organismType = organism $ codonOptimizationConfig conf
+rnaOptimize :: OligsDesignerInnerConfig -> OligSet -> State StdGen OligSet
+rnaOptimize (OligsDesignerInnerConfig organism _ regexes _ _) oligs@(OligSet _ _ splitting) = do
     let mtx = rnaMatrix oligs
     let indexesToMutate = mutationIndexes mtx
     let dna = assemble oligs
-    sequenceVariants <- concat <$> mapM (mutate organismType dna) indexesToMutate
+    sequenceVariants <- concat <$> mapM (mutate organism dna) indexesToMutate
     let filtered =  filterForbidden regexes sequenceVariants
     let oligsVariants = map (buildOligSet splitting) filtered
     let oligs2score = map (scoreOligs mtx) oligsVariants

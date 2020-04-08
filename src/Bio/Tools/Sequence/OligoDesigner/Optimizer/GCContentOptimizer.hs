@@ -1,7 +1,7 @@
 module Bio.Tools.Sequence.OligoDesigner.Optimizer.GCContentOptimizer where
 
 import Bio.NucleicAcid.Nucleotide (DNA(..))
-import Bio.Tools.Sequence.OligoDesigner.Types (Olig(..), OligsDesignerConfig(..), OligSet(..))
+import Bio.Tools.Sequence.OligoDesigner.Types (Olig(..), OligsDesignerInnerConfig(..), OligSet(..))
 import Bio.Tools.Sequence.OligoDesigner.Utils (mutateSlice, assemble, getAAIndex, mutate, buildOligSet, compareBySecond)
 import Bio.Tools.Sequence.OligoDesigner.Scorer (gcContent, oligsGCContentDifference)
 import Control.Monad.State (State)
@@ -14,10 +14,8 @@ import Debug.Trace
 import Text.Regex.TDFA (Regex)
 import Bio.Tools.Sequence.OligoDesigner.Prettifier (prettyOlig, prettyDNA)
 
-gcContentOptimize :: OligsDesignerConfig -> [Regex] -> OligSet -> State StdGen OligSet
-gcContentOptimize conf regexes oligs@(OligSet fwd rvsd splitting) = do
-    let targetGC = gcContentDesired $ codonOptimizationConfig conf
-    let organismType = organism $ codonOptimizationConfig conf
+gcContentOptimize :: OligsDesignerInnerConfig -> OligSet -> State StdGen OligSet
+gcContentOptimize (OligsDesignerInnerConfig organism targetGC regexes _ _) oligs@(OligSet fwd rvsd splitting) = do
     let allOligs = fwd ++ rvsd
     let oligsToGc = map (\o -> (o, gcContent $ sequDNA o)) allOligs
     let maximumOlig = fst $ maximumBy compareBySecond oligsToGc
@@ -27,7 +25,7 @@ gcContentOptimize conf regexes oligs@(OligSet fwd rvsd splitting) = do
 
     let indexesToMutate = (getAAIndex $ start farthestFromTarget, getAAIndex $ end farthestFromTarget - 1)
     let dna = assemble oligs
-    varSequences <- mutate organismType dna indexesToMutate
+    varSequences <- mutate organism dna indexesToMutate
     let filtered =  filterForbidden regexes varSequences
     let variants = map (buildOligSet splitting) filtered
     let varsToScore = map (\vars -> (vars, oligsGCContentDifference vars)) variants

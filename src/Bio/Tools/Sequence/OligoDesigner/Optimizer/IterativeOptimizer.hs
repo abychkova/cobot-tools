@@ -8,21 +8,22 @@ import Bio.Tools.Sequence.OligoDesigner.Optimizer.GCContentOptimizer (gcContentO
 import Bio.Tools.Sequence.OligoDesigner.Optimizer.RNACofoldOptimizer (rnaOptimize)
 import System.Random (StdGen)
 import Control.Monad.State (State)
-import Bio.Tools.Sequence.OligoDesigner.Types (OligsDesignerConfig(..), OligSet)
+import Bio.Tools.Sequence.OligoDesigner.Types (OligsDesignerInnerConfig(..), OligSet)
 import Debug.Trace 
 import Text.Regex.TDFA (Regex)
 
 
-optimize :: OligsDesignerConfig -> [Regex] -> OligSet -> State StdGen OligSet
-optimize conf regexes oligs = trace (buildStr' conf "" oligs) optimizeIteration 0 [(oligs, commonScore conf oligs)]
+optimize :: OligsDesignerInnerConfig -> OligSet -> State StdGen OligSet
+optimize conf@(OligsDesignerInnerConfig _ targetGC _ maxIteration _) oligs = 
+    optimizeIteration 0 [(oligs, commonScore targetGC oligs)]
   where
     optimizationStep :: OligSet -> State StdGen [(OligSet, Double)]
     optimizationStep oligs =  do
-       result <- rnaOptimize conf regexes oligs >>= gcContentOptimize conf regexes
-       return $ trace (buildStr' conf "" result) [(result, commonScore conf result)]
+       result <- rnaOptimize conf oligs >>= gcContentOptimize conf
+       return [(result, commonScore targetGC result)]
 
     optimizeIteration :: Int -> [(OligSet, Double)] -> State StdGen OligSet
-    optimizeIteration iteration results | iteration >= maxOptimizationIteration conf =
+    optimizeIteration iteration results | iteration >= maxIteration =
                                                 trace ("We are reached maximum iteration count. results:" ++ show (map snd results)) $ return $ fst $ last results
                                         | iteration > 2 && isStableScore results =
                                                 trace ("We are reached stable score. results:" ++ show (map snd results)) $

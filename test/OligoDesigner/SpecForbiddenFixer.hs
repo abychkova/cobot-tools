@@ -9,7 +9,7 @@ import Bio.Tools.Sequence.OligoDesigner.Prettifier (prettyDNA)
 import System.Random (mkStdGen)
 import Bio.Tools.Sequence.CodonOptimization (CodonOptimizationConfig(..))
 import Bio.Tools.Sequence.CodonOptimization.Types (Organism(..))
-import Bio.Tools.Sequence.OligoDesigner.Types (OligsSplittingConfig(..), OligsDesignerConfig(..))
+import Bio.Tools.Sequence.OligoDesigner.Types (OligsSplittingConfig(..), OligsDesignerConfig(..), OligsDesignerInnerConfig(..))
 import Data.Default (def)
 import Control.Monad.Except (runExcept)
 import Debug.Trace (trace)
@@ -29,10 +29,10 @@ forbiddenFixerSpec =
         let gen = mkStdGen 429
         let regexpStr = "GGGCCCC" :: String
         let regexp = makeRegex regexpStr :: Regex
-        let conf = OligsDesignerConfig def def 0 5
+        let conf = OligsDesignerInnerConfig CHO 60 [regexp] 0 5
         let dna = "GCCAGCACCAAGGGCCCCAGCGTGTTTCCTCTGGCCCCTTCTTCTAAGTCTACCTCTGGCGGCACCGCCGCCCTGGGCTGTCTGGTGAAG"
         
-        let (Right res) = runExcept $ fixForbidden gen conf [regexp] dna
+        let (Right res) = runExcept $ fixForbidden gen conf dna
         let isMatch = regexp `match` prettyDNA res :: Bool
         trace (prettyDNA res) $ isMatch `shouldBe` False
         
@@ -43,10 +43,10 @@ forbiddenConstantFixerSpec =
         let gen = mkStdGen 429
         let regexpStr = "TGG" :: String
         let regexp = makeRegex regexpStr :: Regex
-        let conf = OligsDesignerConfig def def 0 5
+        let conf = OligsDesignerInnerConfig CHO 60 [regexp] 0 5
         let dna = "GCCTGGACCAAGGGCCCCAGCGTGTTTCCTCTGGCCCCTTCTTCTAAGTCTACCTCTGGCGGCACCGCCGCCCTGGGCTGTCTGGTGAAG"
         
-        let (Left msg) = runExcept $ fixForbidden gen conf [regexp] dna
+        let (Left msg) = runExcept $ fixForbidden gen conf dna
         msg `shouldBe` "cannot fix this shit"
         
 fixTowForbiddenSpec :: Spec
@@ -56,10 +56,10 @@ fixTowForbiddenSpec =
         let gen = mkStdGen 3359
         let regexpStr = ["CAGG", "AATAAA", "GCCGCCATGG"] :: [String]
         let regexps = map makeRegex regexpStr :: [Regex]
-        let conf = OligsDesignerConfig def def 0 5
+        let conf = OligsDesignerInnerConfig CHO 60 regexps 0 5
         let dna = "CAGGCCGCCATGGGCAATAAACAGGTG" --CAGG  AATAAA  GCCGCCATGG
 
-        let (Right res) = runExcept $ fixForbidden gen conf regexps dna
+        let (Right res) = runExcept $ fixForbidden gen conf dna
         let matches = [regexp `match` prettyDNA res :: Bool | regexp <- regexps]
         trace (prettyDNA res) $ filter (== True) matches `shouldBe` []
         
@@ -70,9 +70,9 @@ fixTowForbiddenRealDataSpec =
         let gen = mkStdGen 3358
         let regexpStr = ["CAGG", "AATAAA", "GCCGCCATGG"] :: [String]
         let regexps = map makeRegex regexpStr :: [Regex]
-        let conf = OligsDesignerConfig def def 0 5
+        let conf = OligsDesignerInnerConfig CHO 60 regexps 0 5
         let dna = "CAGGTGCAGCTGCAGGAGAGCGGCGGCGGCCTGGTGCAGCCTGGCGGCTCTCTGAGACTGTCTTGTGCCGCCTCTGGCATCCAGTTCAAGTTCCACAACATGGGCTGGGGCAGACAAGCCCCTGGCAAGCAGAGAGAGCACGTGGCCGCCATGGATCACGGCAGAAGAACCATCTACGCCGACCACGTGAAGGGCAGATTCACCATCTCTAGAGACAACACCAGGAACACCGTGTACCTGCAGATGAACTCTCTGAAGGCCGAGGACACCGCCATCTACTACTGCAAGGCCTCTGCCGGCAGAAGAGTGTACTGGGGCCAAGGCACCATGGTGACCGTGTCTTCT" --CAGG  AATAAA  GCCGCCATGG
 
-        let (Right res) = runExcept $ fixForbidden gen conf regexps dna
+        let (Right res) = runExcept $ fixForbidden gen conf dna
         let matches = [regexp `match` prettyDNA res :: Bool | regexp <- regexps]
         trace (prettyDNA res) $ filter (== True) matches `shouldBe` []

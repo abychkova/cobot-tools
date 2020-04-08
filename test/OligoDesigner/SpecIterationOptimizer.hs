@@ -6,8 +6,9 @@ import System.Random (mkStdGen)
 import Bio.Tools.Sequence.OligoDesigner.Optimizer.IterativeOptimizer (optimize)
 import Bio.Tools.Sequence.OligoDesigner.Scorer (commonScore)
 import Bio.Tools.Sequence.OligoDesigner.Types (OligsDesignerConfig(..), OligsSplittingConfig(..), OligSet(..), Olig(..),
-    OligSplitting(..))
+    OligSplitting(..), OligsDesignerInnerConfig(..))
 import Data.Default (def)
+import Bio.Tools.Sequence.CodonOptimization.Types (Organism(..))
 
 --TODO: test me with forbidden regexp
 optimizerSpec :: Spec
@@ -21,30 +22,30 @@ optimizeWithZeroIterationsSpec :: Spec
 optimizeWithZeroIterationsSpec =
     describe "optimizeWithZeroIterationsSpec" $
     it "" $ do
-        let conf = OligsDesignerConfig def (OligsSplittingConfig 60 1 10) 0 1
+        let conf = OligsDesignerInnerConfig CHO 43 [] 0 1
         let gen = mkStdGen 63
-        let res = evalState (optimize conf [] oligs) gen
+        let res = evalState (optimize conf oligs) gen
         res `shouldBe` oligs
 
 optimizeWithOneIterationsSpec :: Spec
 optimizeWithOneIterationsSpec =
     describe "optimizeWithOneIterationsSpec" $
     it "" $ do
-        let conf = OligsDesignerConfig def (OligsSplittingConfig 60 1 10) 1 1
+        let conf = OligsDesignerInnerConfig CHO 43 [] 1 1
         let gen = mkStdGen 63
-        let res = evalState (optimize conf [] oligs) gen
+        let res = evalState (optimize conf oligs) gen
         res `shouldNotBe` oligs
-        commonScore conf res `shouldSatisfy` (> commonScore conf oligs)
+        commonScore 43 res `shouldSatisfy` (> commonScore 43 oligs)
 
 optimizeTillStableScoreSpec :: Spec
 optimizeTillStableScoreSpec =
     describe "optimizeTillStableScoreSpec" $
     it "" $ do
-        let conf = OligsDesignerConfig def (OligsSplittingConfig 60 1 10) 8 1
+        let conf = OligsDesignerInnerConfig CHO 43 [] 8 1
         let gen = mkStdGen 63
-        let res = evalState (optimize conf [] oligs) gen
+        let res = evalState (optimize conf oligs) gen
         res `shouldNotBe` oligs
-        commonScore conf res `shouldSatisfy` (> commonScore conf oligs)
+        commonScore 43 res `shouldSatisfy` (> commonScore 43 oligs)
 
 oligs :: OligSet
 oligs = OligSet [ Olig "GCTAGCACCAAGGGCCCCAGCGTGTTTCCTCTGGCCCCTAGCAGCAAGAGCACCAGCGGC" 0 60

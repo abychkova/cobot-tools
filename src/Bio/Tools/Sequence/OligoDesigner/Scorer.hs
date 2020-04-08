@@ -13,7 +13,7 @@ import           Bio.Tools.Sequence.OligoDesigner.Types       (MatrixCell (..),
                                                                Olig (..),
                                                                OligLight (..),
                                                                OligSet (..),
-                                                               OligsDesignerConfig (..),
+                                                               OligsDesignerInnerConfig (..),
                                                                standardTemperature, emptyMatrixCell)
 import           Bio.Tools.Sequence.OligoDesigner.Utils       (assemble, mixOligs)
 import           Bio.Tools.Sequence.OligoDesigner.RNAMatrixBuilder       (rnaMatrix)
@@ -25,12 +25,12 @@ import Bio.Tools.Sequence.CodonOptimization.Types (gcContentDesired)
 import Data.Text (pack)
 import Data.Matrix (Matrix, nrows, ncols, (!), prettyMatrix)
 
-commonScore :: OligsDesignerConfig -> OligSet -> Double
-commonScore (OligsDesignerConfig codonConf _ _ _) oligs = scoreValue
+commonScore :: Double -> OligSet -> Double
+commonScore targetGC oligs = scoreValue
   where
     rnaScoreValue = realToFrac $ rnaScore oligs
     oligsGCValue = oligsGCContentDifference oligs
-    gcScoreValue = gcContentScoreByOligs oligs (gcContentDesired codonConf)
+    gcScoreValue = gcContentScoreByOligs oligs targetGC
     scoreValue = rnaScoreValue * gcScoreValue / oligsGCValue
     
 rnaMatrixScore :: Matrix MatrixCell -> Float

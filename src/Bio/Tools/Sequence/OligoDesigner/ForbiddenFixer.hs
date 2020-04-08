@@ -12,21 +12,19 @@ import Control.Monad.Except (Except, throwError)
 import Text.Regex.TDFA (Regex, makeRegex, match, getAllMatches)
 import Bio.Tools.Sequence.OligoDesigner.Prettifier (prettyDNA)
 import Bio.Tools.Sequence.OligoDesigner.Utils (mutate, getAAIndex)
-import Bio.Tools.Sequence.OligoDesigner.Types (OligsDesignerConfig(..))
+import Bio.Tools.Sequence.OligoDesigner.Types (OligsDesignerInnerConfig(..))
 import Bio.Tools.Sequence.CodonOptimization (forbiddenSequence, organism)
 import Bio.Tools.Sequence.CodonOptimization.Types (Organism)
 import Debug.Trace (trace)
 
-fixForbidden :: StdGen -> OligsDesignerConfig -> [Regex] -> [DNA] -> Except String [DNA]
-fixForbidden gen conf regexes dna = do
-    let organismType = organism $ codonOptimizationConfig conf
-    let maxIteration = maxFixForbiddenIteration conf
-    let res = evalState (fixIterative organismType regexes (maxIteration + 1) dna) gen
+fixForbidden :: StdGen -> OligsDesignerInnerConfig -> [DNA] -> Except String [DNA]
+fixForbidden gen (OligsDesignerInnerConfig organism _ regexes _ maxIteration) dna = do
+    let res = evalState (fixIterative organism regexes (maxIteration + 1) dna) gen
     if null res then throwError "cannot fix this shit" else return res
 
 fixIterative :: Organism -> [Regex] -> Int -> [DNA] -> State StdGen [DNA]
-fixIterative organismType regexes 0 dna         = return []
-fixIterative organismType regexes iteration dna =
+fixIterative organism regexes 0 dna         = return []
+fixIterative organism regexes iteration dna =
     case getPositions (prettyDNA dna) of
         []        -> return dna
         positions -> trace ("dna:" ++ prettyDNA dna) $ trace ("fix positions:" ++ show positions) $ fixPositions positions [dna]
@@ -36,7 +34,7 @@ fixIterative organismType regexes iteration dna =
         let filtered = filterForbidden regexes results
         if null filtered then return [] else return $ head filtered
     fixPositions (position : xs) results = do
-      variants <- sequence [mutate organismType result position | result <- results]
+      variants <- sequence [mutate organism result position | result <- results]
       fixPositions xs (concat variants)
 
     getPositions :: String -> [(Int, Int)]

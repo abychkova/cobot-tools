@@ -12,6 +12,7 @@ module Bio.Tools.Sequence.OligoDesigner.Types
     ,OligSplitting(..)
     ,OligsDesignerConfig(..)
     ,OligsSplittingConfig(..)
+    ,OligsDesignerInnerConfig(..)
     ,standardTemperature
     ,emptyMatrixCell) where
 
@@ -23,6 +24,8 @@ import Control.DeepSeq (NFData)
 import           Data.Default (Default (..))
 import Data.Matrix (Matrix)
 import Data.Text (Text)
+import Bio.Tools.Sequence.CodonOptimization.Types (Organism)
+import Text.Regex.TDFA (Regex)
 
 type SequenceLen =  Int
 type GapSize = Int
@@ -63,4 +66,12 @@ data OligsDesignerConfig = OligsDesignerConfig {
     oligSplittingConfig        :: OligsSplittingConfig,
     maxOptimizationIteration   :: Int,
     maxFixForbiddenIteration   :: Int
+}
+
+data OligsDesignerInnerConfig = OligsDesignerInnerConfig {
+    organismType            :: Organism,
+    gcTarget                :: Double,
+    regexes                 :: [Regex],
+    optimizationIteration   :: Int,
+    fixForbiddenIteration   :: Int
 }

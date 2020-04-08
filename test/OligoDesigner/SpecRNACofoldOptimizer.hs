@@ -6,7 +6,8 @@ import Bio.Tools.Sequence.OligoDesigner.Prettifier (prettyMatrixCell)
 import Bio.Tools.Sequence.OligoDesigner.Optimizer.RNACofoldOptimizer (maxPairMutationIndexes, minPairMutationIndexes,
     mutationIndexes, rnaOptimize)
 import Bio.Tools.Sequence.OligoDesigner.Types     (MatrixCell(..), OligBounds, OligSplitting(..), OligSet(..),
-                                                    OligsSplittingConfig(..), OligsDesignerConfig(..), Olig(..), OligLight(..))
+                                                    OligsSplittingConfig(..), OligsDesignerConfig(..), Olig(..), OligLight(..), 
+                                                    OligsDesignerInnerConfig(..))
 import Data.Matrix (matrix)
 import System.Random (mkStdGen)
 import Control.Monad.State (evalState)
@@ -155,9 +156,9 @@ rnaOptimizeSpec =
                     , Olig "GCTAGGCTTGTGGTTCACGTTGCAGATGTAGGTCTGGGTGCCCAGGCTGCTGCTAGGCAC" 210 270
                     ]
                     coords
-        let conf = OligsDesignerConfig def (OligsSplittingConfig 60 1 10) 0 1
+        let conf = OligsDesignerInnerConfig CHO 43 [] 0 1
         let gen = mkStdGen 499
-        let res = evalState (rnaOptimize conf [] oligs) gen
+        let res = evalState (rnaOptimize conf oligs) gen
 
         assemble res `shouldBe` "GCTAGCACCAAGGGCCCCAGCGTGTTTCCTCTGGCCCCTAGCAGCAAGAGCACCAGCGGGGGCACCGCCGCCCTGGGCTGCCTGGTGAAGGACTACTTCCCTGAGCCTGTGACCGTGAGCTGGAACAGCGGCGCCCTGACCAGCGGCGTGCACACCTTCCCTGCCGTGCTGCAGAGCAGCGGCCTGTACAGCCTGAGCAGCGTGGTGACCGTGCCTAGCAGCAGCCTGGGCACCCAGACCTACATCTGCAACGTGAACCACAAGCCTAGC"
         res `shouldBe` OligSet
