@@ -10,7 +10,6 @@ module Bio.Tools.Sequence.OligoDesigner.Utils
  ,mutateSlice
  ,getAAIndex
  ,mixOligs
- ,notMatch
  ,compareBySecond
  ) where
 
@@ -35,7 +34,6 @@ import           System.Random                                  (StdGen,
 import Debug.Trace 
 import Bio.Tools.Sequence.CodonOptimization (CodonOptimizationConfig(..))
 import Text.Regex.TDFA (Regex, makeRegex, match)
-import Bio.Tools.Sequence.OligoDesigner.Prettifier (prettyDNA)
 import Control.Monad.State.Lazy (gets)
 import System.Random.Shuffle (shuffle')
         
@@ -112,21 +110,16 @@ translate :: [DNA] -> [DNA]
 translate = map cNA
 
 --FIXME: что если вернется пустой список вариантов, потому что во всех есть запрещенки? что сказать пользователю?
-mutate :: Organism -> [Regex] -> [DNA] -> (Int, Int) -> State StdGen [[DNA]]
-mutate organism regexes dna interval@(start, end) | validateInterval interval (length dna) = error ("invalid interval for mutation: " ++ show interval)
-                                                  | otherwise = do
+mutate :: Organism -> [DNA] -> (Int, Int) -> State StdGen [[DNA]]
+mutate organism dna interval@(start, end) | validateInterval interval (length dna) = error ("invalid interval for mutation: " ++ show interval)
+                                          | otherwise = do
     let sliceIndex = (start - 1) * 3
     let sliceEndIndex = (end - 1) * 3 + 3
     let begin = take sliceIndex dna
     let mutated = slice sliceIndex sliceEndIndex dna
     let final = drop sliceEndIndex dna
     variants <- mutateSlice organism mutated
-    let resultSequences = map (\var -> begin ++ var ++ final) variants
-    return $ filter (notMatch regexes) resultSequences --FIXME: пусть проверка запрещенок будет не здесь!! 
-
---TODO: test me
-notMatch :: [Regex] -> [DNA] -> Bool
-notMatch regexes dna = True `notElem` [regex `match` prettyDNA dna :: Bool | regex <- regexes]
+    return $ map (\var -> begin ++ var ++ final) variants
 
 --TODO: test me  
 validateInterval :: (Int, Int) -> Int -> Bool

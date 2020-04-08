@@ -1,5 +1,6 @@
 module Bio.Tools.Sequence.OligoDesigner.ForbiddenFixer(
     fixForbidden
+   ,filterForbidden
 ) where
 
 import Bio.NucleicAcid.Nucleotide (DNA)
@@ -10,7 +11,7 @@ import Control.Monad.State (State, evalState)
 import Control.Monad.Except (Except, throwError)
 import Text.Regex.TDFA (Regex, makeRegex, match, getAllMatches)
 import Bio.Tools.Sequence.OligoDesigner.Prettifier (prettyDNA)
-import Bio.Tools.Sequence.OligoDesigner.Utils (mutate, getAAIndex, notMatch)
+import Bio.Tools.Sequence.OligoDesigner.Utils (mutate, getAAIndex)
 import Bio.Tools.Sequence.OligoDesigner.Types (OligsDesignerConfig(..))
 import Bio.Tools.Sequence.CodonOptimization (forbiddenSequence, organism)
 import Bio.Tools.Sequence.CodonOptimization.Types (Organism)
@@ -32,10 +33,10 @@ fixIterative organismType regexes iteration dna =
   where
     fixPositions :: [(Int, Int)] -> [[DNA]] -> State StdGen [DNA]
     fixPositions [] results               = do
-        let filtered = filter (notMatch regexes) results
+        let filtered = filterForbidden regexes results
         if null filtered then return [] else return $ head filtered
     fixPositions (position : xs) results = do
-      variants <- sequence [mutate organismType [] result position | result <- results]
+      variants <- sequence [mutate organismType result position | result <- results]
       fixPositions xs (concat variants)
 
     getPositions :: String -> [(Int, Int)]
@@ -43,3 +44,9 @@ fixIterative organismType regexes iteration dna =
       where
         matches = concat [getAllMatches (regex `match` dna) :: [(Int, Int)] | regex <- regexes]
         res = [(getAAIndex begin, getAAIndex (begin + len)) | (begin, len) <- matches]
+        
+filterForbidden :: [Regex] -> [[DNA]] -> [[DNA]]
+filterForbidden regexes = filter notMatch
+  where
+    notMatch :: [DNA] -> Bool
+    notMatch dna = True `notElem` [regex `match` prettyDNA dna :: Bool | regex <- regexes]

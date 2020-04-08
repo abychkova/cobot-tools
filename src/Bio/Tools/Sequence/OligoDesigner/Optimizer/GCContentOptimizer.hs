@@ -7,6 +7,7 @@ import Bio.Tools.Sequence.OligoDesigner.Scorer (gcContent, oligsGCContentDiffere
 import Control.Monad.State (State)
 import System.Random (StdGen)
 import Bio.Tools.Sequence.CodonOptimization.Types (gcContentDesired, organism)
+import Bio.Tools.Sequence.OligoDesigner.ForbiddenFixer (filterForbidden)
 import Data.List (maximumBy, minimumBy, findIndex)
 import Bio.Tools.Sequence.CodonOptimization (CodonOptimizationConfig(..))
 import Debug.Trace
@@ -26,8 +27,9 @@ gcContentOptimize conf regexes oligs@(OligSet fwd rvsd splitting) = do
 
     let indexesToMutate = (getAAIndex $ start farthestFromTarget, getAAIndex $ end farthestFromTarget - 1)
     let dna = assemble oligs
-    varSequences <- mutate organismType regexes dna indexesToMutate
-    let variants = map (buildOligSet splitting) varSequences
+    varSequences <- mutate organismType dna indexesToMutate
+    let filtered =  filterForbidden regexes varSequences
+    let variants = map (buildOligSet splitting) filtered
     let varsToScore = map (\vars -> (vars, oligsGCContentDifference vars)) variants
     return $ fst $ minimumBy compareBySecond varsToScore
   where

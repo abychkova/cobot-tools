@@ -14,6 +14,7 @@ import Bio.Tools.Sequence.ViennaRNA.Fold (fold)
 import Text.Regex.TDFA (Regex)
 import Bio.Tools.Sequence.CodonOptimization (gcContentDesired)
 import Data.Matrix (Matrix, nrows, ncols, toList, toLists)
+import Bio.Tools.Sequence.OligoDesigner.Utils (mixOligs)
 
 
 prettyDNA :: [DNA] -> String
@@ -49,13 +50,3 @@ prettyMatrixCell mtx = str
     
     cellToStr :: MatrixCell -> String
     cellToStr (MatrixCell _ _ rna) = show rna ++ "\t"
-    
-    
--- TODO: transfer this into Utils
-mixOligs :: OligSet -> [Olig]
-mixOligs (OligSet forward reversed _) = mix forward reversed
-  where
-    mix :: [a] -> [a] -> [a]
-    mix (x:xs) (y:ys) = x : y : mix xs ys
-    mix x []          = x
-    mix [] y          = y

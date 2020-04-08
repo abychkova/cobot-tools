@@ -29,6 +29,7 @@ import Text.Regex.TDFA (Regex)
 import Debug.Trace
 import Bio.Tools.Sequence.OligoDesigner.RNAMatrixBuilder (rnaMatrix, rebuildMatrix)
 import Bio.Tools.Sequence.OligoDesigner.Prettifier (prettyDNA, prettyMatrixCell, prettyOligSet)
+import Bio.Tools.Sequence.OligoDesigner.ForbiddenFixer (filterForbidden)
 
 rnaOptimize :: OligsDesignerConfig -> [Regex] -> OligSet -> State StdGen OligSet
 rnaOptimize conf regexes oligs@(OligSet _ _ splitting) = do
@@ -36,8 +37,9 @@ rnaOptimize conf regexes oligs@(OligSet _ _ splitting) = do
     let mtx = rnaMatrix oligs
     let indexesToMutate = mutationIndexes mtx
     let dna = assemble oligs
-    sequenceVariants <- concat <$> mapM (mutate organismType regexes dna) indexesToMutate
-    let oligsVariants = map (buildOligSet splitting) sequenceVariants
+    sequenceVariants <- concat <$> mapM (mutate organismType dna) indexesToMutate
+    let filtered =  filterForbidden regexes sequenceVariants
+    let oligsVariants = map (buildOligSet splitting) filtered
     let oligs2score = map (scoreOligs mtx) oligsVariants
     return $ fst $ maximumBy compareBySecond oligs2score
   where
