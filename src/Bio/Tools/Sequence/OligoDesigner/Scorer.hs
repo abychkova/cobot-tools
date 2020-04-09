@@ -44,7 +44,6 @@ rnaMatrixScore oligsMatrix = aboveDiagonalScore - otherScore
 rnaScore :: OligSet -> Float
 rnaScore oligs = rnaMatrixScore $ rnaMatrix oligs
 
---TODO: test me
 gcContentScoreByOligs :: OligSet -> Double -> Double
 gcContentScoreByOligs oligs = gcContentScoreBySequence (assemble oligs)
 

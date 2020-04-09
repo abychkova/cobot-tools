@@ -70,10 +70,10 @@ slice start end xs | start < 0 || end < 0 || start > end = error "incorrect coor
 
 translate :: [DNA] -> [DNA]
 translate = map cNA
-            
---TODO: test me      
+              
 getAAIndex :: Int -> Int
-getAAIndex coordinate = ceiling (realToFrac (coordinate + 1) / 3)
+getAAIndex coordinate | coordinate < 0 = error "incorrect coordinates"
+                      | otherwise      = ceiling (realToFrac (coordinate + 1) / 3)
 
 compareBySecond :: Ord b => (a, b) -> (a, b) -> Ordering
 compareBySecond p1 p2 = compare (snd p1) (snd p2)

@@ -9,7 +9,7 @@ import           Bio.Tools.Sequence.OligoDesigner.Types (Olig (..),
                                                          OligSplitting (..))
 import           Bio.Tools.Sequence.OligoDesigner.Utils.CommonUtils (assemble,
                                                          slice,
-                                                         buildOligSet,translate)
+                                                         buildOligSet,translate, getAAIndex, mixOligs)
 import           Control.Exception                      (evaluate)
 import           Control.Monad.State                    (State, evalState, get,
                                                          put, runState)
@@ -29,6 +29,8 @@ import Control.DeepSeq (force)
 utilsSpec :: Spec
 utilsSpec =
     describe "utilsSpec" $ do
+        mixOligsSpec
+        
         assembleSpec
         assembleRealSpec
         assembleWithGapSpec
@@ -45,6 +47,8 @@ utilsSpec =
         buildOligSetWithIncorrectSplittingSpec
         buildOligSetWithOutOfBoundSplittingSpec
         buildOligSetWithOneSplittingCoordinateSpec
+        
+        getAAIndexSpec
 
 assembleSpec :: Spec
 assembleSpec =
@@ -215,3 +219,44 @@ buildOligSetWithIncorrectSplittingSpec =
 
         let splitting' = OligSplitting [(10, 5)] [(29, 670)]
         (evaluate . force) (buildOligSet splitting dna) `shouldThrow` errorCall "incorrect coordinates"
+        
+getAAIndexSpec :: Spec
+getAAIndexSpec =
+    describe "getAAIndexSpec" $
+    it "" $ do
+        getAAIndex 0 `shouldBe` 1
+        getAAIndex 1 `shouldBe` 1
+        getAAIndex 2 `shouldBe` 1
+        getAAIndex 3 `shouldBe` 2
+        getAAIndex 4 `shouldBe` 2
+        getAAIndex 5 `shouldBe` 2
+        evaluate (getAAIndex (-1)) `shouldThrow` errorCall "incorrect coordinates"
+        
+mixOligsSpec :: Spec
+mixOligsSpec =
+    describe "mixOligsSpec" $
+    it "" $ do
+        let oligSet = OligSet
+                         [Olig "GACATACAAATGACTCAAAGTCCATCTACTCTATCCGCGAGTGTCGGCGACCGCGT" 0 56,
+                          Olig "AACTATTACGTGCAGGGCTTCACAAAGCATCGGTTCGGCTTTAGCATGGTATCAGC" 56 112,
+                          Olig "AGAAGCCTGGGAAAGCTCCTAAGTTACTGATCTATAAGGCAAGTGCCCTGGAGAAC" 112 168,
+                          Olig "GGTGTTCCGTCTAGGTTTTCGGGCTCTGGTAGTGGGACCGAGTTCACACTGACAAT" 168 224,
+                          Olig "AAGCAGTCTCCAACCCGATGATTTCGCCACCTACTACTGCCAGCACCTGACCTTCG" 224 280]
+                         [Olig "GCTTTGTGAAGCCCTGCACGTAATAGTTACGCGGTCGCCGACACTCGCGGATAGAG" 28 84,
+                          Olig "AGTAACTTAGGAGCTTTCCCAGGCTTCTGCTGATACCATGCTAAAGCCGAACCGAT" 84 140,
+                          Olig "CAGAGCCCGAAAACCTAGACGGAACACCGTTCTCCAGGGCACTTGCCTTATAGATC" 140 196,
+                          Olig "GGCGAAATCATCGGGTTGGAGACTGCTTATTGTCAGTGTGAACTCGGTCCCACTAC" 196 252,
+                          Olig "TTTGATTTCCAACCTCGTCCCTTGTCCGAAGGTCAGGTGCTGGCAGTAGTAGGT" 252 306]
+                          (OligSplitting [(0, 56), (56, 112), (112, 168), (168, 224), (224, 280)]
+                                         [(28, 84), (84, 140), (140, 196), (196, 252), (252, 306)])
+        let res = mixOligs oligSet
+        res `shouldBe` [Olig "GACATACAAATGACTCAAAGTCCATCTACTCTATCCGCGAGTGTCGGCGACCGCGT" 0 56,
+                        Olig "GCTTTGTGAAGCCCTGCACGTAATAGTTACGCGGTCGCCGACACTCGCGGATAGAG" 28 84,
+                        Olig "AACTATTACGTGCAGGGCTTCACAAAGCATCGGTTCGGCTTTAGCATGGTATCAGC" 56 112,
+                        Olig "AGTAACTTAGGAGCTTTCCCAGGCTTCTGCTGATACCATGCTAAAGCCGAACCGAT" 84 140,
+                        Olig "AGAAGCCTGGGAAAGCTCCTAAGTTACTGATCTATAAGGCAAGTGCCCTGGAGAAC" 112 168,
+                        Olig "CAGAGCCCGAAAACCTAGACGGAACACCGTTCTCCAGGGCACTTGCCTTATAGATC" 140 196,
+                        Olig "GGTGTTCCGTCTAGGTTTTCGGGCTCTGGTAGTGGGACCGAGTTCACACTGACAAT" 168 224,
+                        Olig "GGCGAAATCATCGGGTTGGAGACTGCTTATTGTCAGTGTGAACTCGGTCCCACTAC" 196 252,
+                        Olig "AAGCAGTCTCCAACCCGATGATTTCGCCACCTACTACTGCCAGCACCTGACCTTCG" 224 280,
+                        Olig "TTTGATTTCCAACCTCGTCCCTTGTCCGAAGGTCAGGTGCTGGCAGTAGTAGGT" 252 306]

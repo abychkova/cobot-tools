@@ -20,7 +20,6 @@ import Control.Monad.State (get, put, gets)
 import System.Random.Shuffle (shuffle')
 import Bio.Tools.Sequence.OligoDesigner.Utils.CommonUtils (slice)
 
---TODO: correct exception instead
 oneMutation :: Organism -> Codon -> State StdGen [DNA]
 oneMutation organism codon = do
     let aa = fromMaybe (error ("cannot find aa for codon " ++ show codon)) (Map.lookup codon codon2ak)
@@ -53,7 +52,6 @@ weightedRandom items = do
     getWeightedItem randomValue acc ((x, w) : xs) | acc + w >= randomValue = x
                                                   | otherwise = getWeightedItem randomValue (acc + w) xs
 
---FIXME: что если вернется пустой список вариантов, потому что во всех есть запрещенки? что сказать пользователю?
 mutate :: Organism -> [DNA] -> (Int, Int) -> State StdGen [[DNA]]
 mutate organism dna interval@(start, end) | validateInterval interval (length dna) = error ("invalid interval for mutation: " ++ show interval)
                                           | otherwise = do
@@ -65,7 +63,6 @@ mutate organism dna interval@(start, end) | validateInterval interval (length dn
     variants <- mutateSlice organism mutated
     return $ map (\var -> begin ++ var ++ final) variants
 
---TODO: test me
 validateInterval :: (Int, Int) -> Int -> Bool
 validateInterval (start, end) len = start > end || start < 0 || end < 0 || start * 3 > len || end * 3 > len
 

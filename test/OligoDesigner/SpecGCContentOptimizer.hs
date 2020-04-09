@@ -15,7 +15,6 @@ import Bio.Tools.Sequence.CodonOptimization.Types (Organism(..), defaultForbidde
 import Bio.Tools.Sequence.OligoDesigner.Scorer (oligsGCContentDifference)
 import Debug.Trace (trace)
 
---TODO: test me with forbidden regexp
 gcContentOptimizerSpec :: Spec
 gcContentOptimizerSpec =
     describe "gcContentOptimizerSpec" $ do

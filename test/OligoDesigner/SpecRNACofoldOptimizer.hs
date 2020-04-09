@@ -19,7 +19,6 @@ import Control.Exception (evaluate)
 import Bio.Tools.Sequence.OligoDesigner.Utils.CommonUtils (assemble, translate)
 import Debug.Trace (trace)
 
---TODO: test me with forbidden regexp
 rnaOptimizerSpec :: Spec
 rnaOptimizerSpec =
     describe "rnaOptimizerSpec" $ do

@@ -102,7 +102,6 @@ mutateSliceRealRandomSpec =
         elem "TCTTTGCCGAACGAAGGCATG" res `shouldBe` True
         elem "TCTTTGCCGAACGAGGGAATG" res `shouldBe` True
 
---TODO: test me with forbidden regexp
 mutateSpec :: Spec
 mutateSpec =
     describe "mutateSpec" $
