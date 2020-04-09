@@ -2,6 +2,8 @@ module Bio.Tools.Sequence.OligoDesigner.Types
     (SequenceLen
     ,GapSize
     ,Codon
+    ,TargetGC
+    ,Weight
     ,MatrixCell(..)
     ,Olig(..)
     ,OligLight(..)
@@ -27,9 +29,11 @@ import Data.Text (Text)
 import Bio.Tools.Sequence.CodonOptimization.Types (Organism)
 import Text.Regex.TDFA (Regex)
 
-type SequenceLen =  Int
+type SequenceLen = Int
 type GapSize = Int
 
+type TargetGC = Double
+type Weight = Double
 type OligsCount = Int
 type OligSize = Int
 type OligBounds = (Int, Int)

@@ -1,7 +1,7 @@
 module Bio.Tools.Sequence.OligoDesigner.Optimizer.GCContentOptimizer where
 
 import Bio.NucleicAcid.Nucleotide (DNA(..))
-import Bio.Tools.Sequence.OligoDesigner.Types (Olig(..), OligsDesignerInnerConfig(..), OligSet(..))
+import Bio.Tools.Sequence.OligoDesigner.Types (Olig(..), OligsDesignerInnerConfig(..), OligSet(..), TargetGC)
 import Bio.Tools.Sequence.OligoDesigner.Utils.CommonUtils (assemble, getAAIndex, buildOligSet, compareBySecond)
 import Bio.Tools.Sequence.OligoDesigner.Utils.MutationUtils (mutateSlice, mutate)
 import Bio.Tools.Sequence.OligoDesigner.Scorer (gcContent, oligsGCContentDifference)
@@ -32,5 +32,5 @@ gcContentOptimize (OligsDesignerInnerConfig organism targetGC regexes _ _) oligs
     let varsToScore = map (\vars -> (vars, oligsGCContentDifference vars)) variants
     return $ fst $ minimumBy compareBySecond varsToScore
   where
-    distanceToTarget :: Double -> Olig -> Double
+    distanceToTarget :: TargetGC -> Olig -> Double
     distanceToTarget targetGC (Olig sequ _ _) = abs (gcContent sequ - targetGC)

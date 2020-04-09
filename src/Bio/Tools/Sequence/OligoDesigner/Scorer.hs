@@ -14,7 +14,7 @@ import           Bio.Tools.Sequence.OligoDesigner.Types       (MatrixCell (..),
                                                                OligLight (..),
                                                                OligSet (..),
                                                                OligsDesignerInnerConfig (..),
-                                                               standardTemperature, emptyMatrixCell)
+                                                               standardTemperature, emptyMatrixCell, TargetGC)
 import           Bio.Tools.Sequence.OligoDesigner.Utils.CommonUtils       (assemble, mixOligs)
 import           Bio.Tools.Sequence.OligoDesigner.Utils.RNAMatrixBuilder       (rnaMatrix)
 import           Bio.Tools.Sequence.ViennaRNA.Internal.Cofold (cofold)
@@ -25,7 +25,7 @@ import Bio.Tools.Sequence.CodonOptimization.Types (gcContentDesired)
 import Data.Text (pack)
 import Data.Matrix (Matrix, nrows, ncols, (!), prettyMatrix)
 
-commonScore :: Double -> OligSet -> Double
+commonScore :: TargetGC -> OligSet -> Double
 commonScore targetGC oligs = scoreValue
   where
     rnaScoreValue = realToFrac $ rnaScore oligs

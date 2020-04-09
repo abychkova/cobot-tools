@@ -9,7 +9,7 @@ module Bio.Tools.Sequence.OligoDesigner.Utils.MutationUtils (
 import Bio.NucleicAcid.Nucleotide.Type (DNA)
 import System.Random (StdGen, randomR)
 import Control.Monad.State.Lazy (State)
-import Bio.Tools.Sequence.OligoDesigner.Types (Codon)
+import Bio.Tools.Sequence.OligoDesigner.Types (Codon, Weight)
 import Bio.Tools.Sequence.CodonOptimization.Types (Organism)
 import           Data.Map                                       as Map (lookup)
 import Data.Maybe (fromMaybe)
@@ -35,10 +35,10 @@ randomCodon organism aa = do
     let codonToWeight = map (\codon -> (codon, codonWeight codon)) codons
     weightedRandom codonToWeight
   where
-    codonWeight :: [DNA] -> Double
+    codonWeight :: Codon -> Weight
     codonWeight codon = fromMaybe 0 (Map.lookup codon (codonFrequencies organism))
 
-weightedRandom :: [(a, Double)] -> State StdGen a
+weightedRandom :: [(a, Weight)] -> State StdGen a
 weightedRandom []    = error "cannot get random for empty array" --FIXME: normal exception instead
 weightedRandom items = do
     gen <- get
@@ -47,7 +47,7 @@ weightedRandom items = do
     let value = getWeightedItem random 0 (sortOn snd items)
     return value
   where
-    getWeightedItem :: Double -> Double -> [(a, Double)] -> a
+    getWeightedItem :: Double -> Double -> [(a, Weight)] -> a
     getWeightedItem _ _ []       = error "some strange situation"
     getWeightedItem _ _ [(x, _)] = x
     getWeightedItem randomValue acc ((x, w) : xs) | acc + w >= randomValue = x
