@@ -35,6 +35,7 @@ dependencies:
 - random-shuffle
 - regex-tdfa
 - text
+- transformers
 - QuickCheck
 
 library:

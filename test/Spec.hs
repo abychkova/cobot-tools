@@ -28,12 +28,12 @@ main = do
 --         codonOptimizationSpec
 
          -- OligoDesigner
---         oligoDesignerSplitterSpec
---         oligoDesignerScoreSpec
+         oligoDesignerSplitterSpec
+         oligoDesignerScoreSpec
          utilsSpec
---         mutationUtilsSpec
---         rnaOptimizerSpec
---         gcContentOptimizerSpec
---         optimizerSpec
---         fixerSpec
---         matrixBuilderSpec
+         mutationUtilsSpec
+         rnaOptimizerSpec
+         gcContentOptimizerSpec
+         optimizerSpec
+         fixerSpec
+         matrixBuilderSpec

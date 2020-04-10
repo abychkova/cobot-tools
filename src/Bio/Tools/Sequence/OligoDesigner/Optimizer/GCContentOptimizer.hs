@@ -14,8 +14,10 @@ import Bio.Tools.Sequence.CodonOptimization (CodonOptimizationConfig(..))
 import Debug.Trace
 import Text.Regex.TDFA (Regex)
 import Bio.Tools.Sequence.OligoDesigner.Utils.Prettifier (prettyOlig, prettyDNA)
+import Control.Monad.Trans.State.Lazy (StateT)
+import Control.Monad.Except (Except)
 
-gcContentOptimize :: OligsDesignerInnerConfig -> OligSet -> State StdGen OligSet
+gcContentOptimize :: OligsDesignerInnerConfig -> OligSet -> StateT StdGen (Except String) OligSet
 gcContentOptimize (OligsDesignerInnerConfig organism targetGC regexes _ _) oligs@(OligSet fwd rvsd splitting) = do
     let allOligs = fwd ++ rvsd
     let oligsToGc = map (\o -> (o, gcContent $ sequDNA o)) allOligs

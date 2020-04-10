@@ -15,6 +15,8 @@ import Bio.Tools.Sequence.CodonOptimization.Types (Organism(..))
 import Text.Regex.TDFA (Regex, makeRegex, match)
 import Bio.Tools.Sequence.OligoDesigner.Utils.Prettifier (prettyDNA)
 import Bio.Tools.Sequence.OligoDesigner.Utils.CommonUtils (assemble)
+import Control.Monad.State.Lazy (evalStateT)
+import Control.Monad.Except (runExcept)
 
 optimizerSpec :: Spec
 optimizerSpec =
@@ -29,7 +31,7 @@ optimizeWithZeroIterationsSpec =
     it "" $ do
         let conf = OligsDesignerInnerConfig CHO 43 [] 0 1
         let gen = mkStdGen 63
-        let res = evalState (optimize conf oligs) gen
+        let (Right res) = runExcept $ evalStateT (optimize conf oligs) gen
         res `shouldBe` oligs
 
 optimizeWithOneIterationsSpec :: Spec
@@ -38,7 +40,7 @@ optimizeWithOneIterationsSpec =
     it "" $ do
         let conf = OligsDesignerInnerConfig CHO 43 [] 1 1
         let gen = mkStdGen 64
-        let res = evalState (optimize conf oligs) gen
+        let (Right res) = runExcept $ evalStateT (optimize conf oligs) gen
         res `shouldNotBe` oligs
         commonScore 43 res `shouldSatisfy` (> commonScore 43 oligs)
 
@@ -48,7 +50,7 @@ optimizeTillStableScoreSpec =
     it "" $ do
         let conf = OligsDesignerInnerConfig CHO 43 [] 8 1
         let gen = mkStdGen 65
-        let res = evalState (optimize conf oligs) gen
+        let (Right res) = runExcept $ evalStateT (optimize conf oligs) gen
         res `shouldNotBe` oligs
         commonScore 43 res `shouldSatisfy` (> commonScore 43 oligs)
 

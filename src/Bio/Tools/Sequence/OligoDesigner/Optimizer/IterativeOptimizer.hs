@@ -11,18 +11,20 @@ import Control.Monad.State (State)
 import Bio.Tools.Sequence.OligoDesigner.Types (OligsDesignerInnerConfig(..), OligSet)
 import Debug.Trace 
 import Text.Regex.TDFA (Regex)
+import Control.Monad.Trans.State.Lazy (StateT)
+import Control.Monad.Except (Except)
 
 
-optimize :: OligsDesignerInnerConfig -> OligSet -> State StdGen OligSet
+optimize :: OligsDesignerInnerConfig -> OligSet -> StateT StdGen (Except String) OligSet
 optimize conf@(OligsDesignerInnerConfig _ targetGC _ maxIteration _) oligs = 
     optimizeIteration 0 [(oligs, commonScore targetGC oligs)]
   where
-    optimizationStep :: OligSet -> State StdGen [(OligSet, Double)]
+    optimizationStep :: OligSet -> StateT StdGen (Except String) [(OligSet, Double)]
     optimizationStep oligs =  do
        result <- rnaOptimize conf oligs >>= gcContentOptimize conf
        return [(result, commonScore targetGC result)]
 
-    optimizeIteration :: Int -> [(OligSet, Double)] -> State StdGen OligSet
+    optimizeIteration :: Int -> [(OligSet, Double)] -> StateT StdGen (Except String) OligSet
     optimizeIteration iteration results | iteration >= maxIteration =
                                                 trace ("We are reached maximum iteration count. results:" ++ show (map snd results)) $ return $ fst $ last results
                                         | iteration > 2 && isStableScore results =

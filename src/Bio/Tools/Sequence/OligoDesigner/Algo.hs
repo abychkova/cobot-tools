@@ -15,12 +15,12 @@ import           Bio.Tools.Sequence.OligoDesigner.Types                         
 import           Bio.Tools.Sequence.OligoDesigner.Utils.CommonUtils                         (buildOligSet)
 import           Control.Monad.Except                                           (Except, throwError)
 import           Control.Monad.IO.Class                                         (MonadIO, liftIO)
-import           Control.Monad.State                                            (State, evalState)
 import           System.Random                                                  (StdGen, getStdGen)
 import           Bio.Tools.Sequence.OligoDesigner.Scorer                        (commonScore)
 import Bio.Tools.Sequence.OligoDesigner.ForbiddenFixer(fixForbidden)
 import Text.Regex.TDFA (Regex, makeRegex)
 import Debug.Trace
+import Control.Monad.Trans.State.Lazy (StateT, evalStateT)
 
 designOligsDNA :: OligsSplittingConfig -> [DNA] -> Except String OligSet
 designOligsDNA conf dna =
@@ -32,13 +32,18 @@ getRandomSeed :: MonadIO m => m StdGen
 getRandomSeed = liftIO getStdGen
 
 designOligsAA :: StdGen -> OligsDesignerConfig -> [AA] -> Except String OligSet
-designOligsAA gen conf@(OligsDesignerConfig codonConf splittingConf _ _) aa = do
+designOligsAA gen conf@(OligsDesignerConfig codonConf _ _ _) aa = do
     let dna = optimizeCodonForAA codonConf aa
-    let innerConf = convertConfig conf
-    dnaFixed <- fixForbidden gen innerConf dna
-    oligs    <- designOligsDNA splittingConf dnaFixed
-    return $ evalState (optimize innerConf oligs) gen
+    evalStateT (runOptimization conf dna) gen
   where
+    runOptimization :: OligsDesignerConfig -> [DNA] -> StateT StdGen (Except String) OligSet
+    runOptimization conf@(OligsDesignerConfig _ splittingConf _ _) dna = do
+        let innerConf = convertConfig conf
+        dnaFixed <- fixForbidden innerConf dna
+        case split splittingConf (length dna) of
+                Just splitting -> optimize innerConf (buildOligSet splitting dna)
+                _              -> throwError "Cannot find splitting for parameters"
+                
     convertConfig :: OligsDesignerConfig -> OligsDesignerInnerConfig
     convertConfig conf = OligsDesignerInnerConfig organismType gcTarget regexes optIteration fixForbIteration
       where
@@ -48,3 +53,4 @@ designOligsAA gen conf@(OligsDesignerConfig codonConf splittingConf _ _) aa = do
         regexes = map makeRegex (forbiddenSequence codonConf) :: [Regex]
         optIteration = maxOptimizationIteration conf
         fixForbIteration = maxFixForbiddenIteration conf
+        

@@ -15,6 +15,7 @@ import Bio.Tools.Sequence.OligoDesigner.Types (OligsSplittingConfig(..), OligsDe
 import Data.Default (def)
 import Control.Monad.Except (runExcept)
 import Debug.Trace (trace)
+import Control.Monad.State.Lazy (runStateT, evalStateT)
 
 fixerSpec :: Spec
 fixerSpec =
@@ -34,7 +35,7 @@ forbiddenFixerSpec =
         let conf = OligsDesignerInnerConfig CHO 60 [regexp] 0 5
         let dna = "GCCAGCACCAAGGGCCCCAGCGTGTTTCCTCTGGCCCCTTCTTCTAAGTCTACCTCTGGCGGCACCGCCGCCCTGGGCTGTCTGGTGAAG"
         
-        let (Right res) = runExcept $ fixForbidden gen conf dna
+        let (Right res) = runExcept $ evalStateT (fixForbidden conf dna) gen
         let isMatch = regexp `match` prettyDNA res :: Bool
         trace (prettyDNA res) $ isMatch `shouldBe` False
         
@@ -48,7 +49,7 @@ forbiddenConstantFixerSpec =
         let conf = OligsDesignerInnerConfig CHO 60 [regexp] 0 5
         let dna = "GCCTGGACCAAGGGCCCCAGCGTGTTTCCTCTGGCCCCTTCTTCTAAGTCTACCTCTGGCGGCACCGCCGCCCTGGGCTGTCTGGTGAAG"
         
-        let (Left msg) = runExcept $ fixForbidden gen conf dna
+        let (Left msg) = runExcept $ evalStateT (fixForbidden conf dna) gen
         msg `shouldBe` "cannot fix this shit"
         
 fixTowForbiddenSpec :: Spec
@@ -61,7 +62,7 @@ fixTowForbiddenSpec =
         let conf = OligsDesignerInnerConfig CHO 60 regexps 0 5
         let dna = "CAGGCCGCCATGGGCAATAAACAGGTG" --CAGG  AATAAA  GCCGCCATGG
 
-        let (Right res) = runExcept $ fixForbidden gen conf dna
+        let (Right res) = runExcept $ evalStateT (fixForbidden conf dna) gen
         let matches = [regexp `match` prettyDNA res :: Bool | regexp <- regexps]
         trace (prettyDNA res) $ filter (== True) matches `shouldBe` []
         
@@ -75,6 +76,6 @@ fixTowForbiddenRealDataSpec =
         let conf = OligsDesignerInnerConfig CHO 60 regexps 0 5
         let dna = "CAGGTGCAGCTGCAGGAGAGCGGCGGCGGCCTGGTGCAGCCTGGCGGCTCTCTGAGACTGTCTTGTGCCGCCTCTGGCATCCAGTTCAAGTTCCACAACATGGGCTGGGGCAGACAAGCCCCTGGCAAGCAGAGAGAGCACGTGGCCGCCATGGATCACGGCAGAAGAACCATCTACGCCGACCACGTGAAGGGCAGATTCACCATCTCTAGAGACAACACCAGGAACACCGTGTACCTGCAGATGAACTCTCTGAAGGCCGAGGACACCGCCATCTACTACTGCAAGGCCTCTGCCGGCAGAAGAGTGTACTGGGGCCAAGGCACCATGGTGACCGTGTCTTCT" --CAGG  AATAAA  GCCGCCATGG
 
-        let (Right res) = runExcept $ fixForbidden gen conf dna
+        let (Right res) = runExcept $ evalStateT (fixForbidden conf dna) gen
         let matches = [regexp `match` prettyDNA res :: Bool | regexp <- regexps]
         trace (prettyDNA res) $ filter (== True) matches `shouldBe` []

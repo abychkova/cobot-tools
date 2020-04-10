@@ -14,6 +14,8 @@ import Bio.Tools.Sequence.CodonOptimization (CodonOptimizationConfig(..))
 import Bio.Tools.Sequence.CodonOptimization.Types (Organism(..), defaultForbiddenRegexp)
 import Bio.Tools.Sequence.OligoDesigner.Scorer (oligsGCContentDifference)
 import Debug.Trace (trace)
+import Control.Monad.State.Lazy (evalStateT)
+import Control.Monad.Except (runExcept)
 
 gcContentOptimizerSpec :: Spec
 gcContentOptimizerSpec =
@@ -33,7 +35,7 @@ optimizeGCContentSpec =
 
         let gen = mkStdGen 6637
         let conf = OligsDesignerInnerConfig CHO 43 [] 0 0
-        let res = evalState (gcContentOptimize conf oligs) gen
+        let (Right res) = runExcept $ evalStateT (gcContentOptimize conf oligs) gen
         oligsGCContentDifference res `shouldSatisfy` (<= oligsGCContentDifference oligs)
         res `shouldBe` OligSet
                         [Olig "TTGATCTTCC" 0 10, Olig "TTATACGGAA" 10 20] -- 40% & 30%
@@ -51,7 +53,7 @@ optimizeGCContentForDifferentTargetSpec =
 
         let gen = mkStdGen 6637
         let conf = OligsDesignerInnerConfig CHO 20 [] 0 0
-        let res = evalState (gcContentOptimize conf oligs) gen
+        let (Right res) = runExcept $ evalStateT (gcContentOptimize conf oligs) gen
         oligsGCContentDifference res `shouldSatisfy` (<= oligsGCContentDifference oligs)
         res `shouldBe` OligSet
                         [Olig "TTGATCTTCT" 0 10, Olig "TGATAAGAAA" 10 20] -- 30% & 20%
@@ -78,7 +80,7 @@ optimizeGCContentRealDataSpec =
                     coords
         let gen = mkStdGen 6637
         let conf = OligsDesignerInnerConfig CHO 43 [] 0 0
-        let res = evalState (gcContentOptimize conf oligs) gen
+        let (Right res) = runExcept $ evalStateT (gcContentOptimize conf oligs) gen
         oligsGCContentDifference res `shouldSatisfy` (<= oligsGCContentDifference oligs)
         res `shouldBe` OligSet
                     [ Olig "GCTAGCACCAAGGGCCCCAGCGTGTTTCCTCTGGCCCCTAGCAGCAAGAGCACCAGCGGC" 0 60      -- 66%

@@ -31,8 +31,10 @@ import Debug.Trace
 import Bio.Tools.Sequence.OligoDesigner.Utils.RNAMatrixBuilder (rnaMatrix, rebuildMatrix)
 import Bio.Tools.Sequence.OligoDesigner.Utils.Prettifier (prettyDNA, prettyMatrixCell, prettyOligSet)
 import Bio.Tools.Sequence.OligoDesigner.ForbiddenFixer (filterForbidden)
+import Control.Monad.Trans.State.Lazy (StateT)
+import Control.Monad.Except (Except)
 
-rnaOptimize :: OligsDesignerInnerConfig -> OligSet -> State StdGen OligSet
+rnaOptimize :: OligsDesignerInnerConfig -> OligSet -> StateT StdGen (Except String) OligSet
 rnaOptimize (OligsDesignerInnerConfig organism _ regexes _ _) oligs@(OligSet _ _ splitting) = do
     let mtx = rnaMatrix oligs
     let indexesToMutate = mutationIndexes mtx

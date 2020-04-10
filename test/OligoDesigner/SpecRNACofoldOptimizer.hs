@@ -18,6 +18,8 @@ import Data.Default (def)
 import Control.Exception (evaluate)
 import Bio.Tools.Sequence.OligoDesigner.Utils.CommonUtils (assemble, translate)
 import Debug.Trace (trace)
+import Control.Monad.State.Lazy (evalStateT)
+import Control.Monad.Except (runExcept)
 
 rnaOptimizerSpec :: Spec
 rnaOptimizerSpec =
@@ -159,7 +161,7 @@ rnaOptimizeSpec =
                     coords
         let conf = OligsDesignerInnerConfig CHO 43 [] 0 1
         let gen = mkStdGen 499
-        let res = evalState (rnaOptimize conf oligs) gen
+        let (Right res) = runExcept $ evalStateT (rnaOptimize conf oligs) gen
 
         assemble res `shouldBe` "GCTAGCACCAAGGGCCCCAGCGTGTTTCCTCTGGCCCCTAGCAGCAAGAGCACCAGCGGGGGCACCGCCGCCCTGGGCTGCCTGGTGAAGGACTACTTCCCTGAGCCTGTGACCGTGAGCTGGAACAGCGGCGCCCTGACCAGCGGCGTGCACACCTTCCCTGCCGTGCTGCAGAGCAGCGGCCTGTACAGCCTGAGCAGCGTGGTGACCGTGCCTAGCAGCAGCCTGGGCACCCAGACCTACATCTGCAACGTGAACCACAAGCCTAGC"
         res `shouldBe` OligSet

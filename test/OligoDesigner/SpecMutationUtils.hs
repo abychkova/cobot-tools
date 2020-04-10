@@ -9,13 +9,14 @@ import           Test.Hspec                             (Spec, describe,
                                                          shouldSatisfy,
                                                          shouldThrow, shouldNotBe)
 import System.Random (StdGen, getStdGen, mkStdGen)
-import Control.Monad.State.Lazy (State, get)
+import Control.Monad.State.Lazy (State, get, evalStateT, runStateT)
 import Bio.Tools.Sequence.CodonOptimization.Types (Organism(..))
 import Control.Monad.State (evalState, runState, put)
 import Bio.NucleicAcid.Nucleotide.Type (DNA(..))
 import Control.Exception (evaluate)
 import Bio.Protein.AminoAcid (AA(..))
 import Data.List (nub)
+import Control.Monad.Except (runExcept)
 
 mutationUtilsSpec :: Spec
 mutationUtilsSpec =
@@ -49,7 +50,7 @@ oneMutationSpec =
     describe "oneMutationSpec" $
     it "should return another codon for LYS (aa with 2 codons) for any random value" $ do
         gen <- getStdGen
-        let res = evalState (oneMutation CHO [DA, DA, DA]) gen
+        let (Right res) = runExcept $ evalStateT (oneMutation CHO [DA, DA, DA]) gen
         res `shouldBe` [DA, DA, DG]
 
 oneMutationForAAWithOneCodonSpec :: Spec
@@ -57,7 +58,7 @@ oneMutationForAAWithOneCodonSpec =
     describe "oneMutationForAAWithOneCodonSpec" $
     it "should return the same codon for TRP (aa with 1 codon) for any random value" $ do
         gen <- getStdGen
-        let res = evalState (oneMutation CHO [DT, DG, DG]) gen
+        let (Right res) = runExcept $ evalStateT (oneMutation CHO [DT, DG, DG]) gen
         res `shouldBe` [DT, DG, DG]
 
 runWeightedRandomNTimes :: StdGen -> [(Integer, Double)] -> Int -> [Integer]
@@ -67,7 +68,7 @@ runWeightedRandomNTimes gen arg n = evalState (helper n []) gen
     helper 0 acc = return acc
     helper count acc = do
         random <- get
-        let (res, newGen) = runState (weightedRandom arg) random
+        let (Right (res, newGen)) = runExcept $ runStateT (weightedRandom arg) random
         put newGen
         helper (count - 1) (res : acc)
         
@@ -77,7 +78,7 @@ mutateSliceSpec =
     describe "mutateSliceSpec" $
     it "" $ do
         let gen = mkStdGen 4
-        let res = evalState (mutateSlice CHO "AATATGCAT") gen
+        let (Right res) = runExcept $ evalStateT (mutateSlice CHO "AATATGCAT") gen
         res `shouldBe` ["AATATGCAT", "AACATGCAT", "AATATGCAC"]
 
 mutateSliceWhenThereIsNoVariantsSpec :: Spec
@@ -85,7 +86,7 @@ mutateSliceWhenThereIsNoVariantsSpec =
     describe "mutateSliceWhenThereIsNoVariantsSpec" $
     it "" $ do
         let gen = mkStdGen 4
-        let res = evalState (mutateSlice CHO "ATGTGG") gen
+        let (Right res) = runExcept $ evalStateT (mutateSlice CHO "ATGTGG") gen
         res `shouldBe` ["ATGTGG"]
 
 mutateSliceRealRandomSpec :: Spec
@@ -93,7 +94,7 @@ mutateSliceRealRandomSpec =
     describe "mutateSliceRealRandomSpec" $
     it "" $ do
         let gen = mkStdGen 9
-        let res = evalState (mutateSlice CHO "TCTTTGCCGAACGAGGGCATG") gen
+        let (Right res) = runExcept $ evalStateT (mutateSlice CHO "TCTTTGCCGAACGAGGGCATG") gen
         elem "TCTTTGCCGAACGAGGGCATG" res `shouldBe` True
         elem "AGCTTGCCGAACGAGGGCATG" res `shouldBe` True
         elem "TCTCTCCCGAACGAGGGCATG" res `shouldBe` True
@@ -108,7 +109,7 @@ mutateSpec =
     it "" $ do
         let dna = "ATGGAGACC" ++ "AATATGCAT" ++ "GACACCCTGCTGCTGTGGGTGCTGCTGCTG"
         let gen = mkStdGen 4
-        let res = evalState (mutate CHO dna (4, 6)) gen
+        let (Right res) = runExcept $ evalStateT (mutate CHO dna (4, 6)) gen
         res `shouldBe` ["ATGGAGACCAATATGCATGACACCCTGCTGCTGTGGGTGCTGCTGCTG",
                         "ATGGAGACCAACATGCATGACACCCTGCTGCTGTGGGTGCTGCTGCTG",
                         "ATGGAGACCAATATGCACGACACCCTGCTGCTGTGGGTGCTGCTGCTG"]
@@ -119,7 +120,7 @@ mutateFromStartSpec =
     it "" $ do
         let dna = "AATATGCAT" ++ "ATGGAGACCGACACCCTGCTGCTGTGGGTGCTGCTGCTG"
         let gen = mkStdGen 4
-        let res = evalState (mutate CHO dna (1, 3)) gen
+        let (Right res) = runExcept $ evalStateT (mutate CHO dna (1, 3)) gen
         res `shouldBe` ["AATATGCATATGGAGACCGACACCCTGCTGCTGTGGGTGCTGCTGCTG",
                         "AACATGCATATGGAGACCGACACCCTGCTGCTGTGGGTGCTGCTGCTG",
                         "AATATGCACATGGAGACCGACACCCTGCTGCTGTGGGTGCTGCTGCTG"]
@@ -130,7 +131,7 @@ mutateOneAASpec =
     it "" $ do
         let dna = "ATGGAGACC" ++ "AAT" ++ "ATGCATGACACCCTGCTGCTGTGGGTGCTGCTGCTG"
         let gen = mkStdGen 4
-        let res = evalState (mutate CHO dna (4, 4)) gen
+        let (Right res) = runExcept $ evalStateT (mutate CHO dna (4, 4)) gen
         res `shouldBe` ["ATGGAGACCAATATGCATGACACCCTGCTGCTGTGGGTGCTGCTGCTG",
                         "ATGGAGACCAACATGCATGACACCCTGCTGCTGTGGGTGCTGCTGCTG"]
 
@@ -139,24 +140,24 @@ mutateInvalidIntervalSpec =
     describe "mutateInvalidIntervalSpec" $
     it "" $ do
         let gen = mkStdGen 4
-        evaluate (evalState (mutate CHO "AATATGCATATG" (3, 1)) gen) `shouldThrow` errorCall "invalid interval for mutation: (3,1)"
-        evaluate (evalState (mutate CHO "AATATGCATATG" (-1, 1)) gen) `shouldThrow` errorCall "invalid interval for mutation: (-1,1)"
-        evaluate (evalState (mutate CHO "AATATGCATATG" (3, -10)) gen) `shouldThrow` errorCall "invalid interval for mutation: (3,-10)"
-        evaluate (evalState (mutate CHO "AATATGCATATG" (3, 5)) gen) `shouldThrow` errorCall "invalid interval for mutation: (3,5)"
-        evaluate (evalState (mutate CHO "AATATGCATATG" (5, 40)) gen) `shouldThrow` errorCall "invalid interval for mutation: (5,40)"
+        runExcept (evalStateT (mutate CHO "AATATGCATATG" (3, 1)) gen) `shouldBe` Left "invalid interval for mutation: (3,1)"
+        runExcept (evalStateT (mutate CHO "AATATGCATATG" (-1, 1)) gen) `shouldBe` Left "invalid interval for mutation: (-1,1)"
+        runExcept (evalStateT (mutate CHO "AATATGCATATG" (3, -10)) gen) `shouldBe` Left "invalid interval for mutation: (3,-10)"
+        runExcept (evalStateT (mutate CHO "AATATGCATATG" (3, 5)) gen) `shouldBe` Left "invalid interval for mutation: (3,5)"
+        runExcept (evalStateT (mutate CHO "AATATGCATATG" (5, 40)) gen) `shouldBe` Left "invalid interval for mutation: (5,40)"
 
 randomCodonSpec :: Spec
 randomCodonSpec =
     describe "randomCodonSpec" $
     it "should return two different codons for HIS for defferent random" $ do
         let gen = mkStdGen 3
-        let res = evalState (randomCodon CHO HIS) gen
-        let res2 = evalState (randomCodon CHO HIS) gen
+        let (Right res) = runExcept $ evalStateT (randomCodon CHO HIS) gen
+        let (Right res2) = runExcept $ evalStateT (randomCodon CHO HIS) gen
         res `shouldBe` [DC, DA, DT]
         res `shouldBe` res2
 
         let gen' = mkStdGen 5
-        let res' = evalState (randomCodon CHO HIS) gen'
+        let (Right res') = runExcept $ evalStateT (randomCodon CHO HIS) gen'
         res' `shouldBe` [DC, DA, DC]
 
 randomCodonForAAWithOneCodonSpec :: Spec
@@ -164,9 +165,9 @@ randomCodonForAAWithOneCodonSpec =
     describe "randomCodonForAAWithOneCodonSpec" $
     it "should return only codon for MET for defferent random" $ do
         let gen = mkStdGen 3
-        let res = evalState (randomCodon CHO MET) gen
+        let (Right res) = runExcept $ evalStateT (randomCodon CHO MET) gen
         let gen' = mkStdGen 500
-        let res' = evalState (randomCodon CHO MET) gen'
+        let (Right res') = runExcept $ evalStateT (randomCodon CHO MET) gen'
         res `shouldBe` [DA, DT, DG]
         res' `shouldBe` [DA, DT, DG]
 
@@ -175,7 +176,7 @@ randomCodonWeightedSpec =
     describe "randomCodonWeightedSpec" $
     it "should return most weghted codon for LEU maximum timmes" $ do
         let gens = [mkStdGen x | x <- [0,10..300]]
-        let res = [evalState (randomCodon CHO LEU) gen | gen <- gens]
+        let (Right res) = sequence [runExcept $ evalStateT (randomCodon CHO LEU) gen | gen <- gens]
         let ctg = length (filter (== [DC, DT, DG]) res)
         let tta = length (filter (== [DT, DT, DA]) res)
         let ttg = length (filter (== [DT, DT, DG]) res)
@@ -194,8 +195,8 @@ randomCodonForDifferentOrganismSpec =
     describe "randomCodonForDifferentOrganismSpec" $
     it "should return defferent codon for ILE for different organism" $ do
         let gen = mkStdGen 7
-        let humanRes = evalState (randomCodon Human ILE) gen
-        let ecoliRes = evalState (randomCodon EColi ILE) gen
+        let (Right humanRes) = runExcept $ evalStateT (randomCodon Human ILE) gen
+        let (Right ecoliRes) = runExcept $ evalStateT (randomCodon EColi ILE) gen
         humanRes `shouldNotBe` ecoliRes
         
 weightedRandomSimpleSpec :: Spec
@@ -204,13 +205,13 @@ weightedRandomSimpleSpec =
     it "should return weigthed random element" $ do
         gen <- getStdGen
         let arg = [(1, 1), (2, 0)] :: [(Integer, Double)]
-        let res = evalState (weightedRandom arg) gen
+        let (Right res) = runExcept $ evalStateT (weightedRandom arg) gen
         res `shouldBe` 1
         let arg2 = [(1, 0.99999999), (2, 0.00000001)] :: [(Integer, Double)]
-        let res2 = evalState (weightedRandom arg2) gen
+        let (Right res2) = runExcept $ evalStateT (weightedRandom arg2) gen
         res2 `shouldBe` 1
         let arg3 = [(1, 0), (2, 1)] :: [(Integer, Double)]
-        let res3 = evalState (weightedRandom arg3) gen
+        let (Right res3) = runExcept $ evalStateT (weightedRandom arg3) gen
         res3 `shouldBe` 2
 
 weightedRandomMultipleCallSpec :: Spec
@@ -254,7 +255,7 @@ weightedRandomAllZeroSpec =
     it "should return weigthed random element" $ do
         gen <- getStdGen
         let arg = [(1, 0), (2, 0)] :: [(Integer, Double)]
-        let res = evalState (weightedRandom arg) gen
+        let (Right res) = runExcept $ evalStateT (weightedRandom arg) gen
         res `shouldBe` 1
 
 weightedRandomForEmptySpec :: Spec
@@ -263,4 +264,4 @@ weightedRandomForEmptySpec =
     it "should return error for empty argument" $ do
         let empty = [] :: [(Double, Double)]
         gen <- getStdGen
-        evaluate (evalState (weightedRandom empty) gen) `shouldThrow` errorCall "cannot get random for empty array"
+        runExcept (evalStateT (weightedRandom empty) gen) `shouldBe` Left "cannot get random for empty array"
