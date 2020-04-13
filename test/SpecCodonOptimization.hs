@@ -2,7 +2,7 @@
 
 module SpecCodonOptimization where
 
-import           Bio.NucleicAcid.Nucleotide.Type                (DNA(..))
+import           Bio.NucleicAcid.Nucleotide.Type                (DNA (..))
 import           Bio.Protein.AminoAcid                          ()
 import           Bio.Protein.AminoAcid.Type                     (AA)
 import           Bio.Tools.Sequence.CodonOptimization.Algo      (optimizeCodonForAA,
@@ -13,19 +13,24 @@ import           Bio.Tools.Sequence.CodonOptimization.Constants (ak2Codon)
 import           Bio.Tools.Sequence.CodonOptimization.Types     (CodonOptimizationConfig (..),
                                                                  Organism (..),
                                                                  defaultForbiddenRegexp)
-import           Data.List                                      (foldl', maximumBy, minimumBy)
+import           Control.Monad                                  (replicateM)
+import           Data.List                                      (foldl',
+                                                                 maximumBy,
+                                                                 minimumBy)
 import           Data.Map                                       as Map (lookup)
 import           Data.Maybe                                     (fromMaybe)
 import           System.Random
 import           Test.Hspec                                     (Expectation,
                                                                  Spec, describe,
-                                                                 it, shouldBe,
-                                                                 shouldSatisfy, runIO)
+                                                                 it, runIO,
+                                                                 shouldBe,
+                                                                 shouldSatisfy)
 import           Test.Hspec.QuickCheck                          (prop)
 import           Test.QuickCheck.Gen                            (Gen, elements)
-import           Test.QuickCheck.Property                       (Property, forAll)
-import Text.Regex.TDFA (Regex, makeRegex)
-import Control.Monad (replicateM)
+import           Test.QuickCheck.Property                       (Property,
+                                                                 forAll)
+import           Text.Regex.TDFA                                (Regex,
+                                                                 makeRegex)
 
 confHuman :: CodonOptimizationConfig
 confHuman = CodonOptimizationConfig Human 3 1 1 0.5 1.4 40 0.001 2.6 100 1 60 defaultForbiddenRegexp

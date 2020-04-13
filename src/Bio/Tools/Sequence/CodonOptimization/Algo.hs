@@ -22,8 +22,9 @@ import           Data.List                                      (foldl',
                                                                  take)
 import           Data.Map                                       as Map (lookup)
 import           Data.Maybe                                     (fromMaybe)
-import           Text.Regex.TDFA                                (makeRegex, Regex, match)
-import Debug.Trace
+import           Text.Regex.TDFA                                (Regex,
+                                                                 makeRegex,
+                                                                 match)
 
 -- | optimizeCodonForDNA function does translation from [DNA] to [AA] and then calls 'optimizeCodonForAA'
 optimizeCodonForDNA :: CodonOptimizationConfig -- ^ Config data object. Contains main parameters of codon-optimization and all parameters for scoring function
@@ -45,7 +46,7 @@ optimizeCodonForAA :: CodonOptimizationConfig  -- ^ Config data object. Contains
            -> [AA]              -- ^ Initial, not optimized amino-acid sequence
            -> [DNA]             -- ^ Result, optimized nucleotide sequence
 optimizeCodonForAA cfg@(CodonOptimizationConfig organism initLen winLen _ _ _ _ _ _ _ _ _ forbiddenRegexp) aa =
-    traceMarker "optimizeCodonForAA: line 47" $ foldl' concatByScore initial variants
+    foldl' concatByScore initial variants
   where
     regex = map makeRegex forbiddenRegexp :: [Regex]
     lenAA = length aa
