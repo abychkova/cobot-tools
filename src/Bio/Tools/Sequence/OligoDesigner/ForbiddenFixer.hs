@@ -18,6 +18,7 @@ import Bio.Tools.Sequence.CodonOptimization (forbiddenSequence, organism)
 import Bio.Tools.Sequence.CodonOptimization.Types (Organism)
 import Debug.Trace (trace)
 import Control.Monad.Trans.State.Lazy (StateT, get)
+import Control.Monad.Trans (lift)
 
 fixForbidden :: OligsDesignerInnerConfig -> [DNA] -> StateT StdGen (Except String) [DNA]
 fixForbidden (OligsDesignerInnerConfig organism _ regexes _ maxIteration) dna = do
@@ -26,24 +27,30 @@ fixForbidden (OligsDesignerInnerConfig organism _ regexes _ maxIteration) dna = 
 
 fixIterative :: Organism -> [Regex] -> Int -> [DNA] -> StateT StdGen (Except String) [DNA]
 fixIterative organism regexes 0 dna         = return []
-fixIterative organism regexes iteration dna =
-    case getPositions (prettyDNA dna) of
+fixIterative organism regexes iteration dna = do
+    positions <- lift $ getPositions (prettyDNA dna)
+    case positions of
         []        -> return dna
         positions -> trace ("dna:" ++ prettyDNA dna) $ trace ("fix positions:" ++ show positions) $ fixPositions positions [dna]
   where
     fixPositions :: [(Int, Int)] -> [[DNA]] -> StateT StdGen (Except String) [DNA]
-    fixPositions [] results               = do
+    fixPositions [] results = do
         let filtered = filterForbidden regexes results
         if null filtered then return [] else return $ head filtered
     fixPositions (position : xs) results = do
-      variants <- sequence [mutate organism result position | result <- results]
+      variants <- sequence [mutate organism dna position | dna <- results]
       fixPositions xs (concat variants)
 
-    getPositions :: String -> [(Int, Int)]
-    getPositions dna = res
+    getPositions :: String -> Except String [(Int, Int)]
+    getPositions dna = do
+        let matches = concat [getAllMatches (regex `match` dna) :: [(Int, Int)] | regex <- regexes]
+        mapM toAAIndexes matches
       where
-        matches = concat [getAllMatches (regex `match` dna) :: [(Int, Int)] | regex <- regexes]
-        res = [(getAAIndex begin, getAAIndex (begin + len)) | (begin, len) <- matches]
+        toAAIndexes :: (Int, Int) -> Except String (Int, Int)
+        toAAIndexes (begin, len) = do
+            start <- getAAIndex begin
+            finish <- getAAIndex (begin + len)
+            return (start, finish)
 
 filterForbidden :: [Regex] -> [[DNA]] -> [[DNA]]
 filterForbidden regexes = filter notMatch

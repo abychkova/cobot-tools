@@ -19,11 +19,11 @@ rnaMatrix oligs = matrix rowCount rowCount generator
 
     generator :: (Int, Int) -> MatrixCell
     generator (i, j) | i > j     = emptyMatrixCell --ignore all above diagonal
-                     | otherwise = MatrixCell (OligLight (prettyDNA dna1) olig1) (OligLight (prettyDNA dna2) olig2) score
+                     | otherwise = MatrixCell (OligLight (prettyDNA dna1) olig1) (OligLight (prettyDNA dna2) olig2) rna
       where
         olig1@(Olig dna1 _ _) = allOligs !! (i - 1)
         olig2@(Olig dna2 _ _) = allOligs !! (j - 1)
-        score = fst $ cofold standardTemperature (dna1, dna2)
+        rna = fst $ cofold standardTemperature (dna1, dna2)
 
 rebuildMatrix :: Matrix MatrixCell -> OligSet -> Matrix MatrixCell
 rebuildMatrix oldMatrix oligs = newMatrix

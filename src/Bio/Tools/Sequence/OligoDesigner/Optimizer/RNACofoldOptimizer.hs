@@ -16,7 +16,7 @@ import           Bio.Tools.Sequence.OligoDesigner.Types     (MatrixCell (..),
                                                              OligsDesignerInnerConfig (..), standardTemperature, OligLight(..))
 import           Bio.Tools.Sequence.OligoDesigner.Utils.CommonUtils     (assemble,
                                                              buildOligSet,
-                                                             slice, getAAIndex, compareBySecond)
+                                                             slice, getAAIndex, compareBySecond, orderByScore)
 import Bio.Tools.Sequence.OligoDesigner.Utils.MutationUtils (oneMutation, mutateSlice, mutate)
 import           Control.Monad.State                        (State)
 import           Data.Foldable                              (minimumBy)
@@ -33,44 +33,50 @@ import Bio.Tools.Sequence.OligoDesigner.Utils.Prettifier (prettyDNA, prettyMatri
 import Bio.Tools.Sequence.OligoDesigner.ForbiddenFixer (filterForbidden)
 import Control.Monad.Trans.State.Lazy (StateT)
 import Control.Monad.Except (Except)
+import Control.Monad.Trans (lift)
 
 rnaOptimize :: OligsDesignerInnerConfig -> OligSet -> StateT StdGen (Except String) OligSet
 rnaOptimize (OligsDesignerInnerConfig organism _ regexes _ _) oligs@(OligSet _ _ splitting) = do
     let mtx = rnaMatrix oligs
-    let indexesToMutate = mutationIndexes mtx
+    indexesToMutate <- lift $ mutationIndexes mtx
     let dna = assemble oligs
     sequenceVariants <- concat <$> mapM (mutate organism dna) indexesToMutate
-    let filtered =  filterForbidden regexes sequenceVariants
-    let oligsVariants = map (buildOligSet splitting) filtered
-    let oligs2score = map (scoreOligs mtx) oligsVariants
-    return $ fst $ maximumBy compareBySecond oligs2score
+    let filtered = filterForbidden regexes sequenceVariants
+    oligsVariants <- lift $ mapM (buildOligSet splitting) filtered
+    let (_, max) = orderByScore oligsVariants (rnaMatrixScore . rebuildMatrix mtx)
+    return max
+
+mutationIndexes :: Matrix MatrixCell -> Except String [(Int, Int)]
+mutationIndexes oligsMatrix = do
+    let rowsCnt = nrows oligsMatrix
+    let colsCnt = ncols oligsMatrix
+
+    let minPair = minimumBy compareByRna [oligsMatrix ! (x , x + 1) | x <- [1 .. rowsCnt - 1]]
+    let maxPair = maximumBy compareByRna [oligsMatrix ! (x, y) | x <- [1 .. rowsCnt], y <- [1 .. colsCnt], x <= y && abs (x - y) /= 1]
+
+    minPairIndexes <- minPairMutationIndexes minPair
+    maxPairIndexes <- maxPairMutationIndexes maxPair
+
+    return $ nub (minPairIndexes ++ maxPairIndexes)
   where
-    scoreOligs :: Matrix MatrixCell -> OligSet -> (OligSet, Float)
-    scoreOligs mtx oligs = (oligs, score)
-      where
-        score = rnaMatrixScore $ rebuildMatrix mtx oligs
-
-mutationIndexes :: Matrix MatrixCell -> [(Int, Int)]
-mutationIndexes oligsMatrix = nub (minPairMutationIndexes minPair ++ maxPairMutationIndexes maxPair)
-  where
-    rowsCnt = nrows oligsMatrix
-    colsCnt = ncols oligsMatrix
-
-    minPair = minimumBy compareByRna [oligsMatrix ! (x , x + 1) | x <- [1 .. rowsCnt - 1]]
-    maxPair = maximumBy compareByRna [oligsMatrix ! (x, y) | x <- [1 .. rowsCnt], y <- [1 .. colsCnt], x <= y && abs (x - y) /= 1]
-
     compareByRna :: MatrixCell -> MatrixCell -> Ordering
     compareByRna (MatrixCell _ _ rna1) (MatrixCell _ _ rna2) = compare (abs rna1) (abs rna2)
 
-minPairMutationIndexes :: MatrixCell -> [(Int, Int)]
-minPairMutationIndexes (MatrixCell (OligLight _ (Olig _ start1 end1)) (OligLight _ (Olig _ start2 end2)) _) = indexes
-  where
-    intersection = [start1 .. end1 - 1] `intersect` [start2 .. end2 - 1]
-    indexes =
-        if null intersection
-            then []
-            else [(getAAIndex (head intersection), getAAIndex (last intersection))]
+minPairMutationIndexes :: MatrixCell -> Except String [(Int, Int)]
+minPairMutationIndexes (MatrixCell (OligLight _ (Olig _ start1 end1)) (OligLight _ (Olig _ start2 end2)) _) = do
+    let intersection = [start1 .. end1 - 1] `intersect` [start2 .. end2 - 1]
+    if null intersection
+        then return []
+        else (: []) <$> getAAIndexes (head intersection, last intersection)
 
-maxPairMutationIndexes :: MatrixCell -> [(Int, Int)]
-maxPairMutationIndexes (MatrixCell (OligLight _ (Olig _ start1 end1)) (OligLight _ (Olig _ start2 end2)) _) =
-    [(getAAIndex start1, getAAIndex $ end1 - 1), (getAAIndex start2, getAAIndex $ end2 - 1)]
+maxPairMutationIndexes :: MatrixCell -> Except String [(Int, Int)]
+maxPairMutationIndexes (MatrixCell (OligLight _ (Olig _ start1 end1)) (OligLight _ (Olig _ start2 end2)) _) = do
+    indexesAA1 <- getAAIndexes (start1, end1 - 1)
+    indexesAA2 <- getAAIndexes (start2, end2 - 1)
+    return [indexesAA1, indexesAA2]
+
+getAAIndexes :: (Int, Int) -> Except String (Int, Int)
+getAAIndexes (start, end) = do
+    startAA <- getAAIndex start
+    endAA   <- getAAIndex $ end
+    return (startAA, endAA)

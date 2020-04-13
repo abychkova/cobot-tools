@@ -60,20 +60,6 @@ library:
   c-sources:           src/Bio/Tools/Sequence/ViennaRNA/Native/vienna_rna_wrapper.c
   extra-libraries:     RNA
 
-executables:
-  oligo-designer:
-    main: Main.hs
-    other-modules: []
-    source-dirs: app
-    dependencies:
-      - cobot-tools
-    ghc-options:
-      - -O2
-      - -threaded
-      - -eventlog
-      - -rtsopts
-      - '"-with-rtsopts=-N1 -A64m -AL128m -I0"'
-
 tests:
   cobot-tools-test:
     main:                Spec.hs

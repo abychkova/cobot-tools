@@ -44,13 +44,13 @@ rnaMatrixScore oligsMatrix = aboveDiagonalScore - otherScore
 rnaScore :: OligSet -> Float
 rnaScore oligs = rnaMatrixScore $ rnaMatrix oligs
 
-gcContentScoreByOligs :: OligSet -> Double -> Double
+gcContentScoreByOligs :: OligSet -> TargetGC -> Double
 gcContentScoreByOligs oligs = gcContentScoreBySequence (assemble oligs)
 
-gcContentScoreBySequence :: [DNA] -> Double -> Double
-gcContentScoreBySequence dna target = score where
-    deltaGC = abs(target - gcContent dna)
-    score = 1 - deltaGC / target -- 1 хорошо и 0 плохо
+gcContentScoreBySequence :: [DNA] -> TargetGC -> Double
+gcContentScoreBySequence dna targetGC = score where
+    deltaGC = abs(targetGC - gcContent dna)
+    score = 1 - deltaGC / targetGC -- 1 хорошо и 0 плохо
 
 oligsGCContentDifference :: OligSet -> Double
 oligsGCContentDifference (OligSet [] [] _)     = 0

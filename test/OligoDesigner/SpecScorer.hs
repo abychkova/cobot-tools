@@ -15,7 +15,6 @@ import           Test.Hspec                              (Spec, describe, it,
                                                           shouldBe)
 import Data.Matrix (matrix)
 import Bio.Tools.Sequence.OligoDesigner.Utils.CommonUtils (assemble, buildOligSet)
-import Bio.Tools.Sequence.OligoDesigner.Utils.Printer (printResult)
 import Debug.Trace (trace)
 import Data.Text (toUpper)
 import Data.Default (def)

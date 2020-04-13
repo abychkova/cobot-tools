@@ -6,6 +6,7 @@ module Bio.Tools.Sequence.OligoDesigner.Utils.CommonUtils
  ,getAAIndex
  ,mixOligs
  ,compareBySecond
+ ,orderByScore
  ) where
 
 import           Bio.NucleicAcid.Nucleotide.Type                (DNA (..), cNA)
@@ -31,6 +32,8 @@ import Bio.Tools.Sequence.CodonOptimization (CodonOptimizationConfig(..))
 import Text.Regex.TDFA (Regex, makeRegex, match)
 import Control.Monad.State.Lazy (gets)
 import System.Random.Shuffle (shuffle')
+import Control.Monad.Except (Except, throwError)
+import Data.List (maximumBy, minimumBy, findIndex)
         
 mixOligs :: OligSet -> [Olig]
 mixOligs (OligSet forward reversed _) = mix forward reversed
@@ -46,34 +49,40 @@ assemble (OligSet fwd rvd _) = construct fwd rvd 0 [] where
     construct :: [Olig] -> [Olig] -> Int -> [DNA] -> [DNA]
     construct _ [] _ acc = acc
     construct [] _ _ acc = acc
-    construct (Olig seq1 startLeft endLeft : xs) (Olig seq2 startRight endRight : ys) prevEnd acc = construct xs ys endRight res
+    construct (Olig seqLeft startLeft endLeft : xs) (Olig seqRight startRight endRight : ys) prevEnd acc = construct xs ys endRight res
       where
-        partFormOlig1 = drop (prevEnd - startLeft) seq1
-        partFormOlig2 = map cNA (drop (endLeft - startRight) (reverse seq2))
+        partFormOlig1 = drop (prevEnd - startLeft) seqLeft
+        partFormOlig2 = map cNA (drop (endLeft - startRight) (reverse seqRight))
         res = acc ++ partFormOlig1 ++ partFormOlig2
 
-buildOligSet :: OligSplitting -> [DNA] -> OligSet
-buildOligSet splitting sequ = OligSet strand5' strand3' splitting
+buildOligSet :: OligSplitting -> [DNA] -> Except String OligSet
+buildOligSet splitting sequ = do
+    strand5' <- mapM (buildOlig id sequ) (strand5 splitting)
+    strand3' <- mapM (buildOlig reverse (map cNA sequ)) (strand3 splitting)
+    return $ OligSet strand5' strand3' splitting
   where
-    strand5' = map (buildOlig id sequ) (strand5 splitting)
-    strand3' = map (buildOlig reverse (map cNA sequ)) (strand3 splitting)
-
-    buildOlig :: ([DNA] -> [DNA]) -> [DNA] -> OligBounds -> Olig
-    buildOlig fun dna (start, end) = Olig sliceDNA start end
-      where
-        sliceDNA = fun $ slice start end dna
+    buildOlig :: ([DNA] -> [DNA]) -> [DNA] -> OligBounds -> Except String Olig
+    buildOlig fun dna (start, end) = do
+        sliceDNA <- slice start end dna
+        return $ Olig (fun sliceDNA) start end
 
 --excluding end
-slice :: Int -> Int -> [a] -> [a]
-slice start end xs | start < 0 || end < 0 || start > end = error "incorrect coordinates"
-                   | otherwise = take (end - start) (drop start xs)
+slice :: Int -> Int -> [a] -> Except String [a]
+slice start end xs | start < 0 || end < 0 || start > end = throwError "incorrect coordinates"
+                   | otherwise = return $ take (end - start) (drop start xs)
 
 translate :: [DNA] -> [DNA]
 translate = map cNA
               
-getAAIndex :: Int -> Int
-getAAIndex coordinate | coordinate < 0 = error "incorrect coordinates"
-                      | otherwise      = ceiling (realToFrac (coordinate + 1) / 3)
+getAAIndex :: Int -> Except String Int
+getAAIndex coordinate | coordinate < 0 = throwError "incorrect coordinates"
+                      | otherwise      = return $ ceiling (realToFrac (coordinate + 1) / 3)
+                      
 
 compareBySecond :: Ord b => (a, b) -> (a, b) -> Ordering
 compareBySecond p1 p2 = compare (snd p1) (snd p2)
+
+orderByScore :: Ord b => [a] -> (a -> b) -> (a, a)
+orderByScore sequence func = (fst $ minimumBy compareBySecond pairs, fst $ maximumBy compareBySecond pairs)
+  where
+    pairs = map (\value -> (value, func value)) sequence

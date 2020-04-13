@@ -11,7 +11,7 @@ import           Bio.Tools.Sequence.OligoDesigner.Optimizer.IterativeOptimizer (
 import           Bio.Tools.Sequence.OligoDesigner.Optimizer.GCContentOptimizer (gcContentOptimize)
 import           Bio.Tools.Sequence.OligoDesigner.Splitter                      (split)
 import           Bio.Tools.Sequence.OligoDesigner.Types                         (OligSet (..), OligsSplittingConfig (..),
-                                                                                    OligsDesignerConfig (..), OligsDesignerInnerConfig(..))
+                                                                                    OligsDesignerConfig (..), OligsDesignerInnerConfig(..), OligSplitting)
 import           Bio.Tools.Sequence.OligoDesigner.Utils.CommonUtils                         (buildOligSet)
 import           Control.Monad.Except                                           (Except, throwError)
 import           Control.Monad.IO.Class                                         (MonadIO, liftIO)
@@ -21,28 +21,31 @@ import Bio.Tools.Sequence.OligoDesigner.ForbiddenFixer(fixForbidden)
 import Text.Regex.TDFA (Regex, makeRegex)
 import Debug.Trace
 import Control.Monad.Trans.State.Lazy (StateT, evalStateT)
+import Control.Monad.Trans (lift)
 
 designOligsDNA :: OligsSplittingConfig -> [DNA] -> Except String OligSet
 designOligsDNA conf dna =
     case split conf (length dna) of
-        Just splitting -> return $ buildOligSet splitting dna
+        Just splitting -> buildOligSet splitting dna
         _              -> throwError "Cannot find splitting for parameters"
 
 getRandomSeed :: MonadIO m => m StdGen
 getRandomSeed = liftIO getStdGen
 
 designOligsAA :: StdGen -> OligsDesignerConfig -> [AA] -> Except String OligSet
-designOligsAA gen conf@(OligsDesignerConfig codonConf _ _ _) aa = do
+designOligsAA gen conf@(OligsDesignerConfig codonConf splittingConf _ _) aa = do
     let dna = optimizeCodonForAA codonConf aa
-    evalStateT (runOptimization conf dna) gen
+    case split splittingConf (length dna) of
+            Just splitting -> evalStateT (runOptimization conf dna splitting) gen
+            _              -> throwError "Cannot find splitting for parameters"
+    
   where
-    runOptimization :: OligsDesignerConfig -> [DNA] -> StateT StdGen (Except String) OligSet
-    runOptimization conf@(OligsDesignerConfig _ splittingConf _ _) dna = do
+    runOptimization :: OligsDesignerConfig -> [DNA] -> OligSplitting -> StateT StdGen (Except String) OligSet
+    runOptimization conf dna splitting = do
         let innerConf = convertConfig conf
         dnaFixed <- fixForbidden innerConf dna
-        case split splittingConf (length dna) of
-                Just splitting -> optimize innerConf (buildOligSet splitting dna)
-                _              -> throwError "Cannot find splitting for parameters"
+        oligs <- lift $ buildOligSet splitting dnaFixed
+        optimize innerConf oligs
                 
     convertConfig :: OligsDesignerConfig -> OligsDesignerInnerConfig
     convertConfig conf = OligsDesignerInnerConfig organismType gcTarget regexes optIteration fixForbIteration

@@ -29,7 +29,7 @@ mutate organism dna interval@(start, end) | validateInterval interval (length dn
     let sliceIndex = (start - 1) * 3
     let sliceEndIndex = (end - 1) * 3 + 3
     let begin = take sliceIndex dna
-    let mutated = slice sliceIndex sliceEndIndex dna
+    mutated <- lift $ slice sliceIndex sliceEndIndex dna
     let final = drop sliceEndIndex dna
     variants <- mutateSlice organism mutated
     return $ map (\var -> begin ++ var ++ final) variants
