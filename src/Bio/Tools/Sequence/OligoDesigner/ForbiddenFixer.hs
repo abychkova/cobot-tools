@@ -30,7 +30,8 @@ fixIterative organism regexes iteration dna = do
     forbiddenPositions <- lift $ getPositions (prettyDNA dna)
     case forbiddenPositions of
         []        -> return dna
-        positions -> trace ("dna:" ++ prettyDNA dna) $ trace ("fix positions:" ++ show positions) $ fixPositions positions [dna]
+        positions -> trace ("dna:" ++ prettyDNA dna) $ trace ("fix positions:" ++ show positions) 
+                            $ fixPositions positions [dna]
   where
     fixPositions :: [(Int, Int)] -> [[DNA]] -> StateT StdGen (Except String) [DNA]
     fixPositions [] results = do

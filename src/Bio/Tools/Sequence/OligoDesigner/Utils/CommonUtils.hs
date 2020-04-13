@@ -30,8 +30,10 @@ assemble (OligSet fwd rvd _) = construct fwd rvd 0 [] where
     construct :: [Olig] -> [Olig] -> Int -> [DNA] -> [DNA]
     construct _ [] _ acc = acc
     construct [] _ _ acc = acc
-    construct (Olig seqLeft startLeft endLeft : xs) (Olig seqRight startRight endRight : ys) prevEnd acc = construct xs ys endRight res
+    construct (oligLeft : xs) (oligRight : ys) prevEnd acc = construct xs ys endRight res
       where
+        (Olig seqLeft startLeft endLeft) = oligLeft
+        (Olig seqRight startRight endRight) = oligRight
         partFormOlig1 = drop (prevEnd - startLeft) seqLeft
         partFormOlig2 = map cNA (drop (endLeft - startRight) (reverse seqRight))
         res = acc ++ partFormOlig1 ++ partFormOlig2

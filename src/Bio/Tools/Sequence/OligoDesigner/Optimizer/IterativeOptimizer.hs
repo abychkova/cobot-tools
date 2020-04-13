@@ -21,17 +21,19 @@ optimize conf@(OligsDesignerInnerConfig _ targetGC _ maxIteration _) oligSet =
     optimizationStep oligs =  do
        result <- rnaOptimize conf oligs >>= gcContentOptimize conf
        return [(result, commonScore targetGC result)]
-
+       
     optimizeIteration :: Int -> [(OligSet, Double)] -> StateT StdGen (Except String) OligSet
-    optimizeIteration iteration results | iteration >= maxIteration =
-                                                trace ("We are reached maximum iteration count. results:" ++ show (map snd results)) $ return $ fst $ last results
-                                        | iteration > 2 && isStableScore results =
-                                                trace ("We are reached stable score. results:" ++ show (map snd results)) $
-                                                return $ fst $ last results
-                                        | otherwise =
-                                                trace ("iteration № " ++ show iteration) $
-                                                optimizationStep (fst $ last results) >>= optimizeIteration (iteration + 1) . (results ++)
-
+    optimizeIteration iteration results
+        | iteration >= maxIteration =
+            trace ("We are reached maximum iteration count. results:" ++ show (map snd results)) $
+            return $ fst $ last results
+        | iteration > 2 && isStableScore results =
+            trace ("We are reached stable score. results:" ++ show (map snd results)) $
+            return $ fst $ last results
+        | otherwise =
+            trace ("iteration № " ++ show iteration) $
+            optimizationStep (fst $ last results) >>= optimizeIteration (iteration + 1) . (results ++)
+            
 isStableScore :: [(OligSet, Double)] -> Bool
 isStableScore results = isEqual lastScore prevScore && isEqual lastScore prevPrevScore
   where

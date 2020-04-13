@@ -5,7 +5,8 @@ import           Bio.Tools.Sequence.OligoDesigner.Scorer              (gcContent
                                                                        oligsGCContentDifference)
 import           Bio.Tools.Sequence.OligoDesigner.Types               (Olig (..),
                                                                        OligSet (..),
-                                                                       OligsDesignerInnerConfig (..))
+                                                                       OligsDesignerInnerConfig (..)
+                                                                       )
 import           Bio.Tools.Sequence.OligoDesigner.Utils.CommonUtils   (assemble, buildOligSet,
                                                                        getAAIndex,
                                                                        orderByScore)
@@ -23,12 +24,15 @@ gcContentOptimize :: OligsDesignerInnerConfig    -- ^ configuration data (used '
 gcContentOptimize (OligsDesignerInnerConfig organism targetGC regexes _ _) oligs@(OligSet fwd rvsd splitting) = do
     let allOligs = fwd ++ rvsd
     let (minimumOlig, maximumOlig) = orderByScore allOligs (gcContent . sequDNA)
-    let farthestFromTarget = if distanceToTarget minimumOlig > distanceToTarget maximumOlig then minimumOlig else maximumOlig
+    let farthestFromTarget =
+            if distanceToTarget minimumOlig > distanceToTarget maximumOlig
+                then minimumOlig
+                else maximumOlig
     startAAIndex <- lift $ getAAIndex $ start farthestFromTarget
     endAAIndex <- lift $ getAAIndex $ end farthestFromTarget - 1
     let dna = assemble oligs
     varSequences <- mutate organism dna (startAAIndex, endAAIndex)
-    let filtered =  filterForbidden regexes varSequences
+    let filtered = filterForbidden regexes varSequences
     variants <- lift $ mapM (buildOligSet splitting) filtered
     let (minOligs, _) = orderByScore variants oligsGCContentDifference
     return minOligs

@@ -45,18 +45,20 @@ split (OligsSplittingConfig maxOligSize quality minOverlap) sequLen = do
             case splittingForOligsCount x oligSize [minOligsCount .. maxOligsCount] of
                 Nothing           -> splittingForGapSize oligSize xs
                 (Just oligsCount) -> return (x, oligsCount)
-
+                
     splittingForOligsCount :: GapSize -> OligSize -> [OligsCount] -> Maybe OligsCount
-    splittingForOligsCount _ _ []                               = Nothing
-    splittingForOligsCount gapSize oligSize (x : xs) = do
+    splittingForOligsCount _ _ [] = Nothing
+    splittingForOligsCount gapSize oligSize (x:xs) = do
         let expectedRest = oligSize - div (oligSize - gapSize) 2
         let realRest = sequLen - x * (oligSize + gapSize) + gapSize
         let leftBound = -maximum [div oligSize 10, 1]
         let rightBound = maximum [div oligSize 10, 1]
-        if (realRest-expectedRest) >= leftBound && (realRest-expectedRest) <= rightBound && oligSize >= (2 * minOverlap + gapSize) && x > 0
-        then return x
-        else splittingForOligsCount gapSize oligSize xs
-
+        if (realRest - expectedRest) >= leftBound &&
+           (realRest - expectedRest) <= rightBound && 
+           oligSize >= (2 * minOverlap + gapSize) && 
+           x > 0
+            then return x
+            else splittingForOligsCount gapSize oligSize xs
 
 strand5Coords :: OligSize -> GapSize -> [Int] -> [(Int, Int)]
 strand5Coords size gap = map toCoords

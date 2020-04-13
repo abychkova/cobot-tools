@@ -35,13 +35,14 @@ import           System.Random                                           (StdGen
 -- | 'rnaOptimize' function does optimization for oligs rna matrix.
 -- The main idea is to reduce the difference between neighboring oligs with minimum rna energy
 -- and not neighboring oligs with maximum rna energy
-rnaOptimize :: OligsDesignerInnerConfig          -- ^ configuration data (used 'organism' and 'regexes')
-        -> OligSet                               -- ^ oligs set
-        -> StateT StdGen (Except String) OligSet -- ^ result of optimization is optimized oligs set with the best score or error string
+rnaOptimize ::
+       OligsDesignerInnerConfig              -- ^ configuration data (used 'organism' and 'regexes')
+    -> OligSet                               -- ^ oligs set
+    -> StateT StdGen (Except String) OligSet -- ^ result of optimization is optimized oligs set with the best score or error string
 rnaOptimize (OligsDesignerInnerConfig organism _ regexes _ _) oligs@(OligSet _ _ splitting) = do
     let mtx = rnaMatrix oligs
-    indexesToMutate <- lift $ mutationIndexes mtx
     let dna = assemble oligs
+    indexesToMutate <- lift $ mutationIndexes mtx
     sequenceVariants <- concat <$> mapM (mutate organism dna) indexesToMutate
     let filtered = filterForbidden regexes sequenceVariants
     oligsVariants <- lift $ mapM (buildOligSet splitting) filtered
@@ -52,13 +53,10 @@ mutationIndexes :: Matrix MatrixCell -> Except String [(Int, Int)]
 mutationIndexes oligsMatrix = do
     let rowsCnt = nrows oligsMatrix
     let colsCnt = ncols oligsMatrix
-
-    let minPair = minimumBy compareByRna [oligsMatrix ! (x , x + 1) | x <- [1 .. rowsCnt - 1]]
+    let minPair = minimumBy compareByRna [oligsMatrix ! (x, x + 1) | x <- [1 .. rowsCnt - 1]]
     let maxPair = maximumBy compareByRna [oligsMatrix ! (x, y) | x <- [1 .. rowsCnt], y <- [1 .. colsCnt], x <= y && abs (x - y) /= 1]
-
     minPairIndexes <- minPairMutationIndexes minPair
     maxPairIndexes <- maxPairMutationIndexes maxPair
-
     return $ nub (minPairIndexes ++ maxPairIndexes)
   where
     compareByRna :: MatrixCell -> MatrixCell -> Ordering
@@ -80,5 +78,5 @@ maxPairMutationIndexes (MatrixCell (OligLight _ (Olig _ start1 end1)) (OligLight
 getAAIndexes :: (Int, Int) -> Except String (Int, Int)
 getAAIndexes (start, end) = do
     startAA <- getAAIndex start
-    endAA   <- getAAIndex end
+    endAA <- getAAIndex end
     return (startAA, endAA)

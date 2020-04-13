@@ -34,7 +34,7 @@ rnaMatrixScore oligsMatrix = aboveDiagonalScore - otherScore
     rowsCnt = nrows oligsMatrix
     colsCnt = ncols oligsMatrix
     aboveDiagonalScore = minimum [abs $ rna $ oligsMatrix ! (x , x + 1) | x <- [1 .. rowsCnt - 1]]
-    otherScore         = maximum [abs $ rna $ oligsMatrix ! (x , y) | x <- [1 .. rowsCnt], y <- [1 .. colsCnt], x <= y && abs (x - y) /= 1]
+    otherScore = maximum [abs $ rna $ oligsMatrix ! (x , y) | x <- [1 .. rowsCnt], y <- [1 .. colsCnt], x <= y && abs (x - y) /= 1]
 
 rnaScore :: OligSet -> Float
 rnaScore oligs = rnaMatrixScore $ rnaMatrix oligs
