@@ -13,15 +13,19 @@ import           Bio.Tools.Sequence.CodonOptimization.Constants (ak2Codon)
 import           Bio.Tools.Sequence.CodonOptimization.Types     (CodonOptimizationConfig (..),
                                                                  Organism (..),
                                                                  defaultForbiddenRegexp)
-import           Data.List                                      (foldl')
+import           Data.List                                      (foldl', maximumBy, minimumBy)
 import           Data.Map                                       as Map (lookup)
 import           Data.Maybe                                     (fromMaybe)
 import           System.Random
 import           Test.Hspec                                     (Expectation,
                                                                  Spec, describe,
                                                                  it, shouldBe,
-                                                                 shouldSatisfy)
+                                                                 shouldSatisfy, runIO)
+import           Test.Hspec.QuickCheck                          (prop)
+import           Test.QuickCheck.Gen                            (Gen, elements)
+import           Test.QuickCheck.Property                       (Property, forAll)
 import Text.Regex.TDFA (Regex, makeRegex)
+import Control.Monad (replicateM)
 
 confHuman :: CodonOptimizationConfig
 confHuman = CodonOptimizationConfig Human 3 1 1 0.5 1.4 40 0.001 2.6 100 1 60 defaultForbiddenRegexp
@@ -61,13 +65,16 @@ toRandomCodon ak = do
     let codons = fromMaybe [] (Map.lookup ak ak2Codon)
     i <- randomRIO (0, length codons - 1)
     return $ codons !! i
-    
+
 regexes :: [Regex]
 regexes = map makeRegex defaultForbiddenRegexp :: [Regex]
 
 codonOptimizationSpec :: Spec
 codonOptimizationSpec =
     describe "Codon optimization spec" $ do
+        optimizedAgainstRandom confCHO
+        optimizedAgainstRandom confHuman
+        optimizedAgainstRandom confEColi
         optimizeSequence
         optimizeSequenceForEColi
         optimizeSequenceForCHO
@@ -76,6 +83,7 @@ codonOptimizationSpec =
         optimizeExtremelyShortSequence
         optimizeSequenceWindow3
         optimizeSequenceInit5
+        scoreComparing
         scoreFun
         scoreFunEColi
         scoreFunDifferentCodonUsageWeight
@@ -97,6 +105,18 @@ prettyDNA = map prettyOneDNA
     prettyOneDNA DT = 'T'
     prettyOneDNA DC = 'C'
     prettyOneDNA DG = 'G'
+
+scoreComparing :: Spec
+scoreComparing =
+    describe "scoreComparing" $
+    it "should correct compare by score" $ do
+        let optimized = "ATGGAGACCGACACCCTGCTGCTGTGGGTGCTGCTGCTGTGGGTGCCTGGC"
+        let vars = ["AGTACTGGT","AGCACTGGT","TCGACAGGT","AGTACAGGT","AGCACAGGT","TCTACTGGC","TCCACTGGC","TCAACTGGC","TCGACTGGC","AGCACCGGC"]
+        let cfg = CodonOptimizationConfig Human 3 3 1 0.5 1.4 40 0.001 2.6 100 1 43 defaultForbiddenRegexp
+        let resMin = maximumBy (scoreCmp cfg optimized) vars
+        let resMax = minimumBy (scoreCmp cfg optimized) vars
+        resMax `shouldBe` "TCGACAGGT"
+        resMin `shouldBe` "AGCACCGGC"
 
 optimizeSequence :: Spec
 optimizeSequence =
@@ -312,3 +332,26 @@ scoreFunDifferentGCDesired =
         scoreByWindow conf' regexes "GCCAGCGGCGACAAGACCCACACCTGTCCT" `shouldBe` 80.74362252733329
         scoreByWindow conf' regexes "CCCTGCCCCGCCCCCGAGGCCGCCGGCGGCCCTAGCGTGTTCCTGTTCCCTCCTAAGCCTAAGGACACCCTGATGATCAGCAGAACCCCCGAGGTGACCTGCGTGGTGGTGGACGTGAGCCACGAGGACCCTGAGGTGAAGTTCAATTGGTACGTGGACGGCGTGGAGGTGCACAACGCCAAGACCAAGCCTAGAGAGGAGCAGTACAACAGCACCTACAGAGTGGTGAGCGTGCTGACCGTGCTGCACCAAGACTGGCTGAACGGCAAGGAGTACAAGTGCAAGGTGAGCAACAAGGCCCTGCCCGCCCCTATCGAGAAGACCATCAGCAAGGCCAAG"
          `shouldBe` 96.19662511761598
+
+optimizedAgainstRandom :: CodonOptimizationConfig -> Spec
+optimizedAgainstRandom conf = describe "optimizedAgainstRandom" $ do
+        let ak = "GQPREPQVYTLPPSRDELTKNQVSLTCLVKGFYPSDIAVEWESNGQPENNYKTTPPVLDSDGSFFLYSKLTVDKSRWQQGNVFSCSVMHEALHNHYTQKSLSLSPGK"
+        gen <- runIO $ genNKSequence ak
+        prop "optimized sequence should have better score than any random sequence" (runBatchCheck ak gen)
+  where
+    runBatchCheck :: [AA] -> Gen [DNA] -> Property
+    runBatchCheck ak gen = forAll gen (\nk -> score conf res >= score conf nk)
+      where
+        res = optimizeCodonForAA conf ak
+
+genNKSequence :: [AA] -> IO (Gen [DNA])
+genNKSequence aa = elements <$> variants aa
+
+variants :: [AA] -> IO [[DNA]]
+variants aa = replicateM 100 (toRandomNKSequ aa)
+
+scoreCmp :: CodonOptimizationConfig -> [DNA] -> [DNA] -> [DNA] -> Ordering
+scoreCmp cfg optimized str1 str2 = compare score1 score2
+  where
+    score1 = scoreByWindow cfg regexes (optimized ++ str1)
+    score2 = scoreByWindow cfg regexes (optimized ++ str2)
