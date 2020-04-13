@@ -5,28 +5,39 @@ module Bio.Tools.Sequence.OligoDesigner.Optimizer.RNACofoldOptimizer
     , mutationIndexes
     ) where
 
-import           Bio.Tools.Sequence.OligoDesigner.Scorer    (rnaMatrixScore)
-import           Bio.Tools.Sequence.OligoDesigner.Types     (MatrixCell (..),
-                                                             Olig (..),
-                                                             OligSet (..),
-                                                             OligsDesignerInnerConfig (..), OligLight(..))
-import           Bio.Tools.Sequence.OligoDesigner.Utils.CommonUtils     (assemble,
-                                                             buildOligSet,
-                                                             getAAIndex, orderByScore)
-import Bio.Tools.Sequence.OligoDesigner.Utils.MutationUtils (mutate)
-import           Data.Foldable                              (minimumBy)
-import           Data.List                                  (intersect,
-                                                             maximumBy, nub)
-import           Data.Matrix                                (Matrix, ncols,
-                                                             nrows, (!))
-import           System.Random                              (StdGen)
-import Bio.Tools.Sequence.OligoDesigner.Utils.RNAMatrixBuilder (rnaMatrix, rebuildMatrix)
-import Bio.Tools.Sequence.OligoDesigner.ForbiddenFixer (filterForbidden)
-import Control.Monad.Trans.State.Lazy (StateT)
-import Control.Monad.Except (Except)
-import Control.Monad.Trans (lift)
+import           Bio.Tools.Sequence.OligoDesigner.ForbiddenFixer         (filterForbidden)
+import           Bio.Tools.Sequence.OligoDesigner.Scorer                 (rnaMatrixScore)
+import           Bio.Tools.Sequence.OligoDesigner.Types                  (MatrixCell (..),
+                                                                          Olig (..),
+                                                                          OligLight (..),
+                                                                          OligSet (..),
+                                                                          OligsDesignerInnerConfig (..))
+import           Bio.Tools.Sequence.OligoDesigner.Utils.CommonUtils      (assemble,
+                                                                          buildOligSet,
+                                                                          getAAIndex,
+                                                                          orderByScore)
+import           Bio.Tools.Sequence.OligoDesigner.Utils.MutationUtils    (mutate)
+import           Bio.Tools.Sequence.OligoDesigner.Utils.RNAMatrixBuilder (rebuildMatrix,
+                                                                          rnaMatrix)
+import           Control.Monad.Except                                    (Except)
+import           Control.Monad.Trans                                     (lift)
+import           Control.Monad.Trans.State.Lazy                          (StateT)
+import           Data.Foldable                                           (minimumBy)
+import           Data.List                                               (intersect,
+                                                                          maximumBy,
+                                                                          nub)
+import           Data.Matrix                                             (Matrix,
+                                                                          ncols,
+                                                                          nrows,
+                                                                          (!))
+import           System.Random                                           (StdGen)
 
-rnaOptimize :: OligsDesignerInnerConfig -> OligSet -> StateT StdGen (Except String) OligSet
+-- | 'rnaOptimize' function does optimization for oligs rna matrix.
+-- The main idea is to reduce the difference between neighboring oligs with minimum rna energy
+-- and not neighboring oligs with maximum rna energy
+rnaOptimize :: OligsDesignerInnerConfig          -- ^ configuration data (used 'organism' and 'regexes')
+        -> OligSet                               -- ^ oligs set
+        -> StateT StdGen (Except String) OligSet -- ^ result of optimization is optimized oligs set with the best score or error string
 rnaOptimize (OligsDesignerInnerConfig organism _ regexes _ _) oligs@(OligSet _ _ splitting) = do
     let mtx = rnaMatrix oligs
     indexesToMutate <- lift $ mutationIndexes mtx

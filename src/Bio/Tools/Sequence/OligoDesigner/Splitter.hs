@@ -4,8 +4,8 @@ module Bio.Tools.Sequence.OligoDesigner.Splitter
 
 import           Bio.Tools.Sequence.OligoDesigner.Types (GapSize, OligSize,
                                                          OligSplitting (..),
-                                                         OligsSplittingConfig (..),
                                                          OligsCount,
+                                                         OligsSplittingConfig (..),
                                                          SequenceLen)
 
 
@@ -59,7 +59,7 @@ split (OligsSplittingConfig maxOligSize quality minOverlap) sequLen = do
 
 
 strand5Coords :: OligSize -> GapSize -> [Int] -> [(Int, Int)]
-strand5Coords size gap = map toCoords 
+strand5Coords size gap = map toCoords
   where
     toCoords :: Int -> (Int, Int)
     toCoords num = (x, y) where

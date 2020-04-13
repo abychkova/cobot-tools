@@ -18,13 +18,13 @@ module Bio.Tools.Sequence.OligoDesigner.Types
     ,standardTemperature
     ,emptyMatrixCell) where
 
-import           Bio.NucleicAcid.Nucleotide.Type      (DNA (..))
-import           Bio.Tools.Sequence.CodonOptimization (CodonOptimizationConfig (..))
-import           GHC.Generics                         (Generic)
-import Control.DeepSeq (NFData)
-import           Data.Default (Default (..))
-import Bio.Tools.Sequence.CodonOptimization.Types (Organism)
-import Text.Regex.TDFA (Regex)
+import           Bio.NucleicAcid.Nucleotide.Type            (DNA (..))
+import           Bio.Tools.Sequence.CodonOptimization       (CodonOptimizationConfig (..))
+import           Bio.Tools.Sequence.CodonOptimization.Types (Organism)
+import           Control.DeepSeq                            (NFData)
+import           Data.Default                               (Default (..))
+import           GHC.Generics                               (Generic)
+import           Text.Regex.TDFA                            (Regex)
 
 type SequenceLen = Int
 type GapSize = Int
@@ -58,21 +58,21 @@ data OligsSplittingConfig = OligsSplittingConfig {
     minOverlap     :: Int
 }
 
-instance Default OligsSplittingConfig 
+instance Default OligsSplittingConfig
   where
     def = OligsSplittingConfig 60 1 18
 
 data OligsDesignerConfig = OligsDesignerConfig {
-    codonOptimizationConfig    :: CodonOptimizationConfig,
-    oligSplittingConfig        :: OligsSplittingConfig,
-    maxOptimizationIteration   :: Int,
-    maxFixForbiddenIteration   :: Int
+    codonOptimizationConfig  :: CodonOptimizationConfig,
+    oligSplittingConfig      :: OligsSplittingConfig,
+    maxOptimizationIteration :: Int,
+    maxFixForbiddenIteration :: Int
 }
 
 data OligsDesignerInnerConfig = OligsDesignerInnerConfig {
-    organismType            :: Organism,
-    gcTarget                :: Double,
-    regexes                 :: [Regex],
-    optimizationIteration   :: Int,
-    fixForbiddenIteration   :: Int
+    organismType          :: Organism,
+    gcTarget              :: Double,
+    regexes               :: [Regex],
+    optimizationIteration :: Int,
+    fixForbiddenIteration :: Int
 }

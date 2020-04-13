@@ -8,14 +8,17 @@ module Bio.Tools.Sequence.OligoDesigner.Scorer
  ,gcContentScoreBySequence
  ) where
 
-import           Bio.Tools.Sequence.OligoDesigner.Types       (MatrixCell (..),
-                                                               Olig (..),
-                                                               OligSet (..),
-                                                               TargetGC)
-import           Bio.Tools.Sequence.OligoDesigner.Utils.CommonUtils       (assemble)
-import           Bio.Tools.Sequence.OligoDesigner.Utils.RNAMatrixBuilder       (rnaMatrix)
-import Bio.NucleicAcid.Nucleotide (DNA(..))
-import Data.Matrix (Matrix, nrows, ncols, (!))
+import           Bio.NucleicAcid.Nucleotide                              (DNA (..))
+import           Bio.Tools.Sequence.OligoDesigner.Types                  (MatrixCell (..),
+                                                                          Olig (..),
+                                                                          OligSet (..),
+                                                                          TargetGC)
+import           Bio.Tools.Sequence.OligoDesigner.Utils.CommonUtils      (assemble)
+import           Bio.Tools.Sequence.OligoDesigner.Utils.RNAMatrixBuilder (rnaMatrix)
+import           Data.Matrix                                             (Matrix,
+                                                                          ncols,
+                                                                          nrows,
+                                                                          (!))
 
 commonScore :: TargetGC -> OligSet -> Double
 commonScore targetGC oligs = scoreValue
@@ -24,7 +27,7 @@ commonScore targetGC oligs = scoreValue
     oligsGCValue = oligsGCContentDifference oligs
     gcScoreValue = gcContentScoreByOligs oligs targetGC
     scoreValue = rnaScoreValue * gcScoreValue / oligsGCValue
-    
+
 rnaMatrixScore :: Matrix MatrixCell -> Float
 rnaMatrixScore oligsMatrix = aboveDiagonalScore - otherScore
   where

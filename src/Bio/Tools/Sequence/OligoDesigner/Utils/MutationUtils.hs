@@ -6,23 +6,31 @@ module Bio.Tools.Sequence.OligoDesigner.Utils.MutationUtils (
  ,mutateSlice
 ) where
 
-import Bio.NucleicAcid.Nucleotide.Type (DNA)
-import System.Random (StdGen, randomR)
-import Bio.Tools.Sequence.OligoDesigner.Types (Codon, Weight)
-import Bio.Tools.Sequence.CodonOptimization.Types (Organism)
-import           Data.Map                                       as Map (lookup)
-import Data.Maybe (fromMaybe)
-import Bio.Protein.AminoAcid (AA(..))
-import Bio.Tools.Sequence.CodonOptimization.Constants (ak2Codon, codonFrequencies, codon2ak)
-import Data.List (sortOn, nub)
-import System.Random.Shuffle (shuffle')
-import Bio.Tools.Sequence.OligoDesigner.Utils.CommonUtils (slice)
-import Control.Monad.Trans.State.Lazy (StateT, get, put, gets)
-import Control.Monad.Except (Except, throwError)
-import Control.Monad.Trans (lift)
+import           Bio.NucleicAcid.Nucleotide.Type                    (DNA)
+import           Bio.Protein.AminoAcid                              (AA (..))
+import           Bio.Tools.Sequence.CodonOptimization.Constants     (ak2Codon,
+                                                                     codon2ak,
+                                                                     codonFrequencies)
+import           Bio.Tools.Sequence.CodonOptimization.Types         (Organism)
+import           Bio.Tools.Sequence.OligoDesigner.Types             (Codon,
+                                                                     Weight)
+import           Bio.Tools.Sequence.OligoDesigner.Utils.CommonUtils (slice)
+import           Control.Monad.Except                               (Except,
+                                                                     throwError)
+import           Control.Monad.Trans                                (lift)
+import           Control.Monad.Trans.State.Lazy                     (StateT,
+                                                                     get, gets,
+                                                                     put)
+import           Data.List                                          (nub,
+                                                                     sortOn)
+import           Data.Map                                           as Map (lookup)
+import           Data.Maybe                                         (fromMaybe)
+import           System.Random                                      (StdGen,
+                                                                     randomR)
+import           System.Random.Shuffle                              (shuffle')
 
 mutate :: Organism -> [DNA] -> (Int, Int) -> StateT StdGen (Except String) [[DNA]]
-mutate organism dna interval@(start, end) | validateInterval interval (length dna) = 
+mutate organism dna interval@(start, end) | validateInterval interval (length dna) =
                                                        throwError ("invalid interval for mutation: " ++ show interval)
                                           | otherwise = do
     let sliceIndex = (start - 1) * 3

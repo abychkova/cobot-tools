@@ -3,20 +3,21 @@ module Bio.Tools.Sequence.OligoDesigner.ForbiddenFixer(
    ,filterForbidden
 ) where
 
-import Bio.NucleicAcid.Nucleotide (DNA)
+import           Bio.NucleicAcid.Nucleotide                           (DNA)
 
-import System.Random (StdGen)
+import           System.Random                                        (StdGen)
 
-import Control.Monad.Except (Except, throwError)
-import Text.Regex.TDFA (Regex, match, getAllMatches)
-import Bio.Tools.Sequence.OligoDesigner.Utils.Prettifier (prettyDNA)
-import Bio.Tools.Sequence.OligoDesigner.Utils.MutationUtils (mutate)
-import Bio.Tools.Sequence.OligoDesigner.Utils.CommonUtils (getAAIndex)
-import Bio.Tools.Sequence.OligoDesigner.Types (OligsDesignerInnerConfig(..))
-import Bio.Tools.Sequence.CodonOptimization.Types (Organism)
-import Debug.Trace (trace)
-import Control.Monad.Trans.State.Lazy (StateT)
-import Control.Monad.Trans (lift)
+import           Bio.Tools.Sequence.CodonOptimization.Types           (Organism)
+import           Bio.Tools.Sequence.OligoDesigner.Types               (OligsDesignerInnerConfig (..))
+import           Bio.Tools.Sequence.OligoDesigner.Utils.CommonUtils   (getAAIndex)
+import           Bio.Tools.Sequence.OligoDesigner.Utils.MutationUtils (mutate)
+import           Bio.Tools.Sequence.OligoDesigner.Utils.Prettifier    (prettyDNA)
+import           Control.Monad.Except                                 (Except, throwError)
+import           Control.Monad.Trans                                  (lift)
+import           Control.Monad.Trans.State.Lazy                       (StateT)
+import           Debug.Trace                                          (trace)
+import           Text.Regex.TDFA                                      (Regex, getAllMatches,
+                                                                       match)
 
 fixForbidden :: OligsDesignerInnerConfig -> [DNA] -> StateT StdGen (Except String) [DNA]
 fixForbidden (OligsDesignerInnerConfig organism _ regexes _ maxIteration) dna = do

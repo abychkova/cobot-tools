@@ -9,14 +9,13 @@ module Bio.Tools.Sequence.OligoDesigner.Utils.CommonUtils
  ,orderByScore
  ) where
 
-import           Bio.NucleicAcid.Nucleotide.Type                (DNA (..), cNA)
-import           Bio.Tools.Sequence.OligoDesigner.Types         (Olig (..),
-                                                                 OligBounds,
-                                                                 OligSet (..),
-                                                                 OligSplitting (..))
-import Control.Monad.Except (Except, throwError)
-import Data.List (maximumBy, minimumBy)
-        
+import           Bio.NucleicAcid.Nucleotide.Type        (DNA (..), cNA)
+import           Bio.Tools.Sequence.OligoDesigner.Types (Olig (..), OligBounds,
+                                                         OligSet (..),
+                                                         OligSplitting (..))
+import           Control.Monad.Except                   (Except, throwError)
+import           Data.List                              (maximumBy, minimumBy)
+
 mixOligs :: OligSet -> [Olig]
 mixOligs (OligSet forward reversed _) = mix forward reversed
   where
@@ -24,7 +23,7 @@ mixOligs (OligSet forward reversed _) = mix forward reversed
     mix (x:xs) (y:ys) = x : y : mix xs ys
     mix x []          = x
     mix [] y          = y
-    
+
 assemble :: OligSet -> [DNA]
 assemble (OligSet fwd rvd _) = construct fwd rvd 0 [] where
 
@@ -55,11 +54,11 @@ slice start end xs | start < 0 || end < 0 || start > end = throwError "incorrect
 
 translate :: [DNA] -> [DNA]
 translate = map cNA
-              
+
 getAAIndex :: Int -> Except String Int
 getAAIndex coordinate | coordinate < 0 = throwError "incorrect coordinates"
                       | otherwise      = return $ ceiling (realToFrac (coordinate + 1) / 3 :: Double)
-                      
+
 
 compareBySecond :: Ord b => (a, b) -> (a, b) -> Ordering
 compareBySecond p1 p2 = compare (snd p1) (snd p2)
