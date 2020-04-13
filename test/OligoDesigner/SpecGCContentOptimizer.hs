@@ -3,17 +3,11 @@ module OligoDesigner.SpecGCContentOptimizer (
 ) where
 
 import Test.Hspec (Spec, describe, it, shouldBe, shouldSatisfy)
-import Bio.Tools.Sequence.OligoDesigner.Types (OligSplitting(..), OligSet(..), Olig(..), OligsDesignerConfig(..),
-                                        OligsDesignerInnerConfig(..))
+import Bio.Tools.Sequence.OligoDesigner.Types (OligSplitting(..), OligSet(..), Olig(..), OligsDesignerInnerConfig(..))
 import Bio.Tools.Sequence.OligoDesigner.Optimizer.GCContentOptimizer (gcContentOptimize)
-import Bio.Tools.Sequence.OligoDesigner.Utils.CommonUtils (assemble)
-import Data.Default (def)
-import Control.Monad.State (evalState)
 import System.Random (mkStdGen)
-import Bio.Tools.Sequence.CodonOptimization (CodonOptimizationConfig(..))
-import Bio.Tools.Sequence.CodonOptimization.Types (Organism(..), defaultForbiddenRegexp)
+import Bio.Tools.Sequence.CodonOptimization.Types (Organism(..))
 import Bio.Tools.Sequence.OligoDesigner.Scorer (oligsGCContentDifference)
-import Debug.Trace (trace)
 import Control.Monad.State.Lazy (evalStateT)
 import Control.Monad.Except (runExcept)
 

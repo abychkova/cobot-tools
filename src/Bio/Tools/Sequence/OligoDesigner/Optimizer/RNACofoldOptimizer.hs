@@ -5,31 +5,22 @@ module Bio.Tools.Sequence.OligoDesigner.Optimizer.RNACofoldOptimizer
     , mutationIndexes
     ) where
 
-import           Bio.NucleicAcid.Nucleotide.Type            (DNA)
-import           Bio.Tools.Sequence.CodonOptimization       (CodonOptimizationConfig (..))
-import           Bio.Tools.Sequence.CodonOptimization.Types (Organism)
-import           Bio.Tools.Sequence.OligoDesigner.Scorer    (rnaScore, rnaMatrixScore)
+import           Bio.Tools.Sequence.OligoDesigner.Scorer    (rnaMatrixScore)
 import           Bio.Tools.Sequence.OligoDesigner.Types     (MatrixCell (..),
                                                              Olig (..),
                                                              OligSet (..),
-                                                             OligsDesignerConfig (..),
-                                                             OligsDesignerInnerConfig (..), standardTemperature, OligLight(..))
+                                                             OligsDesignerInnerConfig (..), OligLight(..))
 import           Bio.Tools.Sequence.OligoDesigner.Utils.CommonUtils     (assemble,
                                                              buildOligSet,
-                                                             slice, getAAIndex, compareBySecond, orderByScore)
-import Bio.Tools.Sequence.OligoDesigner.Utils.MutationUtils (oneMutation, mutateSlice, mutate)
-import           Control.Monad.State                        (State)
+                                                             getAAIndex, orderByScore)
+import Bio.Tools.Sequence.OligoDesigner.Utils.MutationUtils (mutate)
 import           Data.Foldable                              (minimumBy)
 import           Data.List                                  (intersect,
-                                                             maximumBy, nub, findIndex)
+                                                             maximumBy, nub)
 import           Data.Matrix                                (Matrix, ncols,
-                                                             nrows, (!), matrix)
+                                                             nrows, (!))
 import           System.Random                              (StdGen)
-import Bio.Tools.Sequence.ViennaRNA.Internal.Cofold (cofold)
-import Text.Regex.TDFA (Regex)
-import Debug.Trace
 import Bio.Tools.Sequence.OligoDesigner.Utils.RNAMatrixBuilder (rnaMatrix, rebuildMatrix)
-import Bio.Tools.Sequence.OligoDesigner.Utils.Prettifier (prettyDNA, prettyMatrixCell, prettyOligSet)
 import Bio.Tools.Sequence.OligoDesigner.ForbiddenFixer (filterForbidden)
 import Control.Monad.Trans.State.Lazy (StateT)
 import Control.Monad.Except (Except)
@@ -43,8 +34,8 @@ rnaOptimize (OligsDesignerInnerConfig organism _ regexes _ _) oligs@(OligSet _ _
     sequenceVariants <- concat <$> mapM (mutate organism dna) indexesToMutate
     let filtered = filterForbidden regexes sequenceVariants
     oligsVariants <- lift $ mapM (buildOligSet splitting) filtered
-    let (_, max) = orderByScore oligsVariants (rnaMatrixScore . rebuildMatrix mtx)
-    return max
+    let (_, maxOligs) = orderByScore oligsVariants (rnaMatrixScore . rebuildMatrix mtx)
+    return maxOligs
 
 mutationIndexes :: Matrix MatrixCell -> Except String [(Int, Int)]
 mutationIndexes oligsMatrix = do
@@ -78,5 +69,5 @@ maxPairMutationIndexes (MatrixCell (OligLight _ (Olig _ start1 end1)) (OligLight
 getAAIndexes :: (Int, Int) -> Except String (Int, Int)
 getAAIndexes (start, end) = do
     startAA <- getAAIndex start
-    endAA   <- getAAIndex $ end
+    endAA   <- getAAIndex end
     return (startAA, endAA)

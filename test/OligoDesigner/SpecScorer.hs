@@ -5,28 +5,14 @@ module OligoDesigner.SpecScorer (
 ) where
 
 import           Bio.Tools.Sequence.OligoDesigner.Scorer (rnaScore, rnaMatrixScore, gcContent,
-                                                            oligsGCContentDifference, gcContentScoreBySequence, commonScore, gcContentScoreByOligs)
+                                                            oligsGCContentDifference, gcContentScoreBySequence, commonScore)
 import           Bio.Tools.Sequence.OligoDesigner.Types  (Olig (..),
                                                           OligLight (..),
                                                           OligSet (..),
-                                                          OligSplitting (..), MatrixCell(..),
-                                                          OligsDesignerConfig(..), OligsSplittingConfig(..), standardTemperature)
+                                                          OligSplitting (..), MatrixCell(..))
 import           Test.Hspec                              (Spec, describe, it,
                                                           shouldBe)
 import Data.Matrix (matrix)
-import Bio.Tools.Sequence.OligoDesigner.Utils.CommonUtils (assemble, buildOligSet)
-import Debug.Trace (trace)
-import Data.Text (toUpper)
-import Data.Default (def)
-import Bio.Tools.Sequence.CodonOptimization (CodonOptimizationConfig(..))
-import Bio.Tools.Sequence.CodonOptimization.Types (Organism(..), defaultForbiddenRegexp)
-import Bio.NucleicAcid.Nucleotide (DNA(..))
-import Bio.Tools.Sequence.ViennaRNA.Cofold (cofold)
-import Bio.Tools.Sequence.ViennaRNA.Fold (fold)
-import Bio.Tools.Sequence.OligoDesigner.Utils.Prettifier (prettyDNA, prettyMatrixCell)
-import Text.Regex.TDFA (Regex, makeRegex)
-import Bio.Tools.Sequence.CodonOptimization.Algo (scoreByWindow)
-import Bio.Tools.Sequence.OligoDesigner.Utils.RNAMatrixBuilder (rnaMatrix)
 
 oligoDesignerScoreSpec :: Spec
 oligoDesignerScoreSpec = describe "Oligo-Designer score spec" $ do
@@ -114,7 +100,7 @@ rnaMatrixScoreSpec =
                                               (OligLight "CACGCCGCTGGTCAGGGCGCCGCTGTTCCAGCTCACGGTCACAGGCTCAGGGAAGTAGTC" (Olig "CACGCCGCTGGTCAGGGCGCCGCTGTTCCAGCTCACGGTCACAGGCTCAGGGAAGTAGTC" 90 150)) (-81.7)
       generatorRealMatrix (4, 4) = MatrixCell (OligLight "CACGCCGCTGGTCAGGGCGCCGCTGTTCCAGCTCACGGTCACAGGCTCAGGGAAGTAGTC" (Olig "CACGCCGCTGGTCAGGGCGCCGCTGTTCCAGCTCACGGTCACAGGCTCAGGGAAGTAGTC" 90 150))
                                               (OligLight "CACGCCGCTGGTCAGGGCGCCGCTGTTCCAGCTCACGGTCACAGGCTCAGGGAAGTAGTC" (Olig "CACGCCGCTGGTCAGGGCGCCGCTGTTCCAGCTCACGGTCACAGGCTCAGGGAAGTAGTC" 90 150)) (-44.5)
-      generatorRealMatrix (x, y) = MatrixCell (OligLight "" (Olig "" 0 0)) (OligLight "" (Olig "" 0 0)) 0
+      generatorRealMatrix (_, _) = MatrixCell (OligLight "" (Olig "" 0 0)) (OligLight "" (Olig "" 0 0)) 0
 
 gcContentSpec :: Spec
 gcContentSpec = describe "gcContentSpec" $ it "" $ do

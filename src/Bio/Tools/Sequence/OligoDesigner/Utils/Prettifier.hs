@@ -7,13 +7,9 @@ module Bio.Tools.Sequence.OligoDesigner.Utils.Prettifier(
 ) where
 
 import Bio.NucleicAcid.Nucleotide (DNA(..))
-import Bio.Tools.Sequence.OligoDesigner.Types (OligSplitting(..), Olig(..), OligSet(..),
-            standardTemperature, OligsDesignerConfig(..), MatrixCell(..), OligLight(..))
+import Bio.Tools.Sequence.OligoDesigner.Types (OligSplitting(..), Olig(..), OligSet(..), MatrixCell(..))
 import Data.List (foldl')
-import Bio.Tools.Sequence.ViennaRNA.Fold (fold)
-import Text.Regex.TDFA (Regex)
-import Bio.Tools.Sequence.CodonOptimization (gcContentDesired)
-import Data.Matrix (Matrix, nrows, ncols, toList, toLists)
+import Data.Matrix (Matrix, toLists)
 import Bio.Tools.Sequence.OligoDesigner.Utils.CommonUtils (mixOligs)
 
 

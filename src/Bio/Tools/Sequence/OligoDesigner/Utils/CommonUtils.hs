@@ -10,30 +10,12 @@ module Bio.Tools.Sequence.OligoDesigner.Utils.CommonUtils
  ) where
 
 import           Bio.NucleicAcid.Nucleotide.Type                (DNA (..), cNA)
-import           Bio.Protein.AminoAcid.Type                     (AA (..))
-import           Bio.Tools.Sequence.CodonOptimization.Constants (ak2Codon,
-                                                                 codon2ak,
-                                                                 codonFrequencies)
-import           Bio.Tools.Sequence.CodonOptimization.Types     (Organism)
-import           Bio.Tools.Sequence.OligoDesigner.Types         (Codon,
-                                                                 Olig (..),
+import           Bio.Tools.Sequence.OligoDesigner.Types         (Olig (..),
                                                                  OligBounds,
                                                                  OligSet (..),
-                                                                 OligSplitting (..), OligsDesignerConfig)
-import           Control.Monad.State                            (State, get,
-                                                                 put)
-import           Data.List                                      (sortOn, nub)
-import           Data.Map                                       as Map (lookup)
-import           Data.Maybe                                     (fromMaybe)
-import           System.Random                                  (StdGen,
-                                                                 randomR)
-import Debug.Trace 
-import Bio.Tools.Sequence.CodonOptimization (CodonOptimizationConfig(..))
-import Text.Regex.TDFA (Regex, makeRegex, match)
-import Control.Monad.State.Lazy (gets)
-import System.Random.Shuffle (shuffle')
+                                                                 OligSplitting (..))
 import Control.Monad.Except (Except, throwError)
-import Data.List (maximumBy, minimumBy, findIndex)
+import Data.List (maximumBy, minimumBy)
         
 mixOligs :: OligSet -> [Olig]
 mixOligs (OligSet forward reversed _) = mix forward reversed
@@ -76,13 +58,13 @@ translate = map cNA
               
 getAAIndex :: Int -> Except String Int
 getAAIndex coordinate | coordinate < 0 = throwError "incorrect coordinates"
-                      | otherwise      = return $ ceiling (realToFrac (coordinate + 1) / 3)
+                      | otherwise      = return $ ceiling (realToFrac (coordinate + 1) / 3 :: Double)
                       
 
 compareBySecond :: Ord b => (a, b) -> (a, b) -> Ordering
 compareBySecond p1 p2 = compare (snd p1) (snd p2)
 
 orderByScore :: Ord b => [a] -> (a -> b) -> (a, a)
-orderByScore sequence func = (fst $ minimumBy compareBySecond pairs, fst $ maximumBy compareBySecond pairs)
+orderByScore sequ func = (fst $ minimumBy compareBySecond pairs, fst $ maximumBy compareBySecond pairs)
   where
-    pairs = map (\value -> (value, func value)) sequence
+    pairs = map (\value -> (value, func value)) sequ

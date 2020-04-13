@@ -4,17 +4,12 @@ module OligoDesigner.SpecIterationOptimizer (
 ) where
 
 import Test.Hspec (Spec, describe, it, shouldBe, shouldNotBe, shouldSatisfy)
-import Control.Monad.State (evalState)
 import System.Random (mkStdGen)
 import Bio.Tools.Sequence.OligoDesigner.Optimizer.IterativeOptimizer (optimize)
 import Bio.Tools.Sequence.OligoDesigner.Scorer (commonScore)
-import Bio.Tools.Sequence.OligoDesigner.Types (OligsDesignerConfig(..), OligsSplittingConfig(..), OligSet(..), Olig(..),
+import Bio.Tools.Sequence.OligoDesigner.Types (OligSet(..), Olig(..),
     OligSplitting(..), OligsDesignerInnerConfig(..))
-import Data.Default (def)
 import Bio.Tools.Sequence.CodonOptimization.Types (Organism(..))
-import Text.Regex.TDFA (Regex, makeRegex, match)
-import Bio.Tools.Sequence.OligoDesigner.Utils.Prettifier (prettyDNA)
-import Bio.Tools.Sequence.OligoDesigner.Utils.CommonUtils (assemble)
 import Control.Monad.State.Lazy (evalStateT)
 import Control.Monad.Except (runExcept)
 

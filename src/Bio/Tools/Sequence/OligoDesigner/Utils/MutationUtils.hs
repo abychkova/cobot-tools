@@ -8,7 +8,6 @@ module Bio.Tools.Sequence.OligoDesigner.Utils.MutationUtils (
 
 import Bio.NucleicAcid.Nucleotide.Type (DNA)
 import System.Random (StdGen, randomR)
-import Control.Monad.State.Lazy (State)
 import Bio.Tools.Sequence.OligoDesigner.Types (Codon, Weight)
 import Bio.Tools.Sequence.CodonOptimization.Types (Organism)
 import           Data.Map                                       as Map (lookup)

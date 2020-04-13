@@ -2,22 +2,18 @@ module OligoDesigner.SpecRNACofoldOptimizer (
     rnaOptimizerSpec
 ) where
 
-import Test.Hspec (Spec, shouldBe, it, describe, shouldThrow, errorCall, shouldSatisfy)
-import Bio.Tools.Sequence.OligoDesigner.Scorer (commonScore, rnaScore)
-import Bio.Tools.Sequence.OligoDesigner.Utils.Prettifier (prettyMatrixCell)
+import Test.Hspec (Spec, shouldBe, it, describe, shouldSatisfy)
+import Bio.Tools.Sequence.OligoDesigner.Scorer (rnaScore)
 import Bio.Tools.Sequence.OligoDesigner.Optimizer.RNACofoldOptimizer (maxPairMutationIndexes, minPairMutationIndexes,
     mutationIndexes, rnaOptimize)
-import Bio.Tools.Sequence.OligoDesigner.Types     (MatrixCell(..), OligBounds, OligSplitting(..), OligSet(..),
-                                                    OligsSplittingConfig(..), OligsDesignerConfig(..), Olig(..), OligLight(..),
+import Bio.Tools.Sequence.OligoDesigner.Types     (MatrixCell(..), OligSplitting(..), OligSet(..),
+                                                    Olig(..), OligLight(..),
                                                     OligsDesignerInnerConfig(..))
 import Data.Matrix (matrix)
 import System.Random (mkStdGen)
-import Control.Monad.State (evalState)
 import Bio.Tools.Sequence.CodonOptimization.Types (Organism(..))
 import Data.Default (def)
-import Control.Exception (evaluate)
-import Bio.Tools.Sequence.OligoDesigner.Utils.CommonUtils (assemble, translate)
-import Debug.Trace (trace)
+import Bio.Tools.Sequence.OligoDesigner.Utils.CommonUtils (assemble)
 import Control.Monad.State.Lazy (evalStateT)
 import Control.Monad.Except (runExcept)
 

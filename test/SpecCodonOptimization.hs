@@ -13,9 +13,7 @@ import           Bio.Tools.Sequence.CodonOptimization.Constants (ak2Codon)
 import           Bio.Tools.Sequence.CodonOptimization.Types     (CodonOptimizationConfig (..),
                                                                  Organism (..),
                                                                  defaultForbiddenRegexp)
-import           Data.List                                      (foldl',
-                                                                 maximumBy,
-                                                                 minimumBy)
+import           Data.List                                      (foldl')
 import           Data.Map                                       as Map (lookup)
 import           Data.Maybe                                     (fromMaybe)
 import           System.Random
@@ -23,7 +21,6 @@ import           Test.Hspec                                     (Expectation,
                                                                  Spec, describe,
                                                                  it, shouldBe,
                                                                  shouldSatisfy)
-import Debug.Trace (trace)
 import Text.Regex.TDFA (Regex, makeRegex)
 
 confHuman :: CodonOptimizationConfig
@@ -194,16 +191,12 @@ scoreFun :: Spec
 scoreFun =
     describe "scoreFun" $
     it "should correct count score" $ do
-        scoreByWindow confCHO regexes "ATGGAGACCGACACCCTGCTGCTGTGGGTGCTGCTGCTGTGGGTGCCTGGCAGCACCGGC"
+        scoreByWindow confHuman regexes "ATGGAGACCGACACCCTGCTGCTGTGGGTGCTGCTGCTGTGGGTGCCTGGCAGCACCGGC"
             `shouldBe` 80.83499151084192
-        scoreByWindow confCHO regexes "GCCAGCGGCGACAAGACCCACACCTGTCCT"
+        scoreByWindow confHuman regexes "GCCAGCGGCGACAAGACCCACACCTGTCCT"
             `shouldBe` 80.74362252733329
-        scoreByWindow confCHO regexes "CCCTGCCCCGCCCCCGAGGCCGCCGGCGGCCCTAGCGTGTTCCTGTTCCCTCCTAAGCCTAAGGACACCCTGATGATCAGCAGAACCCCCGAGGTGACCTGCGTGGTGGTGGACGTGAGCCACGAGGACCCTGAGGTGAAGTTCAATTGGTACGTGGACGGCGTGGAGGTGCACAACGCCAAGACCAAGCCTAGAGAGGAGCAGTACAACAGCACCTACAGAGTGGTGAGCGTGCTGACCGTGCTGCACCAAGACTGGCTGAACGGCAAGGAGTACAAGTGCAAGGTGAGCAACAAGGCCCTGCCCGCCCCTATCGAGAAGACCATCAGCAAGGCCAAG"
+        scoreByWindow confHuman regexes "CCCTGCCCCGCCCCCGAGGCCGCCGGCGGCCCTAGCGTGTTCCTGTTCCCTCCTAAGCCTAAGGACACCCTGATGATCAGCAGAACCCCCGAGGTGACCTGCGTGGTGGTGGACGTGAGCCACGAGGACCCTGAGGTGAAGTTCAATTGGTACGTGGACGGCGTGGAGGTGCACAACGCCAAGACCAAGCCTAGAGAGGAGCAGTACAACAGCACCTACAGAGTGGTGAGCGTGCTGACCGTGCTGCACCAAGACTGGCTGAACGGCAAGGAGTACAAGTGCAAGGTGAGCAACAAGGCCCTGCCCGCCCCTATCGAGAAGACCATCAGCAAGGCCAAG"
             `shouldBe` 96.19662511761598
-
-func :: [Double] -> [Double] -> [Double] -> [Double]
-func [] _ acc = acc
-func (x : xs) (y : ys) acc = func xs ys ((x ** 50 * y) : acc)
 
 scoreFunEColi :: Spec
 scoreFunEColi =

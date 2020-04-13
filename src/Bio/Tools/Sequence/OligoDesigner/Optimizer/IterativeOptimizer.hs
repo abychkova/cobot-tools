@@ -6,17 +6,15 @@ import Bio.Tools.Sequence.OligoDesigner.Scorer (commonScore)
 import Bio.Tools.Sequence.OligoDesigner.Optimizer.GCContentOptimizer (gcContentOptimize)
 import Bio.Tools.Sequence.OligoDesigner.Optimizer.RNACofoldOptimizer (rnaOptimize)
 import System.Random (StdGen)
-import Control.Monad.State (State)
 import Bio.Tools.Sequence.OligoDesigner.Types (OligsDesignerInnerConfig(..), OligSet)
-import Debug.Trace 
-import Text.Regex.TDFA (Regex)
+import Debug.Trace
 import Control.Monad.Trans.State.Lazy (StateT)
 import Control.Monad.Except (Except)
 
 
 optimize :: OligsDesignerInnerConfig -> OligSet -> StateT StdGen (Except String) OligSet
-optimize conf@(OligsDesignerInnerConfig _ targetGC _ maxIteration _) oligs = 
-    optimizeIteration 0 [(oligs, commonScore targetGC oligs)]
+optimize conf@(OligsDesignerInnerConfig _ targetGC _ maxIteration _) oligSet =
+    optimizeIteration 0 [(oligSet, commonScore targetGC oligSet)]
   where
     optimizationStep :: OligSet -> StateT StdGen (Except String) [(OligSet, Double)]
     optimizationStep oligs =  do

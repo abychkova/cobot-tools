@@ -12,6 +12,7 @@ matrixBuilderSpec :: Spec
 matrixBuilderSpec = describe "Oligo-Designer rna matrix builder spec" $ do
     rnaMatrixSpec
     rnaMatrixSimpleSpec
+    rebuildMatrixSpec
 
 rnaMatrixSpec :: Spec
 rnaMatrixSpec =
@@ -51,7 +52,7 @@ rnaMatrixSpec =
                                                 (OligLight "CACGCCGCTGGTCAGGGCGCCGCTGTTCCAGCTCACGGTCACAGGCTCAGGGAAGTAGTC" (Olig "CACGCCGCTGGTCAGGGCGCCGCTGTTCCAGCTCACGGTCACAGGCTCAGGGAAGTAGTC" 90 150)) (-81.7)
         generatorRealMatrix (4, 4) = MatrixCell (OligLight "CACGCCGCTGGTCAGGGCGCCGCTGTTCCAGCTCACGGTCACAGGCTCAGGGAAGTAGTC" (Olig "CACGCCGCTGGTCAGGGCGCCGCTGTTCCAGCTCACGGTCACAGGCTCAGGGAAGTAGTC" 90 150))
                                                 (OligLight "CACGCCGCTGGTCAGGGCGCCGCTGTTCCAGCTCACGGTCACAGGCTCAGGGAAGTAGTC" (Olig "CACGCCGCTGGTCAGGGCGCCGCTGTTCCAGCTCACGGTCACAGGCTCAGGGAAGTAGTC" 90 150)) (-44.5)
-        generatorRealMatrix (x, y) = MatrixCell (OligLight "" (Olig "" 0 0)) (OligLight "" (Olig "" 0 0)) 0
+        generatorRealMatrix (_, _) = MatrixCell (OligLight "" (Olig "" 0 0)) (OligLight "" (Olig "" 0 0)) 0
         
 
 rnaMatrixSimpleSpec :: Spec
@@ -92,7 +93,7 @@ rnaMatrixSimpleSpec =
                                       (OligLight "ACTTTC" (Olig "ACTTTC" 9 15)) 0
         generator (4, 4) = MatrixCell (OligLight "ACTTTC" (Olig "ACTTTC" 9 15))
                                       (OligLight "ACTTTC" (Olig "ACTTTC" 9 15)) 0
-        generator (x, y) = MatrixCell (OligLight "" (Olig "" 0 0 )) (OligLight "" (Olig "" 0 0)) 0
+        generator (_, _) = MatrixCell (OligLight "" (Olig "" 0 0 )) (OligLight "" (Olig "" 0 0)) 0
 
 rebuildMatrixSpec :: Spec
 rebuildMatrixSpec =
@@ -142,5 +143,5 @@ rebuildMatrixSpec =
                                   (OligLight "CACGCCGCTGGTCAGGGCGCCGCTGTTCCAGCTCACGGTCACAGGCTCAGGGAAGTAGTC" (Olig "CACGCCGCTGGTCAGGGCGCCGCTGTTCCAGCTCACGGTCACAGGCTCAGGGAAGTAGTC" 90 150)) (-81.7)
     generator (4, 4) = MatrixCell (OligLight "CACGCCGCTGGTCAGGGCGCCGCTGTTCCAGCTCACGGTCACAGGCTCAGGGAAGTAGTC" (Olig "CACGCCGCTGGTCAGGGCGCCGCTGTTCCAGCTCACGGTCACAGGCTCAGGGAAGTAGTC" 90 150))
                                   (OligLight "CACGCCGCTGGTCAGGGCGCCGCTGTTCCAGCTCACGGTCACAGGCTCAGGGAAGTAGTC" (Olig "CACGCCGCTGGTCAGGGCGCCGCTGTTCCAGCTCACGGTCACAGGCTCAGGGAAGTAGTC" 90 150)) (-44.5)
-    generator (x, y) = MatrixCell (OligLight "" (Olig "" 0 0)) (OligLight "" (Olig "" 0 0)) 0
+    generator (_, _) = MatrixCell (OligLight "" (Olig "" 0 0)) (OligLight "" (Olig "" 0 0)) 0
     

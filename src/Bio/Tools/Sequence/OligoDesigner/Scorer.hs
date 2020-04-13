@@ -8,22 +8,14 @@ module Bio.Tools.Sequence.OligoDesigner.Scorer
  ,gcContentScoreBySequence
  ) where
 
-import qualified Bio.Tools.Sequence.CodonOptimization         as CodonOptimization (score, CodonOptimizationConfig(..))
 import           Bio.Tools.Sequence.OligoDesigner.Types       (MatrixCell (..),
                                                                Olig (..),
-                                                               OligLight (..),
                                                                OligSet (..),
-                                                               OligsDesignerInnerConfig (..),
-                                                               standardTemperature, emptyMatrixCell, TargetGC)
-import           Bio.Tools.Sequence.OligoDesigner.Utils.CommonUtils       (assemble, mixOligs)
+                                                               TargetGC)
+import           Bio.Tools.Sequence.OligoDesigner.Utils.CommonUtils       (assemble)
 import           Bio.Tools.Sequence.OligoDesigner.Utils.RNAMatrixBuilder       (rnaMatrix)
-import           Bio.Tools.Sequence.ViennaRNA.Internal.Cofold (cofold)
-import Bio.Tools.Sequence.OligoDesigner.Utils.Prettifier (prettyDNA, prettyMatrixCell)
 import Bio.NucleicAcid.Nucleotide (DNA(..))
-import Debug.Trace
-import Bio.Tools.Sequence.CodonOptimization.Types (gcContentDesired)
-import Data.Text (pack)
-import Data.Matrix (Matrix, nrows, ncols, (!), prettyMatrix)
+import Data.Matrix (Matrix, nrows, ncols, (!))
 
 commonScore :: TargetGC -> OligSet -> Double
 commonScore targetGC oligs = scoreValue

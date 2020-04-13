@@ -18,14 +18,14 @@ main = do
     hSetBuffering stdout NoBuffering
     hspec $ do
          -- Primers
---         testPrimers
+         testPrimers
 
          -- ViennaRNA
---         foldTest
---         cofoldTest
+         foldTest
+         cofoldTest
 
          -- CodonOptimization
---         codonOptimizationSpec
+         codonOptimizationSpec
 
          -- OligoDesigner
          oligoDesignerSplitterSpec

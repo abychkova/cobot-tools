@@ -20,12 +20,9 @@ module Bio.Tools.Sequence.OligoDesigner.Types
 
 import           Bio.NucleicAcid.Nucleotide.Type      (DNA (..))
 import           Bio.Tools.Sequence.CodonOptimization (CodonOptimizationConfig (..))
-import           Data.List                            (foldl')
 import           GHC.Generics                         (Generic)
 import Control.DeepSeq (NFData)
 import           Data.Default (Default (..))
-import Data.Matrix (Matrix)
-import Data.Text (Text)
 import Bio.Tools.Sequence.CodonOptimization.Types (Organism)
 import Text.Regex.TDFA (Regex)
 

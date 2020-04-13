@@ -4,16 +4,15 @@ module OligoDesigner.SpecMutationUtils (
 
 import Bio.Tools.Sequence.OligoDesigner.Utils.MutationUtils (weightedRandom, randomCodon, oneMutation, mutateSlice, mutate)
 import           Test.Hspec                             (Spec, describe,
-                                                         errorCall, it,
+                                                         it,
                                                          shouldBe,
                                                          shouldSatisfy,
-                                                         shouldThrow, shouldNotBe)
+                                                         shouldNotBe)
 import System.Random (StdGen, getStdGen, mkStdGen)
 import Control.Monad.State.Lazy (State, get, evalStateT, runStateT)
 import Bio.Tools.Sequence.CodonOptimization.Types (Organism(..))
-import Control.Monad.State (evalState, runState, put)
+import Control.Monad.State (evalState, put)
 import Bio.NucleicAcid.Nucleotide.Type (DNA(..))
-import Control.Exception (evaluate)
 import Bio.Protein.AminoAcid (AA(..))
 import Data.List (nub)
 import Control.Monad.Except (runExcept)

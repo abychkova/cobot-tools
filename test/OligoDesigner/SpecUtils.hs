@@ -10,21 +10,9 @@ import           Bio.Tools.Sequence.OligoDesigner.Types (Olig (..),
 import           Bio.Tools.Sequence.OligoDesigner.Utils.CommonUtils (assemble,
                                                          slice,
                                                          buildOligSet,translate, getAAIndex, mixOligs)
-import           Control.Exception                      (evaluate)
-import           Control.Monad.State                    (State, evalState, get,
-                                                         put, runState)
-import           Data.List                              (nub)
-import           System.Random                          (StdGen, getStdGen, mkStdGen)
 import           Test.Hspec                             (Spec, describe,
-                                                         errorCall, it,
-                                                         shouldBe,
-                                                         shouldSatisfy,
-                                                         shouldThrow, shouldNotBe)
-import Bio.NucleicAcid.Nucleotide (DNA(..), cNA)
-import Bio.Tools.Sequence.CodonOptimization.Types (Organism(..))
-import Bio.Protein.AminoAcid (AA(..))
-import Debug.Trace (trace)
-import Control.DeepSeq (force)
+                                                         it,
+                                                         shouldBe)
 import Control.Monad.Except (runExcept)
 
 utilsSpec :: Spec
@@ -93,28 +81,28 @@ sliceSpec :: Spec
 sliceSpec =
     describe "sliceSpec" $
     it "should correct get slice from sequence" $ do
-        let sequence = [0..19] :: [Integer]
-        let res = runExcept $ slice 3 6 sequence
+        let sequ = [0..19] :: [Integer]
+        let res = runExcept $ slice 3 6 sequ
         res `shouldBe` Right [3, 4, 5]
 
 sliceWrongIndexesSpec :: Spec
 sliceWrongIndexesSpec =
     describe "sliceWrongIndexesSpec" $
     it "should return empty slice for wrong indexes" $ do
-        let sequence = [0..19] :: [Integer]
-        runExcept (slice 6 3 sequence)    `shouldBe` Left "incorrect coordinates"
-        runExcept (slice (-6) 0 sequence) `shouldBe` Left "incorrect coordinates"
-        runExcept (slice 20 22 sequence) `shouldBe` Right []
-        runExcept (slice 0 0 sequence) `shouldBe` Right []
-        runExcept (slice (-3) 2 sequence) `shouldBe` Left "incorrect coordinates"
+        let sequ = [0..19] :: [Integer]
+        runExcept (slice 6 3 sequ)    `shouldBe` Left "incorrect coordinates"
+        runExcept (slice (-6) 0 sequ) `shouldBe` Left "incorrect coordinates"
+        runExcept (slice 20 22 sequ) `shouldBe` Right []
+        runExcept (slice 0 0 sequ) `shouldBe` Right []
+        runExcept (slice (-3) 2 sequ) `shouldBe` Left "incorrect coordinates"
 
 sliceOutOfBoundIndexSpec :: Spec
 sliceOutOfBoundIndexSpec =
     describe "sliceOutOfBoundIndexSpec" $
     it "should return tail for out of bound indexes" $ do
-        let sequence = [0..19] :: [Integer]
-        runExcept (slice 17 33 sequence) `shouldBe` Right [17, 18, 19]
-        runExcept (slice 19 20 sequence) `shouldBe` Right [19]
+        let sequ = [0..19] :: [Integer]
+        runExcept (slice 17 33 sequ) `shouldBe` Right [17, 18, 19]
+        runExcept (slice 19 20 sequ) `shouldBe` Right [19]
 
 buildEmptyOligSetSpec :: Spec
 buildEmptyOligSetSpec =
@@ -221,7 +209,7 @@ buildOligSetWithIncorrectSplittingSpec =
         res `shouldBe` Left "incorrect coordinates"
         
         let splitting' = OligSplitting [(10, 5)] [(29, 670)]
-        runExcept (buildOligSet splitting dna) `shouldBe` Left "incorrect coordinates"
+        runExcept (buildOligSet splitting' dna) `shouldBe` Left "incorrect coordinates"
         
 getAAIndexSpec :: Spec
 getAAIndexSpec =
