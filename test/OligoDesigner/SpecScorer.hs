@@ -1,18 +1,14 @@
-{-# LANGUAGE OverloadedStrings #-}
-
 module OligoDesigner.SpecScorer (
     oligoDesignerScoreSpec
 ) where
 
-import           Bio.Tools.Sequence.OligoDesigner.Scorer (rnaScore, rnaMatrixScore, gcContent,
-                                                            oligsGCContentDifference, gcContentScoreBySequence, commonScore)
-import           Bio.Tools.Sequence.OligoDesigner.Types  (Olig (..),
-                                                          OligLight (..),
-                                                          OligSet (..),
-                                                          OligSplitting (..), MatrixCell(..))
-import           Test.Hspec                              (Spec, describe, it,
-                                                          shouldBe)
 import Data.Matrix (matrix)
+import Test.Hspec  (Spec, describe, it, shouldBe)
+
+import Bio.Tools.Sequence.OligoDesigner.Scorer (commonScore, gcContent, gcContentScoreBySequence,
+                                                oligsGCContentDifference, rnaMatrixScore, rnaScore)
+import Bio.Tools.Sequence.OligoDesigner.Types  (MatrixCell (..), Olig (..), OligLight (..),
+                                                OligSet (..), OligSplitting (..))
 
 oligoDesignerScoreSpec :: Spec
 oligoDesignerScoreSpec = describe "Oligo-Designer score spec" $ do
@@ -28,7 +24,6 @@ oligoDesignerScoreSpec = describe "Oligo-Designer score spec" $ do
 
     dnaGCContentScoreSpec
     commonScoreSpec
---       tttt
 
 scoreRNAFoldingSpec :: Spec
 scoreRNAFoldingSpec =

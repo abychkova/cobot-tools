@@ -4,37 +4,28 @@ module Bio.Tools.Sequence.OligoDesigner.Optimizer.RNACofoldOptimizer
     , minPairMutationIndexes
     , mutationIndexes
     ) where
+    
+import Control.Monad.Except           (Except)
+import Control.Monad.Trans            (lift)
+import Control.Monad.Trans.State.Lazy (StateT)
+import Data.Foldable                  (minimumBy)
+import Data.List                      (intersect, maximumBy, nub)
+import Data.Matrix                    (Matrix, ncols, nrows, (!))
+import System.Random                  (StdGen)
 
-import           Bio.Tools.Sequence.OligoDesigner.ForbiddenFixer         (filterForbidden)
-import           Bio.Tools.Sequence.OligoDesigner.Scorer                 (rnaMatrixScore)
-import           Bio.Tools.Sequence.OligoDesigner.Types                  (MatrixCell (..),
-                                                                          Olig (..),
-                                                                          OligLight (..),
-                                                                          OligSet (..),
-                                                                          OligsDesignerInnerConfig (..))
-import           Bio.Tools.Sequence.OligoDesigner.Utils.CommonUtils      (assemble,
-                                                                          buildOligSet,
-                                                                          getAAIndex,
-                                                                          orderByScore)
-import           Bio.Tools.Sequence.OligoDesigner.Utils.MutationUtils    (mutate)
-import           Bio.Tools.Sequence.OligoDesigner.Utils.RNAMatrixBuilder (rebuildMatrix,
-                                                                          rnaMatrix)
-import           Control.Monad.Except                                    (Except)
-import           Control.Monad.Trans                                     (lift)
-import           Control.Monad.Trans.State.Lazy                          (StateT)
-import           Data.Foldable                                           (minimumBy)
-import           Data.List                                               (intersect,
-                                                                          maximumBy,
-                                                                          nub)
-import           Data.Matrix                                             (Matrix,
-                                                                          ncols,
-                                                                          nrows,
-                                                                          (!))
-import           System.Random                                           (StdGen)
+import Bio.Tools.Sequence.OligoDesigner.ForbiddenFixer         (filterForbidden)
+import Bio.Tools.Sequence.OligoDesigner.Scorer                 (rnaMatrixScore)
+import Bio.Tools.Sequence.OligoDesigner.Types                  (MatrixCell (..), Olig (..),
+                                                                OligLight (..), OligSet (..),
+                                                                OligsDesignerInnerConfig (..))
+import Bio.Tools.Sequence.OligoDesigner.Utils.CommonUtils      (assemble, buildOligSet, getAAIndex,
+                                                                orderByScore)
+import Bio.Tools.Sequence.OligoDesigner.Utils.MutationUtils    (mutate)
+import Bio.Tools.Sequence.OligoDesigner.Utils.RNAMatrixBuilder (rebuildMatrix, rnaMatrix)
 
--- | 'rnaOptimize' function does optimization for oligs rna matrix.
+-- | function does optimization for oligs rna matrix.
 -- The main idea is to reduce the difference between neighboring oligs with minimum rna energy
--- and not neighboring oligs with maximum rna energy
+-- and not neighboring oligs with maximum rna energy.
 rnaOptimize :: OligsDesignerInnerConfig              -- ^ configuration data (used 'organism' and 'regexes')
             -> OligSet                               -- ^ oligs set
             -> StateT StdGen (Except String) OligSet -- ^ result of optimization is optimized oligs set with the best score or error string
@@ -62,11 +53,12 @@ mutationIndexes oligsMatrix = do
     compareByRna (MatrixCell _ _ rna1) (MatrixCell _ _ rna2) = compare (abs rna1) (abs rna2)
 
 minPairMutationIndexes :: MatrixCell -> Except String [(Int, Int)]
-minPairMutationIndexes (MatrixCell (OligLight _ (Olig _ start1 end1)) (OligLight _ (Olig _ start2 end2)) _) = do
-    let intersection = [start1 .. end1 - 1] `intersect` [start2 .. end2 - 1]
-    if null intersection
-        then return []
-        else (: []) <$> getAAIndexes (head intersection, last intersection)
+minPairMutationIndexes (MatrixCell (OligLight _ (Olig _ start1 end1)) (OligLight _ (Olig _ start2 end2)) _) 
+  | intersectionStart > intersectionEnd = return []
+  | otherwise = (: []) <$> getAAIndexes (intersectionStart, intersectionEnd)
+  where
+    intersectionStart = max start1 start2
+    intersectionEnd = min end1 end2 - 1
 
 maxPairMutationIndexes :: MatrixCell -> Except String [(Int, Int)]
 maxPairMutationIndexes (MatrixCell (OligLight _ (Olig _ start1 end1)) (OligLight _ (Olig _ start2 end2)) _) = do

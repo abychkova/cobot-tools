@@ -10,12 +10,14 @@ module Bio.Tools.Sequence.OligoDesigner.Utils.CommonUtils
     , isEqual
     ) where
 
-import           Bio.NucleicAcid.Nucleotide.Type        (DNA (..), cNA)
-import           Bio.Tools.Sequence.OligoDesigner.Types (Olig (..), OligBounds,
-                                                         OligSet (..),
-                                                         OligSplitting (..))
-import           Control.Monad.Except                   (Except, throwError)
-import           Data.List                              (maximumBy, minimumBy)
+import Control.Monad.Except (Except, throwError)
+import Data.List            (maximumBy, minimumBy)
+import Data.Ord             (comparing)
+
+import Bio.NucleicAcid.Nucleotide.Type        (DNA (..), cNA)
+import Bio.Tools.Sequence.OligoDesigner.Types (Olig (..), OligBounds, OligSet (..),
+                                               OligSplitting (..))
+
 
 mixOligs :: OligSet -> [Olig]
 mixOligs (OligSet forward reversed _) = mix forward reversed
@@ -64,7 +66,7 @@ getAAIndex coordinate | coordinate < 0 = throwError "incorrect coordinates"
 
 
 compareBySecond :: Ord b => (a, b) -> (a, b) -> Ordering
-compareBySecond p1 p2 = compare (snd p1) (snd p2)
+compareBySecond = comparing snd
 
 orderByScore :: Ord b => [a] -> (a -> b) -> (a, a)
 orderByScore sequ func = (fst $ minimumBy compareBySecond pairs, fst $ maximumBy compareBySecond pairs)

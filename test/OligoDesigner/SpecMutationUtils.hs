@@ -2,20 +2,19 @@ module OligoDesigner.SpecMutationUtils (
     mutationUtilsSpec
 ) where
 
-import Bio.Tools.Sequence.OligoDesigner.Utils.MutationUtils (weightedRandom, randomCodon, oneMutation, mutateSlice, mutate)
-import           Test.Hspec                             (Spec, describe,
-                                                         it,
-                                                         shouldBe,
-                                                         shouldSatisfy,
-                                                         shouldNotBe)
-import System.Random (StdGen, getStdGen, mkStdGen)
-import Control.Monad.State.Lazy (State, get, evalStateT, runStateT)
-import Bio.Tools.Sequence.CodonOptimization.Types (Organism(..))
-import Control.Monad.State (evalState, put)
-import Bio.NucleicAcid.Nucleotide.Type (DNA(..))
-import Bio.Protein.AminoAcid (AA(..))
-import Data.List (nub)
-import Control.Monad.Except (runExcept)
+import Control.Monad.Except     (runExcept)
+import Control.Monad.State      (evalState, put)
+import Control.Monad.State.Lazy (State, evalStateT, get, runStateT)
+import Data.List                (nub)
+import System.Random            (StdGen, getStdGen, mkStdGen)
+import Test.Hspec               (Spec, describe, it, shouldBe, shouldNotBe, shouldSatisfy)
+                                                             
+import Bio.NucleicAcid.Nucleotide.Type (DNA (..))
+import Bio.Protein.AminoAcid           (AA (..))
+
+import Bio.Tools.Sequence.CodonOptimization.Types           (Organism (..))
+import Bio.Tools.Sequence.OligoDesigner.Utils.MutationUtils (mutate, mutateSlice, oneMutation,
+                                                             randomCodon, weightedRandom)
 
 mutationUtilsSpec :: Spec
 mutationUtilsSpec =
@@ -49,16 +48,16 @@ oneMutationSpec =
     describe "oneMutationSpec" $
     it "should return another codon for LYS (aa with 2 codons) for any random value" $ do
         gen <- getStdGen
-        let (Right res) = runExcept $ evalStateT (oneMutation CHO [DA, DA, DA]) gen
-        res `shouldBe` [DA, DA, DG]
+        let res = runExcept $ evalStateT (oneMutation CHO [DA, DA, DA]) gen
+        res `shouldBe` Right [DA, DA, DG]
 
 oneMutationForAAWithOneCodonSpec :: Spec
 oneMutationForAAWithOneCodonSpec =
     describe "oneMutationForAAWithOneCodonSpec" $
     it "should return the same codon for TRP (aa with 1 codon) for any random value" $ do
         gen <- getStdGen
-        let (Right res) = runExcept $ evalStateT (oneMutation CHO [DT, DG, DG]) gen
-        res `shouldBe` [DT, DG, DG]
+        let res = runExcept $ evalStateT (oneMutation CHO [DT, DG, DG]) gen
+        res `shouldBe` Right [DT, DG, DG]
 
 runWeightedRandomNTimes :: StdGen -> [(Integer, Double)] -> Int -> [Integer]
 runWeightedRandomNTimes gen arg n = evalState (helper n []) gen
@@ -77,16 +76,16 @@ mutateSliceSpec =
     describe "mutateSliceSpec" $
     it "" $ do
         let gen = mkStdGen 4
-        let (Right res) = runExcept $ evalStateT (mutateSlice CHO "AATATGCAT") gen
-        res `shouldBe` ["AATATGCAT", "AACATGCAT", "AATATGCAC"]
+        let res = runExcept $ evalStateT (mutateSlice CHO "AATATGCAT") gen
+        res `shouldBe` Right ["AATATGCAT", "AACATGCAT", "AATATGCAC"]
 
 mutateSliceWhenThereIsNoVariantsSpec :: Spec
 mutateSliceWhenThereIsNoVariantsSpec =
     describe "mutateSliceWhenThereIsNoVariantsSpec" $
     it "" $ do
         let gen = mkStdGen 4
-        let (Right res) = runExcept $ evalStateT (mutateSlice CHO "ATGTGG") gen
-        res `shouldBe` ["ATGTGG"]
+        let res = runExcept $ evalStateT (mutateSlice CHO "ATGTGG") gen
+        res `shouldBe` Right ["ATGTGG"]
 
 mutateSliceRealRandomSpec :: Spec
 mutateSliceRealRandomSpec =
@@ -108,8 +107,8 @@ mutateSpec =
     it "" $ do
         let dna = "ATGGAGACC" ++ "AATATGCAT" ++ "GACACCCTGCTGCTGTGGGTGCTGCTGCTG"
         let gen = mkStdGen 4
-        let (Right res) = runExcept $ evalStateT (mutate CHO dna (4, 6)) gen
-        res `shouldBe` ["ATGGAGACCAATATGCATGACACCCTGCTGCTGTGGGTGCTGCTGCTG",
+        let res = runExcept $ evalStateT (mutate CHO dna (4, 6)) gen
+        res `shouldBe` Right ["ATGGAGACCAATATGCATGACACCCTGCTGCTGTGGGTGCTGCTGCTG",
                         "ATGGAGACCAACATGCATGACACCCTGCTGCTGTGGGTGCTGCTGCTG",
                         "ATGGAGACCAATATGCACGACACCCTGCTGCTGTGGGTGCTGCTGCTG"]
 
@@ -119,8 +118,8 @@ mutateFromStartSpec =
     it "" $ do
         let dna = "AATATGCAT" ++ "ATGGAGACCGACACCCTGCTGCTGTGGGTGCTGCTGCTG"
         let gen = mkStdGen 4
-        let (Right res) = runExcept $ evalStateT (mutate CHO dna (1, 3)) gen
-        res `shouldBe` ["AATATGCATATGGAGACCGACACCCTGCTGCTGTGGGTGCTGCTGCTG",
+        let res = runExcept $ evalStateT (mutate CHO dna (1, 3)) gen
+        res `shouldBe` Right ["AATATGCATATGGAGACCGACACCCTGCTGCTGTGGGTGCTGCTGCTG",
                         "AACATGCATATGGAGACCGACACCCTGCTGCTGTGGGTGCTGCTGCTG",
                         "AATATGCACATGGAGACCGACACCCTGCTGCTGTGGGTGCTGCTGCTG"]
 
@@ -130,8 +129,8 @@ mutateOneAASpec =
     it "" $ do
         let dna = "ATGGAGACC" ++ "AAT" ++ "ATGCATGACACCCTGCTGCTGTGGGTGCTGCTGCTG"
         let gen = mkStdGen 4
-        let (Right res) = runExcept $ evalStateT (mutate CHO dna (4, 4)) gen
-        res `shouldBe` ["ATGGAGACCAATATGCATGACACCCTGCTGCTGTGGGTGCTGCTGCTG",
+        let res = runExcept $ evalStateT (mutate CHO dna (4, 4)) gen
+        res `shouldBe` Right ["ATGGAGACCAATATGCATGACACCCTGCTGCTGTGGGTGCTGCTGCTG",
                         "ATGGAGACCAACATGCATGACACCCTGCTGCTGTGGGTGCTGCTGCTG"]
 
 mutateInvalidIntervalSpec :: Spec

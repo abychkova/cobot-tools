@@ -2,11 +2,8 @@ module Bio.Tools.Sequence.OligoDesigner.Splitter
     ( split
     ) where
 
-import           Bio.Tools.Sequence.OligoDesigner.Types (GapSize, OligSize,
-                                                         OligSplitting (..),
-                                                         OligsCount,
-                                                         OligsSplittingConfig (..),
-                                                         SequenceLen)
+import Bio.Tools.Sequence.OligoDesigner.Types (GapSize, OligSize, OligSplitting (..), OligsCount,
+                                               OligsSplittingConfig (..), SequenceLen)
 
 
 split :: OligsSplittingConfig -> SequenceLen -> Maybe OligSplitting

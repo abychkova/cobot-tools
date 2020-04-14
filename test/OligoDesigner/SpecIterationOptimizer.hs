@@ -1,17 +1,18 @@
-{-# LANGUAGE OverloadedStrings #-}
 module OligoDesigner.SpecIterationOptimizer (
     optimizerSpec
 ) where
 
-import Test.Hspec (Spec, describe, it, shouldBe, shouldNotBe, shouldSatisfy)
-import System.Random (mkStdGen)
-import Bio.Tools.Sequence.OligoDesigner.Optimizer.IterativeOptimizer (optimize)
-import Bio.Tools.Sequence.OligoDesigner.Scorer (commonScore)
-import Bio.Tools.Sequence.OligoDesigner.Types (OligSet(..), Olig(..),
-    OligSplitting(..), OligsDesignerInnerConfig(..))
-import Bio.Tools.Sequence.CodonOptimization.Types (Organism(..))
+import Control.Monad.Except     (runExcept)
 import Control.Monad.State.Lazy (evalStateT)
-import Control.Monad.Except (runExcept)
+import System.Random            (mkStdGen)
+import Test.Hspec               (Spec, describe, it, shouldBe, shouldNotBe, shouldSatisfy)
+                                                                      
+import Bio.Tools.Sequence.CodonOptimization.Types                    (Organism (..))
+import Bio.Tools.Sequence.OligoDesigner.Optimizer.IterativeOptimizer (optimize)
+import Bio.Tools.Sequence.OligoDesigner.Scorer                       (commonScore)
+import Bio.Tools.Sequence.OligoDesigner.Types                        (Olig (..), OligSet (..),
+                                                                      OligSplitting (..),
+                                                                      OligsDesignerInnerConfig (..))
 
 optimizerSpec :: Spec
 optimizerSpec =

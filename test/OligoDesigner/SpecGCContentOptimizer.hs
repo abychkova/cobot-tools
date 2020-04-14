@@ -2,14 +2,17 @@ module OligoDesigner.SpecGCContentOptimizer (
     gcContentOptimizerSpec
 ) where
 
-import Test.Hspec (Spec, describe, it, shouldBe, shouldSatisfy)
-import Bio.Tools.Sequence.OligoDesigner.Types (OligSplitting(..), OligSet(..), Olig(..), OligsDesignerInnerConfig(..))
-import Bio.Tools.Sequence.OligoDesigner.Optimizer.GCContentOptimizer (gcContentOptimize)
-import System.Random (mkStdGen)
-import Bio.Tools.Sequence.CodonOptimization.Types (Organism(..))
-import Bio.Tools.Sequence.OligoDesigner.Scorer (oligsGCContentDifference)
+import Control.Monad.Except     (runExcept)
 import Control.Monad.State.Lazy (evalStateT)
-import Control.Monad.Except (runExcept)
+import System.Random            (mkStdGen)
+import Test.Hspec               (Spec, describe, it, shouldBe, shouldSatisfy)
+                                                                      
+import Bio.Tools.Sequence.CodonOptimization.Types                    (Organism (..))
+import Bio.Tools.Sequence.OligoDesigner.Optimizer.GCContentOptimizer (gcContentOptimize)
+import Bio.Tools.Sequence.OligoDesigner.Scorer                       (oligsGCContentDifference)
+import Bio.Tools.Sequence.OligoDesigner.Types                        (Olig (..), OligSet (..),
+                                                                      OligSplitting (..),
+                                                                      OligsDesignerInnerConfig (..))
 
 gcContentOptimizerSpec :: Spec
 gcContentOptimizerSpec =

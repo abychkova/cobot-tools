@@ -2,16 +2,16 @@ module Bio.Tools.Sequence.OligoDesigner.Optimizer.IterativeOptimizer
     ( optimize
     ) where
 
-import           Bio.Tools.Sequence.OligoDesigner.Optimizer.GCContentOptimizer (gcContentOptimize)
-import           Bio.Tools.Sequence.OligoDesigner.Optimizer.RNACofoldOptimizer (rnaOptimize)
-import           Bio.Tools.Sequence.OligoDesigner.Scorer                       (commonScore)
-import           Bio.Tools.Sequence.OligoDesigner.Types                        (OligSet,
-                                                                                OligsDesignerInnerConfig (..))
-import           Bio.Tools.Sequence.OligoDesigner.Utils.CommonUtils            (isEqual)
-import           Control.Monad.Except                                          (Except)
-import           Control.Monad.Trans.State.Lazy                                (StateT)
-import           Debug.Trace
-import           System.Random                                                 (StdGen)
+import Control.Monad.Except           (Except)
+import Control.Monad.Trans.State.Lazy (StateT)
+import System.Random                  (StdGen)
+
+import Bio.Tools.Sequence.OligoDesigner.Optimizer.GCContentOptimizer (gcContentOptimize)
+import Bio.Tools.Sequence.OligoDesigner.Optimizer.RNACofoldOptimizer (rnaOptimize)
+import Bio.Tools.Sequence.OligoDesigner.Scorer                       (commonScore)
+import Bio.Tools.Sequence.OligoDesigner.Types                        (OligSet,
+                                                                      OligsDesignerInnerConfig (..))
+import Bio.Tools.Sequence.OligoDesigner.Utils.CommonUtils            (isEqual)
 
 
 optimize :: OligsDesignerInnerConfig -> OligSet -> StateT StdGen (Except String) OligSet
@@ -25,15 +25,9 @@ optimize conf@(OligsDesignerInnerConfig _ targetGC _ maxIteration _) oligSet =
        
     optimizeIteration :: Int -> [(OligSet, Double)] -> StateT StdGen (Except String) OligSet
     optimizeIteration iteration results
-        | iteration >= maxIteration =
-            trace ("We are reached maximum iteration count. results:" ++ show (map snd results)) $
-            return $ fst $ last results
-        | iteration > 2 && isStableScore results =
-            trace ("We are reached stable score. results:" ++ show (map snd results)) $
-            return $ fst $ last results
-        | otherwise =
-            trace ("iteration № " ++ show iteration) $
-            optimizationStep (fst $ last results) >>= optimizeIteration (iteration + 1) . (results ++)
+        | iteration >= maxIteration = return $ fst $ last results
+        | iteration > 2 && isStableScore results = return $ fst $ last results
+        | otherwise = optimizationStep (fst $ last results) >>= optimizeIteration (iteration + 1) . (results ++)
             
 isStableScore :: [(OligSet, Double)] -> Bool
 isStableScore results = isEqual lastScore prevScore && isEqual lastScore prevPrevScore

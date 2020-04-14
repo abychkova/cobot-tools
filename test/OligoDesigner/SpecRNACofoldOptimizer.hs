@@ -2,20 +2,23 @@ module OligoDesigner.SpecRNACofoldOptimizer (
     rnaOptimizerSpec
 ) where
 
-import Test.Hspec (Spec, shouldBe, it, describe, shouldSatisfy)
-import Bio.Tools.Sequence.OligoDesigner.Scorer (rnaScore)
-import Bio.Tools.Sequence.OligoDesigner.Optimizer.RNACofoldOptimizer (maxPairMutationIndexes, minPairMutationIndexes,
-    mutationIndexes, rnaOptimize)
-import Bio.Tools.Sequence.OligoDesigner.Types     (MatrixCell(..), OligSplitting(..), OligSet(..),
-                                                    Olig(..), OligLight(..),
-                                                    OligsDesignerInnerConfig(..))
-import Data.Matrix (matrix)
-import System.Random (mkStdGen)
-import Bio.Tools.Sequence.CodonOptimization.Types (Organism(..))
-import Data.Default (def)
-import Bio.Tools.Sequence.OligoDesigner.Utils.CommonUtils (assemble)
+import Control.Monad.Except     (runExcept)
 import Control.Monad.State.Lazy (evalStateT)
-import Control.Monad.Except (runExcept)
+import Data.Default             (def)
+import Data.Matrix              (matrix)
+import System.Random            (mkStdGen)
+import Test.Hspec               (Spec, describe, it, shouldBe, shouldSatisfy)
+                                                                      
+import Bio.Tools.Sequence.CodonOptimization.Types                    (Organism (..))
+import Bio.Tools.Sequence.OligoDesigner.Optimizer.RNACofoldOptimizer (maxPairMutationIndexes,
+                                                                      minPairMutationIndexes,
+                                                                      mutationIndexes, rnaOptimize)
+import Bio.Tools.Sequence.OligoDesigner.Scorer                       (rnaScore)
+import Bio.Tools.Sequence.OligoDesigner.Types                        (MatrixCell (..), Olig (..),
+                                                                      OligLight (..), OligSet (..),
+                                                                      OligSplitting (..),
+                                                                      OligsDesignerInnerConfig (..))
+import Bio.Tools.Sequence.OligoDesigner.Utils.CommonUtils            (assemble)
 
 rnaOptimizerSpec :: Spec
 rnaOptimizerSpec =

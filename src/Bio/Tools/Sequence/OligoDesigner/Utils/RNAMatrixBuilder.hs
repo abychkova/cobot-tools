@@ -3,18 +3,15 @@ module Bio.Tools.Sequence.OligoDesigner.Utils.RNAMatrixBuilder
     , rebuildMatrix
     ) where
 
-import           Bio.Tools.Sequence.OligoDesigner.Types             (MatrixCell (..),
-                                                                     Olig (..),
-                                                                     OligLight (..),
-                                                                     OligSet,
-                                                                     emptyMatrixCell,
-                                                                     standardTemperature)
-import           Bio.Tools.Sequence.OligoDesigner.Utils.CommonUtils (mixOligs)
-import           Bio.Tools.Sequence.OligoDesigner.Utils.Prettifier  (prettyDNA)
-import           Bio.Tools.Sequence.ViennaRNA.Cofold                (cofold)
-import           Data.Matrix                                        (Matrix (..),
-                                                                     matrix,
-                                                                     (!))
+
+import Data.Matrix (Matrix (..), matrix, (!))
+                                                                     
+import Bio.Tools.Sequence.OligoDesigner.Types             (MatrixCell (..), Olig (..),
+                                                           OligLight (..), OligSet, emptyMatrixCell,
+                                                           standardTemperature)
+import Bio.Tools.Sequence.OligoDesigner.Utils.CommonUtils (mixOligs)
+import Bio.Tools.Sequence.OligoDesigner.Utils.Prettifier  (prettyDNA)
+import Bio.Tools.Sequence.ViennaRNA.Cofold                (cofold)
 
 rnaMatrix :: OligSet -> Matrix MatrixCell
 rnaMatrix oligs = matrix rowCount rowCount generator

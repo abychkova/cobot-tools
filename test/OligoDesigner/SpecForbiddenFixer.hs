@@ -1,19 +1,17 @@
-{-# LANGUAGE OverloadedStrings #-}
-
 module OligoDesigner.SpecForbiddenFixer (
     fixerSpec
 ) where
 
-import Test.Hspec (Spec, describe, it, shouldBe)
-import Bio.Tools.Sequence.OligoDesigner.ForbiddenFixer (fixForbidden)
-import Text.Regex.TDFA (match, makeRegex, Regex)
-import Bio.Tools.Sequence.OligoDesigner.Utils.Prettifier (prettyDNA)
-import System.Random (mkStdGen)
-import Bio.Tools.Sequence.CodonOptimization.Types (Organism(..))
-import Bio.Tools.Sequence.OligoDesigner.Types (OligsDesignerInnerConfig(..))
-import Control.Monad.Except (runExcept)
-import Debug.Trace (trace)
+import Control.Monad.Except     (runExcept)
 import Control.Monad.State.Lazy (evalStateT)
+import System.Random            (mkStdGen)
+import Test.Hspec               (Spec, describe, it, shouldBe)
+import Text.Regex.TDFA          (Regex, makeRegex, match)
+
+import Bio.Tools.Sequence.CodonOptimization.Types        (Organism (..))
+import Bio.Tools.Sequence.OligoDesigner.ForbiddenFixer   (fixForbidden)
+import Bio.Tools.Sequence.OligoDesigner.Types            (OligsDesignerInnerConfig (..))
+import Bio.Tools.Sequence.OligoDesigner.Utils.Prettifier (prettyDNA)
 
 fixerSpec :: Spec
 fixerSpec =
@@ -35,7 +33,7 @@ forbiddenFixerSpec =
         
         let (Right res) = runExcept $ evalStateT (fixForbidden conf dna) gen
         let isMatch = regexp `match` prettyDNA res :: Bool
-        trace (prettyDNA res) $ isMatch `shouldBe` False
+        isMatch `shouldBe` False
         
 forbiddenConstantFixerSpec :: Spec
 forbiddenConstantFixerSpec =
@@ -62,7 +60,7 @@ fixTowForbiddenSpec =
 
         let (Right res) = runExcept $ evalStateT (fixForbidden conf dna) gen
         let matches = [regexp `match` prettyDNA res :: Bool | regexp <- regexps]
-        trace (prettyDNA res) $ filter (== True) matches `shouldBe` []
+        filter (== True) matches `shouldBe` []
         
 fixTowForbiddenRealDataSpec :: Spec
 fixTowForbiddenRealDataSpec =
@@ -76,4 +74,4 @@ fixTowForbiddenRealDataSpec =
 
         let (Right res) = runExcept $ evalStateT (fixForbidden conf dna) gen
         let matches = [regexp `match` prettyDNA res :: Bool | regexp <- regexps]
-        trace (prettyDNA res) $ filter (== True) matches `shouldBe` []
+        filter (== True) matches `shouldBe` []

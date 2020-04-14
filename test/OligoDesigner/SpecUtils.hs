@@ -1,19 +1,14 @@
-{-# LANGUAGE OverloadedStrings #-}
-
 module OligoDesigner.SpecUtils (
     utilsSpec
 ) where
 
-import           Bio.Tools.Sequence.OligoDesigner.Types (Olig (..),
-                                                         OligSet (..),
-                                                         OligSplitting (..))
-import           Bio.Tools.Sequence.OligoDesigner.Utils.CommonUtils (assemble,
-                                                         slice,
-                                                         buildOligSet,translate, getAAIndex, mixOligs)
-import           Test.Hspec                             (Spec, describe,
-                                                         it,
-                                                         shouldBe)
 import Control.Monad.Except (runExcept)
+import Test.Hspec           (Spec, describe, it, shouldBe)
+
+import Bio.Tools.Sequence.OligoDesigner.Types             (Olig (..), OligSet (..),
+                                                           OligSplitting (..))
+import Bio.Tools.Sequence.OligoDesigner.Utils.CommonUtils (assemble, buildOligSet, getAAIndex,
+                                                           mixOligs, slice, translate)
 
 utilsSpec :: Spec
 utilsSpec =

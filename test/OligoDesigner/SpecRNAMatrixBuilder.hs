@@ -2,11 +2,13 @@ module OligoDesigner.SpecRNAMatrixBuilder (
     matrixBuilderSpec
 ) where
 
-import Bio.Tools.Sequence.OligoDesigner.Types (MatrixCell(..), Olig(..), OligLight(..), OligSplitting(..), OligSet(..))
-
-import Test.Hspec (Spec, describe, it, shouldBe)
-import Bio.Tools.Sequence.OligoDesigner.Utils.RNAMatrixBuilder (rnaMatrix, rebuildMatrix)
 import Data.Matrix (matrix)
+import Test.Hspec  (Spec, describe, it, shouldBe)
+
+import Bio.Tools.Sequence.OligoDesigner.Types (MatrixCell (..), Olig (..), OligLight (..),
+                                               OligSet (..), OligSplitting (..))
+
+import Bio.Tools.Sequence.OligoDesigner.Utils.RNAMatrixBuilder (rebuildMatrix, rnaMatrix)
 
 matrixBuilderSpec :: Spec
 matrixBuilderSpec = describe "Oligo-Designer rna matrix builder spec" $ do

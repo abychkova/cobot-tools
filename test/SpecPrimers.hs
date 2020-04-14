@@ -1,5 +1,3 @@
-{-# LANGUAGE OverloadedStrings #-}
-
 module SpecPrimers where
 
 import           Bio.NucleicAcid.Nucleotide              (DNA, symbol)

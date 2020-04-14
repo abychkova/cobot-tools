@@ -4,33 +4,29 @@ module Bio.Tools.Sequence.OligoDesigner.Algo
     , getRandomSeed
     ) where
 
-import           Bio.NucleicAcid.Nucleotide.Type                               (DNA (..))
-import           Bio.Protein.AminoAcid                                         (AA)
-import           Bio.Tools.Sequence.CodonOptimization                          as CodonOptimization
-                                                                                                     (CodonOptimizationConfig (..),
-                                                                                                     optimizeCodonForAA)
-import           Bio.Tools.Sequence.OligoDesigner.ForbiddenFixer               (fixForbidden)
-import           Bio.Tools.Sequence.OligoDesigner.Optimizer.IterativeOptimizer (optimize)
-import           Bio.Tools.Sequence.OligoDesigner.Splitter                     (split)
-import           Bio.Tools.Sequence.OligoDesigner.Types                        (OligSet (..),
-                                                                                OligSplitting,
-                                                                                OligsDesignerConfig (..),
-                                                                                OligsDesignerInnerConfig (..),
-                                                                                OligsSplittingConfig (..))
-import           Bio.Tools.Sequence.OligoDesigner.Utils.CommonUtils            (buildOligSet)
-import           Control.Monad.Except                                          (Except,
-                                                                                throwError)
-import           Control.Monad.IO.Class                                        (MonadIO,
-                                                                                liftIO)
-import           Control.Monad.Trans                                           (lift)
-import           Control.Monad.Trans.State.Lazy                                (StateT,
-                                                                                evalStateT)
-import           System.Random                                                 (StdGen,
-                                                                                getStdGen)
-import           Text.Regex.TDFA                                               (Regex,
-                                                                                makeRegex)
+import Control.Monad.Except           (Except, throwError)
+import Control.Monad.IO.Class         (MonadIO, liftIO)
+import Control.Monad.Trans            (lift)
+import Control.Monad.Trans.State.Lazy (StateT, evalStateT)
+import System.Random                  (StdGen, getStdGen)
+import Text.Regex.TDFA                (Regex, makeRegex)
+                                                                                
+import Bio.NucleicAcid.Nucleotide.Type (DNA (..))
+import Bio.Protein.AminoAcid           (AA)
 
--- | 'designOligsDNA' function does splitting DNA-sequence to oligs according to splitting config
+import Bio.Tools.Sequence.CodonOptimization                          (CodonOptimizationConfig (..),
+                                                                      optimizeCodonForAA)
+import Bio.Tools.Sequence.OligoDesigner.ForbiddenFixer               (fixForbidden)
+import Bio.Tools.Sequence.OligoDesigner.Optimizer.IterativeOptimizer (optimize)
+import Bio.Tools.Sequence.OligoDesigner.Splitter                     (split)
+import Bio.Tools.Sequence.OligoDesigner.Types                        (OligSet (..), OligSplitting,
+                                                                      OligsDesignerConfig (..),
+                                                                      OligsDesignerInnerConfig (..),
+                                                                      OligsSplittingConfig (..))
+import Bio.Tools.Sequence.OligoDesigner.Utils.CommonUtils            (buildOligSet)
+
+
+-- | function does splitting DNA-sequence to oligs according to splitting config.
 designOligsDNA :: OligsSplittingConfig -- ^ Splitting configuration
                -> [DNA]                   -- ^ DNA-sequence
                -> Except String OligSet   -- ^ Result is set of oligs or error string
@@ -39,11 +35,11 @@ designOligsDNA conf dna =
         Just splitting -> buildOligSet splitting dna
         _              -> throwError "Cannot find splitting for parameters"
 
--- | 'getRandomSeed' function gets random generator. You can use it as parameter for 'designOligsAA' function
+-- | function gets random generator. You can use it as parameter for 'designOligsAA' function.
 getRandomSeed :: MonadIO m => m StdGen
 getRandomSeed = liftIO getStdGen
 
--- | 'designOligsAA' function does splitting and optimization AA-sequence to oligs according config
+-- | function does splitting and optimization AA-sequence to oligs according config.
 designOligsAA :: StdGen          -- ^ Random generator
               -> OligsDesignerConfig   -- ^ configuration for splitting and for codon-optimization
               -> [AA]                  -- ^ AA-sequence

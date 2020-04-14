@@ -6,15 +6,15 @@ module Bio.Tools.Sequence.OligoDesigner.Utils.Prettifier
     , prettyMatrixCell
     ) where
     
-import           Bio.NucleicAcid.Nucleotide                         (DNA (..), symbol)
-import           Bio.Tools.Sequence.OligoDesigner.Types             (MatrixCell (..),
-                                                                     Olig (..),
-                                                                     OligSet (..),
-                                                                     OligSplitting (..))
-import           Bio.Tools.Sequence.OligoDesigner.Utils.CommonUtils (mixOligs)
-import           Data.List                                          (foldl')
-import           Data.Matrix                                        (Matrix,
-                                                                     toLists)
+
+import Data.List   (foldl')
+import Data.Matrix (Matrix, toLists)
+                                                                     
+import Bio.NucleicAcid.Nucleotide (DNA (..), symbol)
+
+import Bio.Tools.Sequence.OligoDesigner.Types             (MatrixCell (..), Olig (..), OligSet (..),
+                                                           OligSplitting (..))
+import Bio.Tools.Sequence.OligoDesigner.Utils.CommonUtils (mixOligs)
 
 
 prettyDNA :: [DNA] -> String

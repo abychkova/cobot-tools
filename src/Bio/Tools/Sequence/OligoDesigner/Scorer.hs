@@ -8,17 +8,14 @@ module Bio.Tools.Sequence.OligoDesigner.Scorer
     , gcContentScoreBySequence
     ) where
 
-import           Bio.NucleicAcid.Nucleotide                              (DNA (..))
-import           Bio.Tools.Sequence.OligoDesigner.Types                  (MatrixCell (..),
-                                                                          Olig (..),
-                                                                          OligSet (..),
-                                                                          TargetGC)
-import           Bio.Tools.Sequence.OligoDesigner.Utils.CommonUtils      (assemble)
-import           Bio.Tools.Sequence.OligoDesigner.Utils.RNAMatrixBuilder (rnaMatrix)
-import           Data.Matrix                                             (Matrix,
-                                                                          ncols,
-                                                                          nrows,
-                                                                          (!))
+import Data.Matrix (Matrix, ncols, nrows, (!))
+
+import Bio.NucleicAcid.Nucleotide (DNA (..))
+
+import Bio.Tools.Sequence.OligoDesigner.Types                  (MatrixCell (..), Olig (..),
+                                                                OligSet (..), TargetGC)
+import Bio.Tools.Sequence.OligoDesigner.Utils.CommonUtils      (assemble)
+import Bio.Tools.Sequence.OligoDesigner.Utils.RNAMatrixBuilder (rnaMatrix)
 
 commonScore :: TargetGC -> OligSet -> Double
 commonScore targetGC oligs = scoreValue
