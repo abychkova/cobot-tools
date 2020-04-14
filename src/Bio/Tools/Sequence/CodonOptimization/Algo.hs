@@ -58,12 +58,12 @@ optimizeCodonForAA cfg@(CodonOptimizationConfig organism initLen winLen _ _ _ _ 
     concatByScore :: [DNA]   -- ^ initial string
                   -> [[DNA]] -- ^ list of variable string
                   -> [DNA]   -- ^ result string
-    concatByScore result vars
-        | length result == 3 * (lenAA - winLen - 1) =  result ++ fst (maximumBy compareBySecond (map var2score vars))
-        | otherwise = result ++ take 3 (fst (maximumBy compareBySecond (map var2score vars)))
+    concatByScore initStr vars
+        | length initStr == 3 * (lenAA - winLen - 1) =  initStr ++ fst (maximumBy compareBySecond (map var2score vars))
+        | otherwise = initStr ++ take 3 (fst (maximumBy compareBySecond (map var2score vars)))
       where
         var2score :: [DNA] -> ([DNA], Double)
-        var2score dna = (dna, scoreByWindow cfg regex (result ++ dna))
+        var2score dna = (dna, scoreByWindow cfg regex (initStr ++ dna))
 
         compareBySecond :: (a, Double) -> (a, Double) -> Ordering
         compareBySecond p1 p2 = compare (snd p1) (snd p2)
