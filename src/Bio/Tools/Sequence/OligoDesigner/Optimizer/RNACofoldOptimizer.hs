@@ -35,10 +35,9 @@ import           System.Random                                           (StdGen
 -- | 'rnaOptimize' function does optimization for oligs rna matrix.
 -- The main idea is to reduce the difference between neighboring oligs with minimum rna energy
 -- and not neighboring oligs with maximum rna energy
-rnaOptimize ::
-       OligsDesignerInnerConfig              -- ^ configuration data (used 'organism' and 'regexes')
-    -> OligSet                               -- ^ oligs set
-    -> StateT StdGen (Except String) OligSet -- ^ result of optimization is optimized oligs set with the best score or error string
+rnaOptimize :: OligsDesignerInnerConfig              -- ^ configuration data (used 'organism' and 'regexes')
+            -> OligSet                               -- ^ oligs set
+            -> StateT StdGen (Except String) OligSet -- ^ result of optimization is optimized oligs set with the best score or error string
 rnaOptimize (OligsDesignerInnerConfig organism _ regexes _ _) oligs@(OligSet _ _ splitting) = do
     let mtx = rnaMatrix oligs
     let dna = assemble oligs

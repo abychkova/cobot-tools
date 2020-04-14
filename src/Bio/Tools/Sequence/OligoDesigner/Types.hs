@@ -1,22 +1,22 @@
 module Bio.Tools.Sequence.OligoDesigner.Types
-    (SequenceLen
-    ,GapSize
-    ,Codon
-    ,TargetGC
-    ,Weight
-    ,MatrixCell(..)
-    ,Olig(..)
-    ,OligLight(..)
-    ,OligSet(..)
-    ,OligsCount
-    ,OligSize
-    ,OligBounds
-    ,OligSplitting(..)
-    ,OligsDesignerConfig(..)
-    ,OligsSplittingConfig(..)
-    ,OligsDesignerInnerConfig(..)
-    ,standardTemperature
-    ,emptyMatrixCell) where
+    ( SequenceLen
+    , GapSize
+    , Codon
+    , TargetGC
+    , Weight
+    , MatrixCell(..)
+    , Olig(..)
+    , OligLight(..)
+    , OligSet(..)
+    , OligsCount
+    , OligSize
+    , OligBounds
+    , OligSplitting(..)
+    , OligsDesignerConfig(..)
+    , OligsSplittingConfig(..)
+    , OligsDesignerInnerConfig(..)
+    , standardTemperature
+    , emptyMatrixCell) where
 
 import           Bio.NucleicAcid.Nucleotide.Type            (DNA (..))
 import           Bio.Tools.Sequence.CodonOptimization       (CodonOptimizationConfig (..))

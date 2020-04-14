@@ -1,12 +1,12 @@
 module Bio.Tools.Sequence.OligoDesigner.Scorer
- (rnaScore
- ,commonScore
- ,rnaMatrixScore
- ,oligsGCContentDifference
- ,gcContent
- ,gcContentScoreByOligs
- ,gcContentScoreBySequence
- ) where
+    ( rnaScore
+    , commonScore
+    , rnaMatrixScore
+    , oligsGCContentDifference
+    , gcContent
+    , gcContentScoreByOligs
+    , gcContentScoreBySequence
+    ) where
 
 import           Bio.NucleicAcid.Nucleotide                              (DNA (..))
 import           Bio.Tools.Sequence.OligoDesigner.Types                  (MatrixCell (..),

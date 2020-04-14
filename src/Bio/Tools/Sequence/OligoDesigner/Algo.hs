@@ -1,8 +1,8 @@
 module Bio.Tools.Sequence.OligoDesigner.Algo
- (designOligsDNA
- ,designOligsAA
- ,getRandomSeed
- ) where
+    ( designOligsDNA
+    , designOligsAA
+    , getRandomSeed
+    ) where
 
 import           Bio.NucleicAcid.Nucleotide.Type                               (DNA (..))
 import           Bio.Protein.AminoAcid                                         (AA)
@@ -32,8 +32,8 @@ import           Text.Regex.TDFA                                               (
 
 -- | 'designOligsDNA' function does splitting DNA-sequence to oligs according to splitting config
 designOligsDNA :: OligsSplittingConfig -- ^ Splitting configuration
-            -> [DNA]                   -- ^ DNA-sequence
-            -> Except String OligSet   -- ^ Result is set of oligs or error string
+               -> [DNA]                   -- ^ DNA-sequence
+               -> Except String OligSet   -- ^ Result is set of oligs or error string
 designOligsDNA conf dna =
     case split conf (length dna) of
         Just splitting -> buildOligSet splitting dna
@@ -45,9 +45,9 @@ getRandomSeed = liftIO getStdGen
 
 -- | 'designOligsAA' function does splitting and optimization AA-sequence to oligs according config
 designOligsAA :: StdGen          -- ^ Random generator
-        -> OligsDesignerConfig   -- ^ configuration for splitting and for codon-optimization
-        -> [AA]                  -- ^ AA-sequence
-        -> Except String OligSet -- ^ Result is set of oligs with the best score or error string
+              -> OligsDesignerConfig   -- ^ configuration for splitting and for codon-optimization
+              -> [AA]                  -- ^ AA-sequence
+              -> Except String OligSet -- ^ Result is set of oligs with the best score or error string
 designOligsAA gen conf@(OligsDesignerConfig codonConf splittingConf _ _) aa = do
     let dna = optimizeCodonForAA codonConf aa
     case split splittingConf (length dna) of

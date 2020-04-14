@@ -1,8 +1,7 @@
-module Bio.Tools.Sequence.OligoDesigner.Utils.RNAMatrixBuilder(
-    rnaMatrix,
-    rebuildMatrix
-) where
-
+module Bio.Tools.Sequence.OligoDesigner.Utils.RNAMatrixBuilder
+    ( rnaMatrix
+    , rebuildMatrix
+    ) where
 
 import           Bio.Tools.Sequence.OligoDesigner.Types             (MatrixCell (..),
                                                                      Olig (..),

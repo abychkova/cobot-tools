@@ -1,12 +1,13 @@
-module Bio.Tools.Sequence.OligoDesigner.Optimizer.IterativeOptimizer(
-    optimize
-) where
+module Bio.Tools.Sequence.OligoDesigner.Optimizer.IterativeOptimizer
+    ( optimize
+    ) where
 
 import           Bio.Tools.Sequence.OligoDesigner.Optimizer.GCContentOptimizer (gcContentOptimize)
 import           Bio.Tools.Sequence.OligoDesigner.Optimizer.RNACofoldOptimizer (rnaOptimize)
 import           Bio.Tools.Sequence.OligoDesigner.Scorer                       (commonScore)
 import           Bio.Tools.Sequence.OligoDesigner.Types                        (OligSet,
                                                                                 OligsDesignerInnerConfig (..))
+import           Bio.Tools.Sequence.OligoDesigner.Utils.CommonUtils            (isEqual)
 import           Control.Monad.Except                                          (Except)
 import           Control.Monad.Trans.State.Lazy                                (StateT)
 import           Debug.Trace
@@ -40,6 +41,3 @@ isStableScore results = isEqual lastScore prevScore && isEqual lastScore prevPre
     lastScore = snd $ last results
     prevScore = snd $ results !! (length results - 2)
     prevPrevScore = snd $ results !! (length results - 3)
-
-isEqual :: Double -> Double -> Bool
-isEqual a b = abs(a - b) < 0.00001

@@ -27,9 +27,10 @@ import           Text.Regex.TDFA                                (Regex,
                                                                  match)
 
 -- | optimizeCodonForDNA function does translation from [DNA] to [AA] and then calls 'optimizeCodonForAA'
-optimizeCodonForDNA :: CodonOptimizationConfig -- ^ Config data object. Contains main parameters of codon-optimization and all parameters for scoring function
-            -> [DNA]            -- ^ Initial, not optimized nucleotide sequence
-            -> [DNA]            -- ^ Result, optimized nucleotide sequence
+optimizeCodonForDNA :: CodonOptimizationConfig 
+                     -- ^ Config data object. Contains main parameters of codon-optimization and all parameters for scoring function
+                    -> [DNA] -- ^ Initial, not optimized nucleotide sequence
+                    -> [DNA] -- ^ Result, optimized nucleotide sequence
 optimizeCodonForDNA cfg dna = optimizeCodonForAA cfg (translate dna)
   where
     translate :: [DNA] -> [AA]
@@ -42,9 +43,10 @@ optimizeCodonForDNA cfg dna = optimizeCodonForAA cfg (translate dna)
 -- | 'optimizeCodonForAA' function does codon-optimisation for incoming amino-acid sequence.
 -- Incoming amino-acid sequence transformed to nucleotide sequence and optimized used the codon-optimization algorithm.
 -- Algorithm described here doi: 10.1007/s11693-010-9062-3
-optimizeCodonForAA :: CodonOptimizationConfig  -- ^ Config data object. Contains main parameters of codon-optimization and all parameters for scoring function
-           -> [AA]              -- ^ Initial, not optimized amino-acid sequence
-           -> [DNA]             -- ^ Result, optimized nucleotide sequence
+optimizeCodonForAA :: CodonOptimizationConfig  
+                     -- ^ Config data object. Contains main parameters of codon-optimization and all parameters for scoring function
+                   -> [AA]   -- ^ Initial, not optimized amino-acid sequence
+                   -> [DNA]  -- ^ Result, optimized nucleotide sequence
 optimizeCodonForAA cfg@(CodonOptimizationConfig organism initLen winLen _ _ _ _ _ _ _ _ _ forbiddenRegexp) aa =
     foldl' concatByScore initial variants
   where
@@ -109,9 +111,9 @@ score cnf@(CodonOptimizationConfig _ initLen winLen _ _ _ _ _ _ _ _ _ forbiddenR
 -- | 'scoreByWindow' function gets scoring for incoming string.
 -- Scoring function is a composite function of several scoring. More about scoring algorithm see here doi: 10.1007/s11693-010-9062-3
 scoreByWindow :: CodonOptimizationConfig  -- ^ Config data object. Contains main parameters of codon-optimization and all parameters for scoring function
-      -> [Regex]           -- ^ compiled regexes for forbidden sequences
-      -> [DNA]             -- ^ nucleotide sequence to score
-      -> Double            -- ^ result score value
+              -> [Regex]           -- ^ compiled regexes for forbidden sequences
+              -> [DNA]             -- ^ nucleotide sequence to score
+              -> Double            -- ^ result score value
 scoreByWindow (CodonOptimizationConfig organism _ winLen codonUsageWeight gcWeight gcFactor gcWindow rnaFoldingWeight
                         rnaFoldingFactor rnaFoldingWindow forbiddenDNAWeight gcContentDesired _) forbiddenRegexes nkSequ =
     scoreCU + scoreGC - scoreMT - realToFrac scoreRNAFold

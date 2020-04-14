@@ -1,13 +1,14 @@
 module Bio.Tools.Sequence.OligoDesigner.Utils.CommonUtils
- (assemble
- ,buildOligSet
- ,slice
- ,translate
- ,getAAIndex
- ,mixOligs
- ,compareBySecond
- ,orderByScore
- ) where
+    ( assemble
+    , buildOligSet
+    , slice
+    , translate
+    , getAAIndex
+    , mixOligs
+    , compareBySecond
+    , orderByScore
+    , isEqual
+    ) where
 
 import           Bio.NucleicAcid.Nucleotide.Type        (DNA (..), cNA)
 import           Bio.Tools.Sequence.OligoDesigner.Types (Olig (..), OligBounds,
@@ -69,3 +70,6 @@ orderByScore :: Ord b => [a] -> (a -> b) -> (a, a)
 orderByScore sequ func = (fst $ minimumBy compareBySecond pairs, fst $ maximumBy compareBySecond pairs)
   where
     pairs = map (\value -> (value, func value)) sequ
+    
+isEqual :: Double -> Double -> Bool
+isEqual a b = abs(a - b) < 0.00001

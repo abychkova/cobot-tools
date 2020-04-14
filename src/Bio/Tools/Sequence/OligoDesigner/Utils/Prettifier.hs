@@ -1,12 +1,12 @@
-module Bio.Tools.Sequence.OligoDesigner.Utils.Prettifier(
-    prettyDNA
-   ,prettySplitting
-   ,prettyOlig
-   ,prettyOligSet
-   ,prettyMatrixCell
-) where
-
-import           Bio.NucleicAcid.Nucleotide                         (DNA (..))
+module Bio.Tools.Sequence.OligoDesigner.Utils.Prettifier
+    ( prettyDNA
+    , prettySplitting
+    , prettyOlig
+    , prettyOligSet
+    , prettyMatrixCell
+    ) where
+    
+import           Bio.NucleicAcid.Nucleotide                         (DNA (..), symbol)
 import           Bio.Tools.Sequence.OligoDesigner.Types             (MatrixCell (..),
                                                                      Olig (..),
                                                                      OligSet (..),
@@ -18,13 +18,7 @@ import           Data.Matrix                                        (Matrix,
 
 
 prettyDNA :: [DNA] -> String
-prettyDNA = map prettyOneDNA
-  where
-    prettyOneDNA :: DNA -> Char
-    prettyOneDNA DA = 'A'
-    prettyOneDNA DT = 'T'
-    prettyOneDNA DC = 'C'
-    prettyOneDNA DG = 'G'
+prettyDNA = map symbol
 
 prettySplitting :: OligSplitting -> String
 prettySplitting (OligSplitting strand5 strand3) = "5': " ++ str5 ++ "\n3': " ++ str3 where

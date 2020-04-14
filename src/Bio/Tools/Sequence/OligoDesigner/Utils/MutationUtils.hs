@@ -1,10 +1,10 @@
-module Bio.Tools.Sequence.OligoDesigner.Utils.MutationUtils (
-  weightedRandom
- ,randomCodon
- ,oneMutation
- ,mutate
- ,mutateSlice
-) where
+module Bio.Tools.Sequence.OligoDesigner.Utils.MutationUtils 
+    ( weightedRandom
+    , randomCodon
+    , oneMutation
+    , mutate
+    , mutateSlice
+    ) where
 
 import           Bio.NucleicAcid.Nucleotide.Type                    (DNA)
 import           Bio.Protein.AminoAcid                              (AA (..))

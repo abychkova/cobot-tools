@@ -1,7 +1,7 @@
-module Bio.Tools.Sequence.OligoDesigner.ForbiddenFixer(
-    fixForbidden
-   ,filterForbidden
-) where
+module Bio.Tools.Sequence.OligoDesigner.ForbiddenFixer
+    ( fixForbidden
+    , filterForbidden
+    ) where
 
 import           Bio.NucleicAcid.Nucleotide                           (DNA)
 
@@ -30,7 +30,7 @@ fixIterative organism regexes iteration dna = do
     forbiddenPositions <- lift $ getPositions (prettyDNA dna)
     case forbiddenPositions of
         []        -> return dna
-        positions -> trace ("dna:" ++ prettyDNA dna) $ trace ("fix positions:" ++ show positions) 
+        positions -> trace ("dna:" ++ prettyDNA dna) $ trace ("fix positions:" ++ show positions)
                             $ fixPositions positions [dna]
   where
     fixPositions :: [(Int, Int)] -> [[DNA]] -> StateT StdGen (Except String) [DNA]

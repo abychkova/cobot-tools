@@ -1,5 +1,5 @@
 module Bio.Tools.Sequence.OligoDesigner.Splitter
-    (split
+    ( split
     ) where
 
 import           Bio.Tools.Sequence.OligoDesigner.Types (GapSize, OligSize,
@@ -70,10 +70,3 @@ strand5Coords size gap = map toCoords
 
 shiftToOffset :: Int -> [(Int, Int)] -> [(Int, Int)]
 shiftToOffset offset = map (\(x, y) -> (x + offset, y + offset))
-
-
-
-
-
-
-

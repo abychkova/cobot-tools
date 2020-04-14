@@ -1,4 +1,6 @@
-module Bio.Tools.Sequence.OligoDesigner.Optimizer.GCContentOptimizer where
+module Bio.Tools.Sequence.OligoDesigner.Optimizer.GCContentOptimizer 
+    ( gcContentOptimize 
+    ) where
 
 import           Bio.Tools.Sequence.OligoDesigner.ForbiddenFixer      (filterForbidden)
 import           Bio.Tools.Sequence.OligoDesigner.Scorer              (gcContent,
@@ -14,20 +16,19 @@ import           Bio.Tools.Sequence.OligoDesigner.Utils.MutationUtils (mutate)
 import           Control.Monad.Except                                 (Except)
 import           Control.Monad.Trans                                  (lift)
 import           Control.Monad.Trans.State.Lazy                       (StateT)
+import           Data.List                                            (maximumBy)
+import           Data.Ord                                             (comparing)
 import           System.Random                                        (StdGen)
 
 -- | 'gcContentOptimize' function does optimization for oligs gc-contents.
 -- The main idea is to reduce the difference between oligs gc-content and make it closer to the target
 gcContentOptimize :: OligsDesignerInnerConfig    -- ^ configuration data (used 'organism', 'targetGC' and 'regexes')
-        -> OligSet                               -- ^ oligs set
-        -> StateT StdGen (Except String) OligSet -- ^ result of optimization is optimized oligs set with the best score or error string
+                  -> OligSet                               -- ^ oligs set
+                  -> StateT StdGen (Except String) OligSet -- ^ result of optimization is optimized oligs set with the best score or error string
 gcContentOptimize (OligsDesignerInnerConfig organism targetGC regexes _ _) oligs@(OligSet fwd rvsd splitting) = do
     let allOligs = fwd ++ rvsd
     let (minimumOlig, maximumOlig) = orderByScore allOligs (gcContent . sequDNA)
-    let farthestFromTarget =
-            if distanceToTarget minimumOlig > distanceToTarget maximumOlig
-                then minimumOlig
-                else maximumOlig
+    let farthestFromTarget = maximumBy (comparing distanceToTarget) [minimumOlig, maximumOlig]
     startAAIndex <- lift $ getAAIndex $ start farthestFromTarget
     endAAIndex <- lift $ getAAIndex $ end farthestFromTarget - 1
     let dna = assemble oligs
