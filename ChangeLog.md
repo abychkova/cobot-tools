@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.1.2.4] - 2020-04-15
+### Changed
+- migrate from `less-wrong` to `biocad`
+### Added
+- gitlab CI
+
 ## [0.1.2.3] - 2019-12-29
 ### Added
 - quick-check tests for codon-optimization algorithm

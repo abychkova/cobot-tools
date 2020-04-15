@@ -1,11 +1,11 @@
 name:                cobot-tools
-version:             0.1.2.3
-github:              "less-wrong/cobot-tools"
+version:             0.1.2.4
+github:              "biocad/cobot-tools"
 license:             BSD3
 category:            Bio 
 author:              "Pavel Yakovlev, Bogdan Neterebskii, Alexander Sadovnikov"
 maintainer:          "pavel@yakovlev.me"
-copyright:           "2018-2019, Less Wrong Bio"
+copyright:           "2020, Biocad"
 synopsis:            Biological data file formats and IO
 
 extra-source-files:
@@ -17,7 +17,7 @@ extra-source-files:
 # To avoid duplicated efforts in documentation and dealing with the
 # complications of embedding Haddock markup inside cabal files, it is
 # common to point users to the README.md file.
-description:         Please see the README on GitHub at <https://github.com/less-wrong/cobot-tools#readme>
+description:         Please see the README on GitHub at <https://github.com/biocad/cobot-tools#readme>
 
 dependencies:
 - array >= 0.5 && < 0.6
@@ -69,6 +69,6 @@ tests:
     dependencies:
     - cobot-tools
     - random
-    - QuickCheck >= 2.9.2 && < 2.13
-    - hspec >= 2.4.1 && < 2.7
+    - QuickCheck >= 2.9.2 && < 2.14
+    - hspec >= 2.4.1 && < 2.8
     - neat-interpolation >= 0.3

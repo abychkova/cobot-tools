@@ -11,14 +11,15 @@ import           Bio.NucleicAcid.Nucleotide.Type                (DNA (..))
 import           Bio.Protein.AminoAcid.Type                     (AA (..))
 import           Bio.Tools.Sequence.CodonOptimization.Constants (ak2Codon, ak2MaxFrequCodon,
                                                                  codon2ak,
-                                                                 codonFrequencies, motiveScoreWindow, defaultMotiveScore, 
-                                                                 forbiddenMotiveScore)
+                                                                 codonFrequencies,
+                                                                 defaultMotiveScore,
+                                                                 forbiddenMotiveScore,
+                                                                 motiveScoreWindow)
 import           Bio.Tools.Sequence.CodonOptimization.Types     (CodonScoreConfig (..),
                                                                  standardTemperature)
 import           Bio.Tools.Sequence.ViennaRNA.Fold              (fold)
 import           Data.List                                      (foldl',
-                                                                 maximumBy,
-                                                                 take)
+                                                                 maximumBy)
 import           Data.Map                                       as Map (lookup)
 import           Data.Maybe                                     (fromMaybe)
 import           Text.Regex.TDFA                                ((=~))
