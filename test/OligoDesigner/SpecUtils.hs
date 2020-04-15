@@ -123,7 +123,7 @@ buildOligSetSplittingSpec =
     it "should correct build oligs from splitting and sequence" $ do
         let splitting = OligSplitting [(0, 57), (57, 114)] [(29, 86), (86, 123)]
         let dna = "ATGGAGACCGACACCCTGCTGCTGTGGGTGCTGCTGCTGTGGGTGCCTGGGTCGACCGGCATGGCTTCCATGTCGGCAGAATGCTTAATGAATTACAACAGTACTGCGATGAGTGGCAGGGGG"
-        let (Right res) = runExcept $ buildOligSet splitting dna
+        Right res <- return $ runExcept $ buildOligSet splitting dna
         res `shouldBe` OligSet [ Olig "ATGGAGACCGACACCCTGCTGCTGTGGGTGCTGCTGCTGTGGGTGCCTGGGTCGACC" 0 57
                                , Olig "GGCATGGCTTCCATGTCGGCAGAATGCTTAATGAATTACAACAGTACTGCGATGAGT" 57 114]
                                [ Olig (reverse $ translate "GCTGCTGCTGTGGGTGCCTGGGTCGACCGGCATGGCTTCCATGTCGGCAGAATGCTT") 29 86
@@ -138,7 +138,7 @@ buildOligSetSpec =
         let splitting = OligSplitting [(0, 56), (56, 112), (112, 168), (168, 224), (224, 280)]
                                                                [(28, 84), (84, 140), (140, 196), (196, 252), (252, 306)]
         let dna = "GACATACAAATGACTCAAAGTCCATCTACTCTATCCGCGAGTGTCGGCGACCGCGTAACTATTACGTGCAGGGCTTCACAAAGCATCGGTTCGGCTTTAGCATGGTATCAGCAGAAGCCTGGGAAAGCTCCTAAGTTACTGATCTATAAGGCAAGTGCCCTGGAGAACGGTGTTCCGTCTAGGTTTTCGGGCTCTGGTAGTGGGACCGAGTTCACACTGACAATAAGCAGTCTCCAACCCGATGATTTCGCCACCTACTACTGCCAGCACCTGACCTTCGGACAAGGGACGAGGTTGGAAATCAAA"
-        let (Right res) = runExcept $ buildOligSet splitting dna
+        Right res <- return $ runExcept $ buildOligSet splitting dna
         res `shouldBe` OligSet
                           [Olig "GACATACAAATGACTCAAAGTCCATCTACTCTATCCGCGAGTGTCGGCGACCGCGT" 0 56,
                            Olig "AACTATTACGTGCAGGGCTTCACAAAGCATCGGTTCGGCTTTAGCATGGTATCAGC" 56 112,
@@ -159,7 +159,7 @@ buildOligSetWithGapSplittingSpec =
     it "should build oligs for splitting with gap and sequence" $ do
         let splitting = OligSplitting [(0, 57), (60, 117)] [(26, 83), (86, 123)]
         let dna = "ATGGAGACCGACACCCTGCTGCTGTGGGTGCTGCTGCTGTGGGTGCCTGGGTCGACCGGCATGGCTTCCATGTCGGCAGAATGCTTAATGAATTACAACAGTACTGCGATGAGTGGCAGGGGG"
-        let (Right res) = runExcept $ buildOligSet splitting dna
+        Right res <- return $ runExcept $ buildOligSet splitting dna
         res `shouldBe` OligSet [ Olig "ATGGAGACCGACACCCTGCTGCTGTGGGTGCTGCTGCTGTGGGTGCCTGGGTCGACC" 0 57
                                , Olig "ATGGCTTCCATGTCGGCAGAATGCTTAATGAATTACAACAGTACTGCGATGAGTGGC" 60 117]
                                [ Olig (reverse $ translate "GGTGCTGCTGCTGTGGGTGCCTGGGTCGACCGGCATGGCTTCCATGTCGGCAGAATG") 26 83
@@ -173,7 +173,7 @@ buildOligSetWithOutOfBoundSplittingSpec =
     it "should build oligs for splitting with out of bound end coordinate and sequence" $ do
         let splitting = OligSplitting [(0, 57), (60, 117)] [(26, 83), (86, 224)]
         let dna = "ATGGAGACCGACACCCTGCTGCTGTGGGTGCTGCTGCTGTGGGTGCCTGGGTCGACCGGCATGGCTTCCATGTCGGCAGAATGCTTAATGAATTACAACAGTACTGCGATGAGTGGCAGGGGG"
-        let (Right res) = runExcept $ buildOligSet splitting dna
+        Right res <- return $ runExcept $ buildOligSet splitting dna
         res `shouldBe` OligSet [ Olig "ATGGAGACCGACACCCTGCTGCTGTGGGTGCTGCTGCTGTGGGTGCCTGGGTCGACC" 0 57
                                , Olig "ATGGCTTCCATGTCGGCAGAATGCTTAATGAATTACAACAGTACTGCGATGAGTGGC" 60 117]
                                [ Olig (reverse $ translate "GGTGCTGCTGCTGTGGGTGCCTGGGTCGACCGGCATGGCTTCCATGTCGGCAGAATG") 26 83
@@ -187,7 +187,7 @@ buildOligSetWithOneSplittingCoordinateSpec =
     it "should build oligs for splitting with one coordinate and sequence" $ do
         let splitting = OligSplitting [(0, 123)] [(26, 123)]
         let dna = "ATGGAGACCGACACCCTGCTGCTGTGGGTGCTGCTGCTGTGGGTGCCTGGGTCGACCGGCATGGCTTCCATGTCGGCAGAATGCTTAATGAATTACAACAGTACTGCGATGAGTGGCAGGGGG"
-        let (Right res) = runExcept $ buildOligSet splitting dna
+        Right res <- return $ runExcept $ buildOligSet splitting dna
         res `shouldBe` OligSet [ Olig dna 0 123]
                                [ Olig (reverse $ translate $ drop 26 dna) 26 123]
                                 splitting

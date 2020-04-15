@@ -160,7 +160,7 @@ rnaOptimizeSpec =
                     coords
         let conf = OligsDesignerInnerConfig CHO 43 [] 0 1
         let gen = mkStdGen 499
-        let (Right res) = runExcept $ evalStateT (rnaOptimize conf oligs) gen
+        Right res <- return $ runExcept $ evalStateT (rnaOptimize conf oligs) gen
 
         assemble res `shouldBe` "GCTAGCACCAAGGGCCCCAGCGTGTTTCCTCTGGCCCCTAGCAGCAAGAGCACCAGCGGGGGCACCGCCGCCCTGGGCTGCCTGGTGAAGGACTACTTCCCTGAGCCTGTGACCGTGAGCTGGAACAGCGGCGCCCTGACCAGCGGCGTGCACACCTTCCCTGCCGTGCTGCAGAGCAGCGGCCTGTACAGCCTGAGCAGCGTGGTGACCGTGCCTAGCAGCAGCCTGGGCACCCAGACCTACATCTGCAACGTGAACCACAAGCCTAGC"
         res `shouldBe` OligSet

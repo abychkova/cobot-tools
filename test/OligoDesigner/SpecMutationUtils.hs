@@ -93,7 +93,7 @@ mutateSliceRealRandomSpec =
     describe "mutateSliceRealRandomSpec" $
     it "" $ do
         let gen = mkStdGen 9
-        let (Right res) = runExcept $ evalStateT (mutateSlice CHO "TCTTTGCCGAACGAGGGCATG") gen
+        Right res <- return $ runExcept $ evalStateT (mutateSlice CHO "TCTTTGCCGAACGAGGGCATG") gen
         elem "TCTTTGCCGAACGAGGGCATG" res `shouldBe` True
         elem "AGCTTGCCGAACGAGGGCATG" res `shouldBe` True
         elem "TCTCTCCCGAACGAGGGCATG" res `shouldBe` True
@@ -150,13 +150,13 @@ randomCodonSpec =
     describe "randomCodonSpec" $
     it "should return two different codons for HIS for defferent random" $ do
         let gen = mkStdGen 3
-        let (Right res) = runExcept $ evalStateT (randomCodon CHO HIS) gen
-        let (Right res2) = runExcept $ evalStateT (randomCodon CHO HIS) gen
+        Right res <- return $ runExcept $ evalStateT (randomCodon CHO HIS) gen
+        Right res2 <- return $ runExcept $ evalStateT (randomCodon CHO HIS) gen
         res `shouldBe` [DC, DA, DT]
         res `shouldBe` res2
 
         let gen' = mkStdGen 5
-        let (Right res') = runExcept $ evalStateT (randomCodon CHO HIS) gen'
+        Right res' <- return $ runExcept $ evalStateT (randomCodon CHO HIS) gen'
         res' `shouldBe` [DC, DA, DC]
 
 randomCodonForAAWithOneCodonSpec :: Spec
@@ -164,9 +164,9 @@ randomCodonForAAWithOneCodonSpec =
     describe "randomCodonForAAWithOneCodonSpec" $
     it "should return only codon for MET for defferent random" $ do
         let gen = mkStdGen 3
-        let (Right res) = runExcept $ evalStateT (randomCodon CHO MET) gen
+        Right res <- return $ runExcept $ evalStateT (randomCodon CHO MET) gen
         let gen' = mkStdGen 500
-        let (Right res') = runExcept $ evalStateT (randomCodon CHO MET) gen'
+        Right res' <- return $ runExcept $ evalStateT (randomCodon CHO MET) gen'
         res `shouldBe` [DA, DT, DG]
         res' `shouldBe` [DA, DT, DG]
 
@@ -175,7 +175,7 @@ randomCodonWeightedSpec =
     describe "randomCodonWeightedSpec" $
     it "should return most weghted codon for LEU maximum timmes" $ do
         let gens = [mkStdGen x | x <- [0,10..300]]
-        let (Right res) = sequence [runExcept $ evalStateT (randomCodon CHO LEU) gen | gen <- gens]
+        Right res <- return $ sequence [runExcept $ evalStateT (randomCodon CHO LEU) gen | gen <- gens]
         let ctg = length (filter (== [DC, DT, DG]) res)
         let tta = length (filter (== [DT, DT, DA]) res)
         let ttg = length (filter (== [DT, DT, DG]) res)
@@ -194,8 +194,8 @@ randomCodonForDifferentOrganismSpec =
     describe "randomCodonForDifferentOrganismSpec" $
     it "should return defferent codon for ILE for different organism" $ do
         let gen = mkStdGen 7
-        let (Right humanRes) = runExcept $ evalStateT (randomCodon Human ILE) gen
-        let (Right ecoliRes) = runExcept $ evalStateT (randomCodon EColi ILE) gen
+        Right humanRes <- return $ runExcept $ evalStateT (randomCodon Human ILE) gen
+        Right ecoliRes <- return $ runExcept $ evalStateT (randomCodon EColi ILE) gen
         humanRes `shouldNotBe` ecoliRes
         
 weightedRandomSimpleSpec :: Spec
@@ -204,13 +204,13 @@ weightedRandomSimpleSpec =
     it "should return weigthed random element" $ do
         gen <- getStdGen
         let arg = [(1, 1), (2, 0)] :: [(Integer, Double)]
-        let (Right res) = runExcept $ evalStateT (weightedRandom arg) gen
+        Right res <- return $ runExcept $ evalStateT (weightedRandom arg) gen
         res `shouldBe` 1
         let arg2 = [(1, 0.99999999), (2, 0.00000001)] :: [(Integer, Double)]
-        let (Right res2) = runExcept $ evalStateT (weightedRandom arg2) gen
+        Right res2 <- return $ runExcept $ evalStateT (weightedRandom arg2) gen
         res2 `shouldBe` 1
         let arg3 = [(1, 0), (2, 1)] :: [(Integer, Double)]
-        let (Right res3) = runExcept $ evalStateT (weightedRandom arg3) gen
+        Right res3 <- return $ runExcept $ evalStateT (weightedRandom arg3) gen
         res3 `shouldBe` 2
 
 weightedRandomMultipleCallSpec :: Spec
@@ -254,7 +254,7 @@ weightedRandomAllZeroSpec =
     it "should return weigthed random element" $ do
         gen <- getStdGen
         let arg = [(1, 0), (2, 0)] :: [(Integer, Double)]
-        let (Right res) = runExcept $ evalStateT (weightedRandom arg) gen
+        Right res <- return $ runExcept $ evalStateT (weightedRandom arg) gen
         res `shouldBe` 1
 
 weightedRandomForEmptySpec :: Spec

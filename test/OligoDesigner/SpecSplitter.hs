@@ -10,7 +10,6 @@ import Test.QuickCheck       (Gen, Property, elements, forAll)
 import Bio.Tools.Sequence.OligoDesigner.Splitter         (split)
 import Bio.Tools.Sequence.OligoDesigner.Types            (OligSplitting (..),
                                                           OligsSplittingConfig (..), SequenceLen)
-import Bio.Tools.Sequence.OligoDesigner.Utils.Prettifier (prettySplitting)
 
 emptySplitting :: OligSplitting
 emptySplitting = OligSplitting [] []
@@ -90,7 +89,7 @@ splitWithRandom =
 
 isGood :: Int -> SequenceLen -> Maybe OligSplitting -> Bool
 isGood _ _ Nothing  = False
-isGood minOverlaps sequLen (Just splitting@(OligSplitting strand5' strand3')) =
+isGood minOverlaps sequLen (Just (OligSplitting strand5' strand3')) =
     if not res then res else res where
         zip53 = zip strand5' strand3'
         zip35 = zip strand3' (tail strand5')

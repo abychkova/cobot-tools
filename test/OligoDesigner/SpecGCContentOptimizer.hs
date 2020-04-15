@@ -32,7 +32,7 @@ optimizeGCContentSpec =
 
         let gen = mkStdGen 6637
         let conf = OligsDesignerInnerConfig CHO 43 [] 0 0
-        let (Right res) = runExcept $ evalStateT (gcContentOptimize conf oligs) gen
+        Right res <- return $ runExcept $ evalStateT (gcContentOptimize conf oligs) gen
         oligsGCContentDifference res `shouldSatisfy` (<= oligsGCContentDifference oligs)
         res `shouldBe` OligSet
                         [Olig "TTGATCTTCC" 0 10, Olig "TTATACGGAA" 10 20] -- 40% & 30%
@@ -50,7 +50,7 @@ optimizeGCContentForDifferentTargetSpec =
 
         let gen = mkStdGen 6637
         let conf = OligsDesignerInnerConfig CHO 20 [] 0 0
-        let (Right res) = runExcept $ evalStateT (gcContentOptimize conf oligs) gen
+        Right res <- return $ runExcept $ evalStateT (gcContentOptimize conf oligs) gen
         oligsGCContentDifference res `shouldSatisfy` (<= oligsGCContentDifference oligs)
         res `shouldBe` OligSet
                         [Olig "TTGATCTTCT" 0 10, Olig "TGATAAGAAA" 10 20] -- 30% & 20%
@@ -77,7 +77,7 @@ optimizeGCContentRealDataSpec =
                     coords
         let gen = mkStdGen 6637
         let conf = OligsDesignerInnerConfig CHO 43 [] 0 0
-        let (Right res) = runExcept $ evalStateT (gcContentOptimize conf oligs) gen
+        Right res <- return $ runExcept $ evalStateT (gcContentOptimize conf oligs) gen
         oligsGCContentDifference res `shouldSatisfy` (<= oligsGCContentDifference oligs)
         res `shouldBe` OligSet
                     [ Olig "GCTAGCACCAAGGGCCCCAGCGTGTTTCCTCTGGCCCCTAGCAGCAAGAGCACCAGCGGC" 0 60      -- 66%

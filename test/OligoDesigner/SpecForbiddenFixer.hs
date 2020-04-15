@@ -32,7 +32,7 @@ forbiddenFixerSpec =
         let conf = OligsDesignerInnerConfig CHO 60 [regexp] 0 5
         let dna = "GCCAGCACCAAGGGCCCCAGCGTGTTTCCTCTGGCCCCTTCTTCTAAGTCTACCTCTGGCGGCACCGCCGCCCTGGGCTGTCTGGTGAAG"
         
-        let (Right res) = runExcept $ evalStateT (fixForbidden conf dna) gen
+        Right res <- return $ runExcept $ evalStateT (fixForbidden conf dna) gen
         let isMatch = regexp `match` prettyDNA res :: Bool
         isMatch `shouldBe` False
         
@@ -59,7 +59,7 @@ fixTowForbiddenSpec =
         let conf = OligsDesignerInnerConfig CHO 60 regexps 0 5
         let dna = "CAGGCCGCCATGGGCAATAAACAGGTG" --CAGG  AATAAA  GCCGCCATGG
 
-        let (Right res) = runExcept $ evalStateT (fixForbidden conf dna) gen
+        Right res <- return $ runExcept $ evalStateT (fixForbidden conf dna) gen
         let matches = [regexp `match` prettyDNA res :: Bool | regexp <- regexps]
         filter (== True) matches `shouldBe` []
         
@@ -73,6 +73,6 @@ fixTowForbiddenRealDataSpec =
         let conf = OligsDesignerInnerConfig CHO 60 regexps 0 5
         let dna = "CAGGTGCAGCTGCAGGAGAGCGGCGGCGGCCTGGTGCAGCCTGGCGGCTCTCTGAGACTGTCTTGTGCCGCCTCTGGCATCCAGTTCAAGTTCCACAACATGGGCTGGGGCAGACAAGCCCCTGGCAAGCAGAGAGAGCACGTGGCCGCCATGGATCACGGCAGAAGAACCATCTACGCCGACCACGTGAAGGGCAGATTCACCATCTCTAGAGACAACACCAGGAACACCGTGTACCTGCAGATGAACTCTCTGAAGGCCGAGGACACCGCCATCTACTACTGCAAGGCCTCTGCCGGCAGAAGAGTGTACTGGGGCCAAGGCACCATGGTGACCGTGTCTTCT" --CAGG  AATAAA  GCCGCCATGG
 
-        let (Right res) = runExcept $ evalStateT (fixForbidden conf dna) gen
+        Right res <- return $ runExcept $ evalStateT (fixForbidden conf dna) gen
         let matches = [regexp `match` prettyDNA res :: Bool | regexp <- regexps]
         filter (== True) matches `shouldBe` []

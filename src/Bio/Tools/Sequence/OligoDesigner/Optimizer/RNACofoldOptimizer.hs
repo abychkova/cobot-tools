@@ -9,7 +9,7 @@ import Control.Monad.Except           (Except)
 import Control.Monad.Trans            (lift)
 import Control.Monad.Trans.State.Lazy (StateT)
 import Data.Foldable                  (minimumBy)
-import Data.List                      (intersect, maximumBy, nub)
+import Data.List                      (maximumBy, nub)
 import Data.Matrix                    (Matrix, ncols, nrows, (!))
 import System.Random                  (StdGen)
 

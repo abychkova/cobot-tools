@@ -12,7 +12,7 @@ import Text.Regex.TDFA                (Regex, getAllMatches, match)
 import Bio.NucleicAcid.Nucleotide (DNA)
 
 import Bio.Tools.Sequence.CodonOptimization.Types           (Organism)
-import Bio.Tools.Sequence.OligoDesigner.Types               (OligsDesignerInnerConfig (..), 
+import Bio.Tools.Sequence.OligoDesigner.Types               (OligsDesignerInnerConfig (..),
                                                              OligoDesignerError(..))
 import Bio.Tools.Sequence.OligoDesigner.Utils.CommonUtils   (getAAIndex)
 import Bio.Tools.Sequence.OligoDesigner.Utils.MutationUtils (mutate)
@@ -35,7 +35,9 @@ fixIterative organism regexes iteration dna = do
     fixPositions :: [(Int, Int)] -> [[DNA]] -> StateT StdGen (Except OligoDesignerError) [DNA]
     fixPositions [] results = do
         let filtered = filterForbidden regexes results
-        if null filtered then fixIterative organism regexes (iteration - 1) dna else return $ head filtered
+        case filtered of
+            []    -> fixIterative organism regexes (iteration - 1) dna
+            x : _ -> return x
     fixPositions (position : xs) results = do
       variants <- traverse (\result -> mutate organism result position) results
       fixPositions xs (concat variants)

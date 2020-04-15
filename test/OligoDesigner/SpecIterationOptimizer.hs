@@ -27,8 +27,8 @@ optimizeWithZeroIterationsSpec =
     it "" $ do
         let conf = OligsDesignerInnerConfig CHO 43 [] 0 1
         let gen = mkStdGen 63
-        let (Right res) = runExcept $ evalStateT (optimize conf oligs) gen
-        res `shouldBe` oligs
+        let res = runExcept $ evalStateT (optimize conf oligs) gen
+        res `shouldBe` Right oligs
 
 optimizeWithOneIterationsSpec :: Spec
 optimizeWithOneIterationsSpec =
@@ -36,7 +36,7 @@ optimizeWithOneIterationsSpec =
     it "" $ do
         let conf = OligsDesignerInnerConfig CHO 43 [] 1 1
         let gen = mkStdGen 64
-        let (Right res) = runExcept $ evalStateT (optimize conf oligs) gen
+        Right res <- return $ runExcept $ evalStateT (optimize conf oligs) gen
         res `shouldNotBe` oligs
         commonScore 43 res `shouldSatisfy` (> commonScore 43 oligs)
 
@@ -46,7 +46,7 @@ optimizeTillStableScoreSpec =
     it "" $ do
         let conf = OligsDesignerInnerConfig CHO 43 [] 8 1
         let gen = mkStdGen 65
-        let (Right res) = runExcept $ evalStateT (optimize conf oligs) gen
+        Right res <- return $ runExcept $ evalStateT (optimize conf oligs) gen
         res `shouldNotBe` oligs
         commonScore 43 res `shouldSatisfy` (> commonScore 43 oligs)
 
