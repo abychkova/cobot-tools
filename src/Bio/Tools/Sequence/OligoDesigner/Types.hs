@@ -19,6 +19,7 @@ module Bio.Tools.Sequence.OligoDesigner.Types
     , standardTemperature
     , emptyMatrixCell
     ) where
+    ) where
 
 import Control.DeepSeq (NFData)
 import Data.Default    (Default (..))
