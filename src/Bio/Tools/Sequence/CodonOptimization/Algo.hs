@@ -24,7 +24,7 @@ import Bio.Tools.Sequence.ViennaRNA.Fold              (fold)
 
 
 -- | function does translation from [DNA] to [AA] and then calls 'optimizeCodonForAA'
-optimizeCodonForDNA :: CodonOptimizationConfig 
+optimizeCodonForDNA :: CodonOptimizationConfig
                      -- ^ Config data object. Contains main parameters of codon-optimization and all parameters for scoring function
                     -> [DNA] -- ^ Initial, not optimized nucleotide sequence
                     -> [DNA] -- ^ Result, optimized nucleotide sequence
@@ -40,7 +40,7 @@ optimizeCodonForDNA cfg dna = optimizeCodonForAA cfg (translate dna)
 -- | function does codon-optimisation for incoming amino-acid sequence.
 -- Incoming amino-acid sequence transformed to nucleotide sequence and optimized used the codon-optimization algorithm.
 -- Algorithm described here doi: 10.1007/s11693-010-9062-3
-optimizeCodonForAA :: CodonOptimizationConfig  
+optimizeCodonForAA :: CodonOptimizationConfig
                      -- ^ Config data object. Contains main parameters of codon-optimization and all parameters for scoring function
                    -> [AA]   -- ^ Initial, not optimized amino-acid sequence
                    -> [DNA]  -- ^ Result, optimized nucleotide sequence
