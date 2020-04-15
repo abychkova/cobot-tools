@@ -15,6 +15,7 @@ module Bio.Tools.Sequence.OligoDesigner.Types
     , OligsDesignerConfig(..)
     , OligsSplittingConfig(..)
     , OligsDesignerInnerConfig(..)
+    , OligoDesignerError(..)
     , standardTemperature
     , emptyMatrixCell) where
 
@@ -38,6 +39,15 @@ type OligsCount = Int
 type OligSize = Int
 type OligBounds = (Int, Int)
 type Codon = [DNA]
+
+data OligoDesignerError = 
+    CannotFixForbiddenSequence | 
+    InvalidInterval {interval :: (Int, Int)} | 
+    CannotFindCodon {codon :: String} | 
+    CannotGetRandom |
+    CannotFindSplitting |
+    OtherError
+    deriving (Show, Eq, Generic)
 
 data MatrixCell
   = MatrixCell

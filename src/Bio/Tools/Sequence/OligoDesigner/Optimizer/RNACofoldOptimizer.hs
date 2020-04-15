@@ -17,7 +17,8 @@ import Bio.Tools.Sequence.OligoDesigner.ForbiddenFixer         (filterForbidden)
 import Bio.Tools.Sequence.OligoDesigner.Scorer                 (rnaMatrixScore)
 import Bio.Tools.Sequence.OligoDesigner.Types                  (MatrixCell (..), Olig (..),
                                                                 OligLight (..), OligSet (..),
-                                                                OligsDesignerInnerConfig (..))
+                                                                OligsDesignerInnerConfig (..),
+                                                                OligoDesignerError)
 import Bio.Tools.Sequence.OligoDesigner.Utils.CommonUtils      (assemble, buildOligSet, getAAIndex,
                                                                 orderByScore)
 import Bio.Tools.Sequence.OligoDesigner.Utils.MutationUtils    (mutate)
@@ -26,9 +27,11 @@ import Bio.Tools.Sequence.OligoDesigner.Utils.RNAMatrixBuilder (rebuildMatrix, r
 -- | function does optimization for oligs rna matrix.
 -- The main idea is to reduce the difference between neighboring oligs with minimum rna energy
 -- and not neighboring oligs with maximum rna energy.
-rnaOptimize :: OligsDesignerInnerConfig              -- ^ configuration data (used 'organism' and 'regexes')
-            -> OligSet                               -- ^ oligs set
-            -> StateT StdGen (Except String) OligSet -- ^ result of optimization is optimized oligs set with the best score or error string
+rnaOptimize :: OligsDesignerInnerConfig
+                        -- ^ configuration data (used 'organism' and 'regexes')
+            -> OligSet  -- ^ oligs set
+            -> StateT StdGen (Except OligoDesignerError) OligSet
+                        -- ^ result of optimization is optimized oligs set with the best score or error string
 rnaOptimize (OligsDesignerInnerConfig organism _ regexes _ _) oligs@(OligSet _ _ splitting) = do
     let mtx = rnaMatrix oligs
     let dna = assemble oligs
@@ -39,7 +42,7 @@ rnaOptimize (OligsDesignerInnerConfig organism _ regexes _ _) oligs@(OligSet _ _
     let (_, maxOligs) = orderByScore oligsVariants (rnaMatrixScore . rebuildMatrix mtx)
     return maxOligs
 
-mutationIndexes :: Matrix MatrixCell -> Except String [(Int, Int)]
+mutationIndexes :: Matrix MatrixCell -> Except OligoDesignerError [(Int, Int)]
 mutationIndexes oligsMatrix = do
     let rowsCnt = nrows oligsMatrix
     let colsCnt = ncols oligsMatrix
@@ -52,7 +55,7 @@ mutationIndexes oligsMatrix = do
     compareByRna :: MatrixCell -> MatrixCell -> Ordering
     compareByRna (MatrixCell _ _ rna1) (MatrixCell _ _ rna2) = compare (abs rna1) (abs rna2)
 
-minPairMutationIndexes :: MatrixCell -> Except String [(Int, Int)]
+minPairMutationIndexes :: MatrixCell -> Except OligoDesignerError [(Int, Int)]
 minPairMutationIndexes (MatrixCell (OligLight _ (Olig _ start1 end1)) (OligLight _ (Olig _ start2 end2)) _) 
   | intersectionStart > intersectionEnd = return []
   | otherwise = (: []) <$> getAAIndexes (intersectionStart, intersectionEnd)
@@ -60,13 +63,13 @@ minPairMutationIndexes (MatrixCell (OligLight _ (Olig _ start1 end1)) (OligLight
     intersectionStart = max start1 start2
     intersectionEnd = min end1 end2 - 1
 
-maxPairMutationIndexes :: MatrixCell -> Except String [(Int, Int)]
+maxPairMutationIndexes :: MatrixCell -> Except OligoDesignerError [(Int, Int)]
 maxPairMutationIndexes (MatrixCell (OligLight _ (Olig _ start1 end1)) (OligLight _ (Olig _ start2 end2)) _) = do
     indexesAA1 <- getAAIndexes (start1, end1 - 1)
     indexesAA2 <- getAAIndexes (start2, end2 - 1)
     return [indexesAA1, indexesAA2]
 
-getAAIndexes :: (Int, Int) -> Except String (Int, Int)
+getAAIndexes :: (Int, Int) -> Except OligoDesignerError (Int, Int)
 getAAIndexes (start, end) = do
     startAA <- getAAIndex start
     endAA <- getAAIndex end

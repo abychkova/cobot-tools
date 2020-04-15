@@ -10,20 +10,21 @@ import Bio.Tools.Sequence.OligoDesigner.Optimizer.GCContentOptimizer (gcContentO
 import Bio.Tools.Sequence.OligoDesigner.Optimizer.RNACofoldOptimizer (rnaOptimize)
 import Bio.Tools.Sequence.OligoDesigner.Scorer                       (commonScore)
 import Bio.Tools.Sequence.OligoDesigner.Types                        (OligSet,
-                                                                      OligsDesignerInnerConfig (..))
+                                                                      OligsDesignerInnerConfig (..), 
+                                                                      OligoDesignerError)
 import Bio.Tools.Sequence.OligoDesigner.Utils.CommonUtils            (isEqual)
 
 
-optimize :: OligsDesignerInnerConfig -> OligSet -> StateT StdGen (Except String) OligSet
+optimize :: OligsDesignerInnerConfig -> OligSet -> StateT StdGen (Except OligoDesignerError) OligSet
 optimize conf@(OligsDesignerInnerConfig _ targetGC _ maxIteration _) oligSet =
     optimizeIteration 0 [(oligSet, commonScore targetGC oligSet)]
   where
-    optimizationStep :: OligSet -> StateT StdGen (Except String) [(OligSet, Double)]
+    optimizationStep :: OligSet -> StateT StdGen (Except OligoDesignerError) [(OligSet, Double)]
     optimizationStep oligs =  do
        result <- rnaOptimize conf oligs >>= gcContentOptimize conf
        return [(result, commonScore targetGC result)]
        
-    optimizeIteration :: Int -> [(OligSet, Double)] -> StateT StdGen (Except String) OligSet
+    optimizeIteration :: Int -> [(OligSet, Double)] -> StateT StdGen (Except OligoDesignerError) OligSet
     optimizeIteration iteration results
         | iteration >= maxIteration = return $ fst $ last results
         | iteration > 2 && isStableScore results = return $ fst $ last results

@@ -16,7 +16,7 @@ import Data.Ord             (comparing)
 
 import Bio.NucleicAcid.Nucleotide.Type        (DNA (..), cNA)
 import Bio.Tools.Sequence.OligoDesigner.Types (Olig (..), OligBounds, OligSet (..),
-                                               OligSplitting (..))
+                                               OligSplitting (..), OligoDesignerError(..))
 
 
 mixOligs :: OligSet -> [Olig]
@@ -41,27 +41,27 @@ assemble (OligSet fwd rvd _) = construct fwd rvd 0 [] where
         partFormOlig2 = map cNA (drop (endLeft - startRight) (reverse seqRight))
         res = acc ++ partFormOlig1 ++ partFormOlig2
 
-buildOligSet :: OligSplitting -> [DNA] -> Except String OligSet
+buildOligSet :: OligSplitting -> [DNA] -> Except OligoDesignerError OligSet
 buildOligSet splitting sequ = do
     strand5' <- mapM (buildOlig id sequ) (strand5 splitting)
     strand3' <- mapM (buildOlig reverse (map cNA sequ)) (strand3 splitting)
     return $ OligSet strand5' strand3' splitting
   where
-    buildOlig :: ([DNA] -> [DNA]) -> [DNA] -> OligBounds -> Except String Olig
+    buildOlig :: ([DNA] -> [DNA]) -> [DNA] -> OligBounds -> Except OligoDesignerError Olig
     buildOlig fun dna (start, end) = do
         sliceDNA <- slice start end dna
         return $ Olig (fun sliceDNA) start end
 
 --excluding end
-slice :: Int -> Int -> [a] -> Except String [a]
-slice start end xs | start < 0 || end < 0 || start > end = throwError "incorrect coordinates"
+slice :: Int -> Int -> [a] -> Except OligoDesignerError [a]
+slice start end xs | start < 0 || end < 0 || start > end = throwError (InvalidInterval (start, end))
                    | otherwise = return $ take (end - start) (drop start xs)
 
 translate :: [DNA] -> [DNA]
 translate = map cNA
 
-getAAIndex :: Int -> Except String Int
-getAAIndex coordinate | coordinate < 0 = throwError "incorrect coordinates"
+getAAIndex :: Int -> Except OligoDesignerError Int
+getAAIndex coordinate | coordinate < 0 = throwError (InvalidInterval (coordinate, coordinate))
                       | otherwise      = return $ ceiling (realToFrac (coordinate + 1) / 3 :: Double)
 
 

@@ -10,7 +10,8 @@ import Text.Regex.TDFA          (Regex, makeRegex, match)
 
 import Bio.Tools.Sequence.CodonOptimization.Types        (Organism (..))
 import Bio.Tools.Sequence.OligoDesigner.ForbiddenFixer   (fixForbidden)
-import Bio.Tools.Sequence.OligoDesigner.Types            (OligsDesignerInnerConfig (..))
+import Bio.Tools.Sequence.OligoDesigner.Types            (OligsDesignerInnerConfig (..),
+                                                          OligoDesignerError(..))
 import Bio.Tools.Sequence.OligoDesigner.Utils.Prettifier (prettyDNA)
 
 fixerSpec :: Spec
@@ -46,7 +47,7 @@ forbiddenConstantFixerSpec =
         let dna = "GCCTGGACCAAGGGCCCCAGCGTGTTTCCTCTGGCCCCTTCTTCTAAGTCTACCTCTGGCGGCACCGCCGCCCTGGGCTGTCTGGTGAAG"
         
         let (Left msg) = runExcept $ evalStateT (fixForbidden conf dna) gen
-        msg `shouldBe` "cannot fix this shit"
+        msg `shouldBe` CannotFixForbiddenSequence
         
 fixTowForbiddenSpec :: Spec
 fixTowForbiddenSpec =

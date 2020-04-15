@@ -13,6 +13,7 @@ import Bio.NucleicAcid.Nucleotide.Type (DNA (..))
 import Bio.Protein.AminoAcid           (AA (..))
 
 import Bio.Tools.Sequence.CodonOptimization.Types           (Organism (..))
+import Bio.Tools.Sequence.OligoDesigner.Types               (OligoDesignerError(..))
 import Bio.Tools.Sequence.OligoDesigner.Utils.MutationUtils (mutate, mutateSlice, oneMutation,
                                                              randomCodon, weightedRandom)
 
@@ -138,11 +139,11 @@ mutateInvalidIntervalSpec =
     describe "mutateInvalidIntervalSpec" $
     it "" $ do
         let gen = mkStdGen 4
-        runExcept (evalStateT (mutate CHO "AATATGCATATG" (3, 1)) gen) `shouldBe` Left "invalid interval for mutation: (3,1)"
-        runExcept (evalStateT (mutate CHO "AATATGCATATG" (-1, 1)) gen) `shouldBe` Left "invalid interval for mutation: (-1,1)"
-        runExcept (evalStateT (mutate CHO "AATATGCATATG" (3, -10)) gen) `shouldBe` Left "invalid interval for mutation: (3,-10)"
-        runExcept (evalStateT (mutate CHO "AATATGCATATG" (3, 5)) gen) `shouldBe` Left "invalid interval for mutation: (3,5)"
-        runExcept (evalStateT (mutate CHO "AATATGCATATG" (5, 40)) gen) `shouldBe` Left "invalid interval for mutation: (5,40)"
+        runExcept (evalStateT (mutate CHO "AATATGCATATG" (3, 1)) gen) `shouldBe` Left (InvalidInterval (3, 1))
+        runExcept (evalStateT (mutate CHO "AATATGCATATG" (-1, 1)) gen) `shouldBe` Left (InvalidInterval (-1, 1))
+        runExcept (evalStateT (mutate CHO "AATATGCATATG" (3, -10)) gen) `shouldBe` Left (InvalidInterval (3, -10))
+        runExcept (evalStateT (mutate CHO "AATATGCATATG" (3, 5)) gen) `shouldBe` Left (InvalidInterval (3, 5))
+        runExcept (evalStateT (mutate CHO "AATATGCATATG" (5, 40)) gen) `shouldBe` Left (InvalidInterval (5, 40))
 
 randomCodonSpec :: Spec
 randomCodonSpec =
@@ -262,4 +263,4 @@ weightedRandomForEmptySpec =
     it "should return error for empty argument" $ do
         let empty = [] :: [(Double, Double)]
         gen <- getStdGen
-        runExcept (evalStateT (weightedRandom empty) gen) `shouldBe` Left "cannot get random for empty array"
+        runExcept (evalStateT (weightedRandom empty) gen) `shouldBe` Left CannotGetRandom

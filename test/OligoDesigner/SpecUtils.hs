@@ -6,7 +6,7 @@ import Control.Monad.Except (runExcept)
 import Test.Hspec           (Spec, describe, it, shouldBe)
 
 import Bio.Tools.Sequence.OligoDesigner.Types             (Olig (..), OligSet (..),
-                                                           OligSplitting (..))
+                                                           OligSplitting (..), OligoDesignerError(..))
 import Bio.Tools.Sequence.OligoDesigner.Utils.CommonUtils (assemble, buildOligSet, getAAIndex,
                                                            mixOligs, slice, translate)
 
@@ -85,11 +85,11 @@ sliceWrongIndexesSpec =
     describe "sliceWrongIndexesSpec" $
     it "should return empty slice for wrong indexes" $ do
         let sequ = [0..19] :: [Integer]
-        runExcept (slice 6 3 sequ)    `shouldBe` Left "incorrect coordinates"
-        runExcept (slice (-6) 0 sequ) `shouldBe` Left "incorrect coordinates"
+        runExcept (slice 6 3 sequ)    `shouldBe` Left (InvalidInterval (6, 3))
+        runExcept (slice (-6) 0 sequ) `shouldBe` Left (InvalidInterval (-6, 0))
         runExcept (slice 20 22 sequ) `shouldBe` Right []
         runExcept (slice 0 0 sequ) `shouldBe` Right []
-        runExcept (slice (-3) 2 sequ) `shouldBe` Left "incorrect coordinates"
+        runExcept (slice (-3) 2 sequ) `shouldBe` Left (InvalidInterval (-3, 2))
 
 sliceOutOfBoundIndexSpec :: Spec
 sliceOutOfBoundIndexSpec =
@@ -201,10 +201,10 @@ buildOligSetWithIncorrectSplittingSpec =
         let dna =
                 "ATGGAGACCGACACCCTGCTGCTGTGGGTGCTGCTGCTGTGGGTGCCTGGGTCGACCGGCATGGCTTCCATGTCGGCAGAATGCTTAATGAATTACAACAGTACTGCGATGAGTGGCAGGGGG"
         let res = runExcept $ buildOligSet splitting dna
-        res `shouldBe` Left "incorrect coordinates"
+        res `shouldBe` Left (InvalidInterval (-10, 569))
         
         let splitting' = OligSplitting [(10, 5)] [(29, 670)]
-        runExcept (buildOligSet splitting' dna) `shouldBe` Left "incorrect coordinates"
+        runExcept (buildOligSet splitting' dna) `shouldBe` Left (InvalidInterval (10, 5))
         
 getAAIndexSpec :: Spec
 getAAIndexSpec =
@@ -216,7 +216,7 @@ getAAIndexSpec =
         runExcept (getAAIndex 3) `shouldBe` Right 2
         runExcept (getAAIndex 4) `shouldBe` Right 2
         runExcept (getAAIndex 5) `shouldBe` Right 2
-        runExcept (getAAIndex (-1)) `shouldBe` Left "incorrect coordinates"
+        runExcept (getAAIndex (-1)) `shouldBe` Left (InvalidInterval (-1, -1))
         
 mixOligsSpec :: Spec
 mixOligsSpec =
